@@ -1,0 +1,4 @@
+timestamp,node_id,prediction_time,predicted_6h,actual_6h,predicted_12h,actual_12h,predicted_24h,actual_24h,error_6h,error_12h,error_24h,weather_conditions
+2025-09-11T15:59:29Z,!2c9e092b,2025-09-11T15,77.00,78.00,75.00,78.00,71.00,78.00,-1.00,-3.00,-7.00,clear sky
+2025-09-11T15:59:29Z,!2df67288,2025-09-11T15,106.00,100.00,104.00,100.00,100.00,100.00,6.00,4.00,0,clear sky
+2025-09-11T15:59:29Z,!75e98c18,2025-09-11T15,94.00,101.00,92.00,101.00,88.00,101.00,-7.00,-9.00,-13.00,clear sky

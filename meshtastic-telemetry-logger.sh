@@ -137,12 +137,100 @@ get_value_class() {
     esac
 }
 
-# Get weather predictions for a specific node
+# Get ML-enhanced power predictions for a specific node
+get_ml_predictions() {
+    local node_id="$1"
+    local predictions_file="power_predictions.csv"
+    
+    # Default values if predictions not available
+    local pred_6h="N/A"
+    local pred_12h="N/A" 
+    local pred_24h="N/A"
+    local accuracy="Learning"
+    
+    if [ -f "$predictions_file" ]; then
+        # Get latest ML prediction for this node
+        local latest_prediction=$(grep ",$node_id," "$predictions_file" | tail -1)
+        
+        if [ -n "$latest_prediction" ]; then
+            # Parse CSV: timestamp,node_id,current_battery,predicted_6h,predicted_12h,predicted_24h,weather_desc,cloud_cover,solar_efficiency
+            pred_6h=$(echo "$latest_prediction" | cut -d',' -f4)
+            pred_12h=$(echo "$latest_prediction" | cut -d',' -f5)
+            pred_24h=$(echo "$latest_prediction" | cut -d',' -f6)
+            
+            # Add percentage signs and determine icons based on trend
+            if [ -n "$pred_6h" ] && [ "$pred_6h" != "" ]; then
+                local current_battery=$(echo "$latest_prediction" | cut -d',' -f3)
+                local trend_6h=$(echo "scale=2; $pred_6h - $current_battery" | bc 2>/dev/null)
+                local trend_12h=$(echo "scale=2; $pred_12h - $current_battery" | bc 2>/dev/null)
+                local trend_24h=$(echo "scale=2; $pred_24h - $current_battery" | bc 2>/dev/null)
+                
+                # Add appropriate icons based on trend
+                local icon_6h="🔋"
+                local icon_12h="🔋"
+                local icon_24h="🔋"
+                
+                if (( $(echo "$trend_6h > 2" | bc -l 2>/dev/null) )); then icon_6h="⚡"; fi
+                if (( $(echo "$trend_6h < -5" | bc -l 2>/dev/null) )); then icon_6h="📉"; fi
+                if (( $(echo "$trend_12h > 2" | bc -l 2>/dev/null) )); then icon_12h="⚡"; fi
+                if (( $(echo "$trend_12h < -5" | bc -l 2>/dev/null) )); then icon_12h="📉"; fi
+                if (( $(echo "$trend_24h > 2" | bc -l 2>/dev/null) )); then icon_24h="⚡"; fi
+                if (( $(echo "$trend_24h < -5" | bc -l 2>/dev/null) )); then icon_24h="📉"; fi
+                
+                pred_6h="${pred_6h}% ${icon_6h}"
+                pred_12h="${pred_12h}% ${icon_12h}"
+                pred_24h="${pred_24h}% ${icon_24h}"
+            fi
+        fi
+    fi
+    
+    # Get accuracy information from ML predictions
+    local accuracy_file="prediction_accuracy.csv"
+    if [ -f "$accuracy_file" ]; then
+        local node_accuracy=$(grep ",$node_id," "$accuracy_file" | tail -5)
+        if [ -n "$node_accuracy" ]; then
+            # Calculate average absolute error from last 5 predictions
+            accuracy=$(echo "$node_accuracy" | awk -F',' 'BEGIN{sum=0;count=0} {
+                if($10!="") {
+                    err = ($10 < 0 ? -$10 : $10)
+                    sum += err
+                    count++
+                }
+            } END{
+                if(count>0) {
+                    avg_err = sum/count
+                    acc = 100 - avg_err
+                    if(acc < 0) acc = 0
+                    printf "%.0f%%", acc
+                } else {
+                    print "Learning"
+                }
+            }')
+        fi
+    fi
+    
+    echo "$pred_6h|$pred_12h|$pred_24h|$accuracy"
+}
+
+# Get weather predictions for a specific node (enhanced with ML)
 get_weather_predictions() {
     local node_id="$1"
     local predictions_file="weather_predictions.json"
     
-    # Default values if predictions not available
+    # Try ML predictions first
+    local ml_result=$(get_ml_predictions "$node_id")
+    local ml_6h=$(echo "$ml_result" | cut -d'|' -f1)
+    local ml_12h=$(echo "$ml_result" | cut -d'|' -f2)
+    local ml_24h=$(echo "$ml_result" | cut -d'|' -f3)
+    local ml_accuracy=$(echo "$ml_result" | cut -d'|' -f4)
+    
+    # If ML predictions are available, use them; otherwise fall back to original method
+    if [ "$ml_6h" != "N/A" ] && [ -n "$ml_6h" ]; then
+        echo "$ml_6h|$ml_12h|$ml_24h"
+        return
+    fi
+    
+    # Original weather prediction logic as fallback
     local pred_6h="N/A"
     local pred_12h="N/A" 
     local pred_24h="N/A"
@@ -550,6 +638,71 @@ generate_stats_html() {
 EOF
         
         echo "<h1>Meshtastic Telemetry Statistics</h1>"
+        echo "<p><em>Last updated: $(date)</em></p>"
+        
+        # ML Learning Status Section
+        echo "<h2>🤖 Machine Learning Power Prediction Status</h2>"
+        
+        # Check if ML system is active
+        if [ -f "power_predictions.csv" ] && [ -f "prediction_accuracy.csv" ]; then
+            # Count total predictions made
+            total_predictions=$(tail -n +2 "power_predictions.csv" 2>/dev/null | wc -l)
+            
+            # Count accuracy measurements
+            total_accuracy_checks=$(tail -n +2 "prediction_accuracy.csv" 2>/dev/null | wc -l)
+            
+            # Calculate overall accuracy if data available
+            if [ -f "prediction_accuracy.csv" ] && [ "$total_accuracy_checks" -gt 0 ]; then
+                overall_accuracy=$(tail -n +2 "prediction_accuracy.csv" | awk -F',' 'BEGIN{sum=0;count=0} {
+                    if($10!="") {
+                        err = ($10 < 0 ? -$10 : $10)
+                        sum += err
+                        count++
+                    }
+                } END{
+                    if(count>0) {
+                        avg_err = sum/count
+                        acc = 100 - avg_err
+                        if(acc < 0) acc = 0
+                        printf "%.1f%%", acc
+                    } else {
+                        print "Calculating..."
+                    }
+                }')
+            else
+                overall_accuracy="Learning..."
+            fi
+            
+            # Get nodes being tracked
+            nodes_tracked=$(cut -d',' -f2 "power_predictions.csv" 2>/dev/null | tail -n +2 | sort -u | wc -l)
+            
+            echo "<div style='background: #e8f5e8; padding: 15px; border-radius: 5px; margin: 10px 0;'>"
+            echo "<p><strong>🟢 ML System Active</strong></p>"
+            echo "<ul>"
+            echo "<li><strong>Predictions Made:</strong> $total_predictions</li>"
+            echo "<li><strong>Accuracy Checks:</strong> $total_accuracy_checks</li>"
+            echo "<li><strong>Overall Accuracy:</strong> $overall_accuracy</li>"
+            echo "<li><strong>Nodes Tracked:</strong> $nodes_tracked</li>"
+            echo "</ul>"
+            
+            # Show recent learning activity
+            if [ "$total_accuracy_checks" -gt 0 ]; then
+                echo "<p><strong>Recent Learning Activity:</strong></p>"
+                echo "<ul style='font-size: 0.9em;'>"
+                tail -3 "prediction_accuracy.csv" | while IFS=',' read -r timestamp node_id pred_time predicted_6h actual_6h predicted_12h actual_12h predicted_24h actual_24h error_6h error_12h error_24h weather; do
+                    if [ "$timestamp" != "timestamp" ]; then
+                        echo "<li>$(date -d "$timestamp" '+%m-%d %H:%M'): $node_id predicted ${predicted_6h}%, actual ${actual_6h}% (error: ${error_6h}%)</li>"
+                    fi
+                done
+                echo "</ul>"
+            fi
+            echo "</div>"
+        else
+            echo "<div style='background: #fff3cd; padding: 15px; border-radius: 5px; margin: 10px 0;'>"
+            echo "<p><strong>🟡 ML System Initializing</strong></p>"
+            echo "<p>Machine learning power predictor is collecting initial data. Improved predictions will be available after sufficient data is gathered.</p>"
+            echo "</div>"
+        fi
         echo "<p>Generated: $(iso8601_date)</p>"
         
         # Display monitored addresses with resolved names
@@ -603,7 +756,7 @@ EOF
         # Per-Node Statistics Summary
         echo "<h2>Node Summary Statistics</h2>"
         echo "<table>"
-        echo "<tr><th>Address</th><th>Last Seen</th><th>Success</th><th>Failures</th><th>Success Rate</th><th>Battery (%)</th><th>Voltage (V)</th><th>Channel Util (%)</th><th>Tx Util (%)</th><th>Uptime (s)</th><th>Min Battery</th><th>Max Battery</th><th>Max Channel Util</th><th>Max Tx Util</th><th>Est. Time Left (h)</th><th>Power in 6h</th><th>Power in 12h</th><th>Power in 24h</th></tr>"
+        echo "<tr><th>Address</th><th>Last Seen</th><th>Success</th><th>Failures</th><th>Success Rate</th><th>Battery (%)</th><th>Voltage (V)</th><th>Channel Util (%)</th><th>Tx Util (%)</th><th>Uptime (s)</th><th>Min Battery</th><th>Max Battery</th><th>Max Channel Util</th><th>Max Tx Util</th><th>Est. Time Left (h)</th><th>Power in 6h (ML)</th><th>Power in 12h (ML)</th><th>Power in 24h (ML)</th><th>ML Accuracy</th></tr>"
         
         cut -d',' -f2 /tmp/all_success.csv | sort | uniq | while read address; do
             if [ -z "$address" ]; then continue; fi
@@ -833,13 +986,40 @@ EOF
             echo "<td class=\"number $max_tx_util_class\">${max_tx_util:-N/A}</td>"
             echo "<td class=\"number $time_left_class\">$est_hours_left</td>"
             
-            # Get weather predictions for this node
-            weather_predictions=$(get_weather_predictions "$address")
-            IFS='|' read -r pred_6h pred_12h pred_24h <<< "$weather_predictions"
+            # Get ML-enhanced weather predictions for this node
+            ml_result=$(get_ml_predictions "$address")
+            IFS='|' read -r ml_6h ml_12h ml_24h ml_accuracy <<< "$ml_result"
+            
+            # Fall back to regular weather predictions if ML not available
+            if [ "$ml_6h" = "N/A" ]; then
+                weather_predictions=$(get_weather_predictions "$address")
+                IFS='|' read -r pred_6h pred_12h pred_24h <<< "$weather_predictions"
+                ml_accuracy="N/A"
+            else
+                pred_6h="$ml_6h"
+                pred_12h="$ml_12h"
+                pred_24h="$ml_24h"
+            fi
+            
+            # Determine accuracy class for color coding
+            accuracy_class="unknown"
+            if [ "$ml_accuracy" != "N/A" ] && [ "$ml_accuracy" != "Learning" ]; then
+                accuracy_num=$(echo "$ml_accuracy" | sed 's/%//')
+                if (( $(echo "$accuracy_num >= 90" | bc -l 2>/dev/null) )); then
+                    accuracy_class="good"
+                elif (( $(echo "$accuracy_num >= 75" | bc -l 2>/dev/null) )); then
+                    accuracy_class="normal"
+                elif (( $(echo "$accuracy_num >= 60" | bc -l 2>/dev/null) )); then
+                    accuracy_class="warning"
+                else
+                    accuracy_class="critical"
+                fi
+            fi
             
             echo "<td class=\"prediction\">${pred_6h}</td>"
             echo "<td class=\"prediction\">${pred_12h}</td>"
             echo "<td class=\"prediction\">${pred_24h}</td>"
+            echo "<td class=\"number $accuracy_class\" title=\"ML prediction accuracy based on historical performance\">${ml_accuracy}</td>"
             echo "</tr>"
         done
         echo "</table>"
@@ -1028,6 +1208,12 @@ while true; do
     if [[ -f "weather_integration.sh" ]]; then
         echo "Generating weather-based energy predictions..."
         ./weather_integration.sh nodes_log.csv telemetry_log.csv weather_predictions.json
+    fi
+    
+    # Run ML power predictor to learn and improve predictions
+    if [[ -f "ml_power_predictor.sh" ]]; then
+        echo "Running ML power prediction analysis..."
+        ./ml_power_predictor.sh run
     fi
     
     sleep "$INTERVAL"
