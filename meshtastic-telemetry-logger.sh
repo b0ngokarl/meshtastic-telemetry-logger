@@ -203,17 +203,29 @@ parse_nodes_to_csv() {
 generate_stats_html() {
     {
         echo "<html><head><title>Meshtastic Telemetry Stats</title></head><body>"
-        echo "<h1>Meshtastic Telemetry - Last Results (Success Only)</h1>"
-        echo "<table border=1><tr><th>Timestamp</th><th>Address</th><th>Battery</th><th>Voltage</th><th>Channel Util</th><th>Tx Util</th><th>Uptime</th></tr>"
+    echo "<h1>Meshtastic Telemetry - Last Results (Success Only)</h1>"
+    echo "<table border=1><tr><th>Timestamp</th><th>Address</th><th>Battery</th><th>Voltage</th><th>Channel Util</th><th>Tx Util</th><th>Uptime</th></tr>"
         # Show only the latest success for each address, sorted by timestamp descending
         awk -F',' '$3=="success" {a[$2]=$0} END {for (i in a) print a[i]}' "$TELEMETRY_CSV" | sort -t',' -k1,1r | while IFS=',' read -r timestamp address status battery voltage channel_util tx_util uptime; do
-            echo "<tr><td>$timestamp</td><td>$address</td><td>$battery</td><td>$voltage</td><td>$channel_util</td><td>$tx_util</td><td>$uptime</td></tr>"
+            device_name="$(get_node_info "$address")"
+            if [ -n "$device_name" ] && [ "$device_name" != "$address" ]; then
+                address_display="$address ($device_name)"
+            else
+                address_display="$address"
+            fi
+            echo "<tr><td>$timestamp</td><td>$address_display</td><td>$battery</td><td>$voltage</td><td>$channel_util</td><td>$tx_util</td><td>$uptime</td></tr>"
         done
         echo "</table>"
 
-        echo "<h2>Telemetry Success History</h2>"
+    echo "<h2>Telemetry Success History</h2>"
         for addr in "${ADDRESSES[@]}"; do
-            echo "<h3>$addr</h3>"
+            device_name="$(get_node_info "$addr")"
+            if [ -n "$device_name" ] && [ "$device_name" != "$addr" ]; then
+                addr_display="$addr ($device_name)"
+            else
+                addr_display="$addr"
+            fi
+            echo "<h3>$addr_display</h3>"
             echo "<table border=1><tr><th>Timestamp</th><th>Battery</th><th>Voltage</th><th>Channel Util</th><th>Tx Util</th><th>Uptime</th></tr>"
             grep "$addr,success" "$TELEMETRY_CSV" | tail -n 10 | while IFS=',' read -r timestamp address status battery voltage channel_util tx_util uptime; do
                 echo "<tr><td>$timestamp</td><td>$battery</td><td>$voltage</td><td>$channel_util</td><td>$tx_util</td><td>$uptime</td></tr>"
@@ -221,7 +233,7 @@ generate_stats_html() {
             echo "</table>"
         done
 
-        echo "<h2>Current Node List</h2>"
+    echo "<h2>Current Node List</h2>"
         echo "<table border=1><tr><th>User</th><th>ID</th><th>AKA</th><th>Hardware</th><th>Pubkey</th><th>Role</th><th>Latitude</th><th>Longitude</th><th>Altitude</th><th>Battery</th><th>Channel Util</th><th>Tx Air Util</th><th>SNR</th><th>Hops</th><th>Channel</th><th>LastHeard</th><th>Since</th></tr>"
         tail -n +2 "$NODES_CSV" | sort -t, -k16,16r | while IFS=',' read -r user id aka hardware pubkey role latitude longitude altitude battery channel_util tx_util snr hops channel lastheard since; do
             echo "<tr><td>$user</td><td>$id</td><td>$aka</td><td>$hardware</td><td>$pubkey</td><td>$role</td><td>$latitude</td><td>$longitude</td><td>$altitude</td><td>$battery</td><td>$channel_util</td><td>$tx_util</td><td>$snr</td><td>$hops</td><td>$channel</td><td>$lastheard</td><td>$since</td></tr>"
@@ -234,6 +246,9 @@ generate_stats_html() {
 # ---- MAIN LOOP ----
 while true; do
     for addr in "${ADDRESSES[@]}"; do
+        # Lookup node info from nodes_log.csv every round
+        node_info="$(get_node_info "$addr")"
+        debug_log "Node info for $addr: $node_info"
         run_telemetry "$addr"
     done
     update_nodes_log
