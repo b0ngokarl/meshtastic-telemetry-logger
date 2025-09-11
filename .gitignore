@@ -1,0 +1,10 @@
+# Generated log files and output files
+error.log
+nodes_log.txt
+nodes_log.csv
+stats.html
+telemetry_log.csv
+
+# Temporary files
+/tmp/
+*.tmp
