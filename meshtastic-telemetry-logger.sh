@@ -221,9 +221,12 @@ generate_stats_html() {
             echo "</table>"
         done
 
-        echo "<h2>Current Node List</h2><pre>"
-        tail -n 40 "$NODES_LOG"
-        echo "</pre>"
+        echo "<h2>Current Node List</h2>"
+        echo "<table border=1><tr><th>User</th><th>ID</th><th>AKA</th><th>Hardware</th><th>Pubkey</th><th>Role</th><th>Latitude</th><th>Longitude</th><th>Altitude</th><th>Battery</th><th>Channel Util</th><th>Tx Air Util</th><th>SNR</th><th>Hops</th><th>Channel</th><th>LastHeard</th><th>Since</th></tr>"
+        tail -n +2 "$NODES_CSV" | sort -t, -k16,16r | while IFS=',' read -r user id aka hardware pubkey role latitude longitude altitude battery channel_util tx_util snr hops channel lastheard since; do
+            echo "<tr><td>$user</td><td>$id</td><td>$aka</td><td>$hardware</td><td>$pubkey</td><td>$role</td><td>$latitude</td><td>$longitude</td><td>$altitude</td><td>$battery</td><td>$channel_util</td><td>$tx_util</td><td>$snr</td><td>$hops</td><td>$channel</td><td>$lastheard</td><td>$since</td></tr>"
+        done
+        echo "</table>"
         echo "</body></html>"
     } > "$STATS_HTML"
 }
