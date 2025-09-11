@@ -12,7 +12,7 @@ debug_log() {
         printf '[DEBUG] %s\n' "$*" >&2
     fi
 }
-ADDRESSES=('!9eed0410' '!2c9e092b' '!849c4818' '!fd17c0ed' '!a0cc8008' '!ba656304' '!2df67288' '!277db5ca' '!75e98c18') # Add/change as needed
+ADDRESSES=('!9eed0410' '!2c9e092b' '!849c4818' '!fd17c0ed' '!a0cc8008' '!ba656304' '!2df67288' '!277db5ca' '!75e98c18' '!b03d9844') # Add/change as needed
 INTERVAL=300                        # Polling interval in seconds
 TELEMETRY_CSV="telemetry_log.csv"
 NODES_LOG="nodes_log.txt"
@@ -203,10 +203,84 @@ parse_nodes_to_csv() {
 generate_stats_html() {
     {
         echo "<html><head><title>Meshtastic Telemetry Stats</title></head><body>"
-    echo "<h1>Meshtastic Telemetry - Last Results (Success Only)</h1>"
-    echo "<table border=1><tr><th>Timestamp</th><th>Address</th><th>Battery</th><th>Voltage</th><th>Channel Util</th><th>Tx Util</th><th>Uptime</th></tr>"
-        # Show only the latest success for each address, sorted by timestamp descending
-        awk -F',' '$3=="success" {a[$2]=$0} END {for (i in a) print a[i]}' "$TELEMETRY_CSV" | sort -t',' -k1,1r | while IFS=',' read -r timestamp address status battery voltage channel_util tx_util uptime; do
+        echo "<h1>Meshtastic Telemetry - Last Results (Success Only)</h1>"
+
+        # Gather all successful telemetry for per-node stats
+        awk -F',' '$3=="success"' "$TELEMETRY_CSV" > /tmp/all_success.csv
+        # Build per-node stats
+        echo "<h2>Per-Node Statistics (Success History)</h2>"
+        echo "<table border=1><tr><th>Address</th><th>Min Battery (%)</th><th>Max Battery (%)</th><th>Min Voltage (V)</th><th>Max Voltage (V)</th><th>Min Uptime (s)</th><th>Max Uptime (s)</th><th>Est. Time Left (h)</th></tr>"
+        cut -d',' -f2 /tmp/all_success.csv | sort | uniq | while read address; do
+            # Get all records for this address
+            node_data=$(grep ",$address," /tmp/all_success.csv)
+            min_battery=$(echo "$node_data" | awk -F',' '{print $4}' | sort -n | head -1)
+            max_battery=$(echo "$node_data" | awk -F',' '{print $4}' | sort -nr | head -1)
+            min_voltage=$(echo "$node_data" | awk -F',' '{print $5}' | sort -n | head -1)
+            max_voltage=$(echo "$node_data" | awk -F',' '{print $5}' | sort -nr | head -1)
+            min_uptime=$(echo "$node_data" | awk -F',' '{print $8}' | sort -n | head -1)
+            max_uptime=$(echo "$node_data" | awk -F',' '{print $8}' | sort -nr | head -1)
+            # Estimate time left: use earliest and latest records for battery drop rate
+            first_battery=$(echo "$node_data" | awk -F',' '{print $4}' | head -1)
+            last_battery=$(echo "$node_data" | awk -F',' '{print $4}' | tail -1)
+            first_uptime=$(echo "$node_data" | awk -F',' '{print $8}' | head -1)
+            last_uptime=$(echo "$node_data" | awk -F',' '{print $8}' | tail -1)
+            battery_drop=$(echo "$first_battery - $last_battery" | bc)
+            time_diff=$((last_uptime-first_uptime))
+            if [ "$battery_drop" != "0" ] && [ "$time_diff" -gt 0 ]; then
+                drop_per_hour=$(echo "scale=2; $battery_drop / ($time_diff/3600)" | bc)
+                if (( $(echo "$drop_per_hour > 0" | bc -l) )); then
+                    est_hours_left=$(echo "scale=1; $last_battery / $drop_per_hour" | bc)
+                else
+                    est_hours_left="N/A"
+                fi
+            else
+                est_hours_left="N/A"
+            fi
+            device_name="$(get_node_info "$address")"
+            if [ -n "$device_name" ] && [ "$device_name" != "$address" ]; then
+                address_display="$address ($device_name)"
+            else
+                address_display="$address"
+            fi
+            echo "<tr><td>$address_display</td><td>$min_battery</td><td>$max_battery</td><td>$min_voltage</td><td>$max_voltage</td><td>$min_uptime</td><td>$max_uptime</td><td>$est_hours_left</td></tr>"
+        done
+        echo "</table>"
+
+        # Gather stats for battery, voltage, uptime from latest success per address (for global stats)
+        awk -F',' '$3=="success" {a[$2]=$0} END {for (i in a) print a[i]}' "$TELEMETRY_CSV" | sort -t',' -k1,1r > /tmp/last_success.csv
+        min_battery=; max_battery=; sum_battery=0; count_battery=0
+        min_voltage=; max_voltage=; sum_voltage=0; count_voltage=0
+        min_uptime=; max_uptime=; sum_uptime=0; count_uptime=0
+        while IFS=',' read -r timestamp address status battery voltage channel_util tx_util uptime; do
+            # Battery
+            if [ -z "$min_battery" ] || (( $(echo "$battery < $min_battery" | bc -l) )); then min_battery="$battery"; fi
+            if [ -z "$max_battery" ] || (( $(echo "$battery > $max_battery" | bc -l) )); then max_battery="$battery"; fi
+            sum_battery=$(echo "$sum_battery + $battery" | bc)
+            count_battery=$((count_battery+1))
+            # Voltage
+            if [ -z "$min_voltage" ] || (( $(echo "$voltage < $min_voltage" | bc -l) )); then min_voltage="$voltage"; fi
+            if [ -z "$max_voltage" ] || (( $(echo "$voltage > $max_voltage" | bc -l) )); then max_voltage="$voltage"; fi
+            sum_voltage=$(echo "$sum_voltage + $voltage" | bc)
+            count_voltage=$((count_voltage+1))
+            # Uptime
+            if [ -z "$min_uptime" ] || (( "$uptime" < "$min_uptime" )); then min_uptime="$uptime"; fi
+            if [ -z "$max_uptime" ] || (( "$uptime" > "$max_uptime" )); then max_uptime="$uptime"; fi
+            sum_uptime=$((sum_uptime+uptime))
+            count_uptime=$((count_uptime+1))
+        done < /tmp/last_success.csv
+        avg_battery=$(echo "scale=2; $sum_battery / $count_battery" | bc)
+        avg_voltage=$(echo "scale=2; $sum_voltage / $count_voltage" | bc)
+        if [ "$count_uptime" -gt 0 ]; then avg_uptime=$((sum_uptime/count_uptime)); else avg_uptime=0; fi
+
+        echo "<h2>Global Statistics (Last Success Only)</h2>"
+        echo "<table border=1><tr><th>Metric</th><th>Min</th><th>Max</th><th>Avg</th></tr>"
+        echo "<tr><td>Battery (%)</td><td>$min_battery</td><td>$max_battery</td><td>$avg_battery</td></tr>"
+        echo "<tr><td>Voltage (V)</td><td>$min_voltage</td><td>$max_voltage</td><td>$avg_voltage</td></tr>"
+        echo "<tr><td>Uptime (s)</td><td>$min_uptime</td><td>$max_uptime</td><td>$avg_uptime</td></tr>"
+        echo "</table>"
+
+        echo "<table border=1><tr><th>Timestamp</th><th>Address</th><th>Battery</th><th>Voltage</th><th>Channel Util</th><th>Tx Util</th><th>Uptime</th></tr>"
+        while IFS=',' read -r timestamp address status battery voltage channel_util tx_util uptime; do
             device_name="$(get_node_info "$address")"
             if [ -n "$device_name" ] && [ "$device_name" != "$address" ]; then
                 address_display="$address ($device_name)"
@@ -214,7 +288,7 @@ generate_stats_html() {
                 address_display="$address"
             fi
             echo "<tr><td>$timestamp</td><td>$address_display</td><td>$battery</td><td>$voltage</td><td>$channel_util</td><td>$tx_util</td><td>$uptime</td></tr>"
-        done
+        done < /tmp/last_success.csv
         echo "</table>"
 
     echo "<h2>Telemetry Success History</h2>"
