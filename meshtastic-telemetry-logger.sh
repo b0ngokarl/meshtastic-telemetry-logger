@@ -1,7 +1,18 @@
 #!/bin/bash
 
+#!/bin/bash
+
 # ---- CONFIGURATION ----
-ADDRESSES=('!9eed0410' '!2df67288') # Add/change as needed
+DEBUG=1  # Set to 1 to enable debug output
+# ---- FUNCTIONS ----
+
+# Debug log function (prints only if DEBUG=1)
+debug_log() {
+    if [ "$DEBUG" = "1" ]; then
+        printf '[DEBUG] %s\n' "$*" >&2
+    fi
+}
+ADDRESSES=('!9eed0410' '!2c9e092b' '!849c4818' '!fd17c0ed' '!a0cc8008' '!ba656304' '!2df67288' '!277db5ca') # Add/change as needed
 INTERVAL=300                        # Polling interval in seconds
 TELEMETRY_CSV="telemetry_log.csv"
 NODES_LOG="nodes_log.txt"
@@ -54,7 +65,9 @@ run_telemetry() {
     local ts
     ts=$(iso8601_date)
     local out
-    out=$(meshtastic --request-telemetry --dest "'$addr'" 2>&1)
+    debug_log "Requesting telemetry for $addr at $ts"
+    out=$(meshtastic --request-telemetry --dest "$addr" 2>&1)
+    debug_log "Telemetry output: $out"
     local status="unknown"
     local battery="" voltage="" channel_util="" tx_util="" uptime=""
 
@@ -65,10 +78,13 @@ run_telemetry() {
         channel_util=$(echo "$out" | grep "Total channel utilization:" | awk -F: '{print $2}' | tr -d ' %')
         tx_util=$(echo "$out" | grep "Transmit air utilization:" | awk -F: '{print $2}' | tr -d ' %')
         uptime=$(echo "$out" | grep "Uptime:" | awk -F: '{print $2}' | tr -d ' s')
+        debug_log "Telemetry success: battery=$battery, voltage=$voltage, channel_util=$channel_util, tx_util=$tx_util, uptime=$uptime"
     elif echo "$out" | grep -q "Timed out waiting for telemetry"; then
         status="timeout"
+        debug_log "Telemetry timeout for $addr"
     else
         status="error"
+        debug_log "Telemetry error for $addr: $out"
         echo "$ts [$addr] ERROR: $out" >> "$ERROR_LOG"
     fi
 
@@ -78,8 +94,10 @@ run_telemetry() {
 update_nodes_log() {
     local ts
     ts=$(iso8601_date)
+    debug_log "Updating nodes log at $ts"
     local out
     out=$(meshtastic --nodes 2>&1)
+    debug_log "Nodes output: $out"
     echo "===== $ts =====" >> "$NODES_LOG"
     echo "$out" >> "$NODES_LOG"
 }
@@ -96,26 +114,26 @@ parse_nodes_to_csv() {
     # Create temporary files
     local temp_csv="/tmp/nodes_unsorted.csv"
     local temp_data="/tmp/data_rows.txt"
-    
+    local temp_merged="/tmp/nodes_merged.csv"
+
     # Extract data rows (skip header row with "N │ User" and separator rows)
     grep "│.*│" "$input_file" | grep -v "│   N │ User" | grep -v "├─" | grep -v "╞═" | grep -v "╘═" | grep -v "╒═" > "$temp_data"
-    
+
     # Check if we have any data rows
     if [ ! -s "$temp_data" ]; then
         echo "No data rows found in $input_file"
         rm -f "$temp_data"
         return 1
     fi
-    
+
     # Write CSV header (skip first column N)
     echo "User,ID,AKA,Hardware,Pubkey,Role,Latitude,Longitude,Altitude,Battery,Channel_util,Tx_air_util,SNR,Hops,Channel,LastHeard,Since" > "$temp_csv"
-    
+
     # Process each data row
     while IFS= read -r line; do
         if [ -n "$line" ]; then
             # Split by │ and trim whitespace, skip first field (N)
             echo "$line" | awk -F'│' '{
-                # Skip first field (index 2 is actually second field due to leading │)
                 user = $3; gsub(/^[ ]+|[ ]+$/, "", user)
                 id = $4; gsub(/^[ ]+|[ ]+$/, "", id)
                 aka = $5; gsub(/^[ ]+|[ ]+$/, "", aka)
@@ -133,7 +151,7 @@ parse_nodes_to_csv() {
                 channel = $17; gsub(/^[ ]+|[ ]+$/, "", channel)
                 lastheard = $18; gsub(/^[ ]+|[ ]+$/, "", lastheard)
                 since = $19; gsub(/^[ ]+|[ ]+$/, "", since)
-                
+
                 # Escape commas in fields by wrapping in quotes if they contain commas
                 if (match(user, /,/)) user = "\"" user "\""
                 if (match(id, /,/)) id = "\"" id "\""
@@ -152,63 +170,60 @@ parse_nodes_to_csv() {
                 if (match(channel, /,/)) channel = "\"" channel "\""
                 if (match(lastheard, /,/)) lastheard = "\"" lastheard "\""
                 if (match(since, /,/)) since = "\"" since "\""
-                
+
                 print user","id","aka","hardware","pubkey","role","latitude","longitude","altitude","battery","channel_util","tx_util","snr","hops","channel","lastheard","since
             }' >> "$temp_csv"
         fi
     done < "$temp_data"
-    
-    # Sort by LastHeard column (column 16, 0-indexed) and write to output
-    # First extract header
-    head -n 1 "$temp_csv" > "$output_file"
-    
-    # Sort data rows by LastHeard (column 16) - newer timestamps first (reverse sort)
-    tail -n +2 "$temp_csv" | sort -t, -k16,16r >> "$output_file"
-    
+
+    # Merge with existing nodes_log.csv (except header) using awk for portability
+    local header
+    header=$(head -n 1 "$temp_csv")
+    echo "$header" > "$temp_merged"
+
+    # Combine old and new data (skip headers)
+    { tail -n +2 "$NODES_CSV" 2>/dev/null; tail -n +2 "$temp_csv"; } > /tmp/nodes_all.csv
+
+    # Use awk to keep only the latest info for each node ID (never delete old nodes)
+    awk -F',' '{
+        if (!($2 in seen) || $16 > seen[$2]) {
+            row[$2]=$0; seen[$2]=$16
+        }
+    } END {
+        for (i in row) print row[i]
+    }' /tmp/nodes_all.csv | sort -t, -k16,16r >> "$temp_merged"
+
+    # Write merged and sorted node list to output
+    mv "$temp_merged" "$output_file"
+
     # Clean up temporary files
-    rm -f "$temp_csv" "$temp_data"
+    rm -f "$temp_csv" "$temp_data" /tmp/nodes_all.csv
 }
 
 generate_stats_html() {
     {
         echo "<html><head><title>Meshtastic Telemetry Stats</title></head><body>"
-        echo "<h1>Meshtastic Telemetry - Last Results</h1>"
-        echo "<table border=1><tr><th>Timestamp</th><th>Node</th><th>Address</th><th>Status</th><th>Battery</th><th>Voltage</th><th>Channel Util</th><th>Tx Util</th><th>Uptime</th></tr>"
-        
-        # Process telemetry data and add node information
-        while IFS=',' read -r timestamp address status battery voltage channel_util tx_util uptime; do
-            if [ "$timestamp" != "timestamp" ]; then  # Skip header
-                node_info=$(get_node_info "$address")
-                if [ -z "$node_info" ]; then
-                    node_info="$address"
-                fi
-                echo "<tr><td>$timestamp</td><td>$node_info</td><td>$address</td><td>$status</td><td>$battery</td><td>$voltage</td><td>$channel_util</td><td>$tx_util</td><td>$uptime</td></tr>"
-            fi
-        done < <(tail -n 20 "$TELEMETRY_CSV")
-        
+        echo "<h1>Meshtastic Telemetry - Last Results (Success Only)</h1>"
+        echo "<table border=1><tr><th>Timestamp</th><th>Address</th><th>Battery</th><th>Voltage</th><th>Channel Util</th><th>Tx Util</th><th>Uptime</th></tr>"
+        # Show only the latest success for each address, sorted by timestamp descending
+        awk -F',' '$3=="success" {a[$2]=$0} END {for (i in a) print a[i]}' "$TELEMETRY_CSV" | sort -t',' -k1,1r | while IFS=',' read -r timestamp address status battery voltage channel_util tx_util uptime; do
+            echo "<tr><td>$timestamp</td><td>$address</td><td>$battery</td><td>$voltage</td><td>$channel_util</td><td>$tx_util</td><td>$uptime</td></tr>"
+        done
         echo "</table>"
 
-        # Enhanced stats with node information
-        echo "<h2>Success Rate</h2><ul>"
+        echo "<h2>Telemetry Success History</h2>"
         for addr in "${ADDRESSES[@]}"; do
-            total=$(grep "$addr" "$TELEMETRY_CSV" | wc -l)
-            success=$(grep "$addr" "$TELEMETRY_CSV" | grep "success" | wc -l)
-            rate=0
-            if [ "$total" -gt 0 ]; then rate=$((100 * success / total)); fi
-            
-            # Get node info for display
-            node_info=$(get_node_info "$addr")
-            if [ -z "$node_info" ]; then
-                node_info="$addr"
-            fi
-            echo "<li>$node_info ($addr): $rate% ($success / $total)</li>"
+            echo "<h3>$addr</h3>"
+            echo "<table border=1><tr><th>Timestamp</th><th>Battery</th><th>Voltage</th><th>Channel Util</th><th>Tx Util</th><th>Uptime</th></tr>"
+            grep "$addr,success" "$TELEMETRY_CSV" | tail -n 10 | while IFS=',' read -r timestamp address status battery voltage channel_util tx_util uptime; do
+                echo "<tr><td>$timestamp</td><td>$battery</td><td>$voltage</td><td>$channel_util</td><td>$tx_util</td><td>$uptime</td></tr>"
+            done
+            echo "</table>"
         done
-        echo "</ul>"
 
-        echo "<h2>Node Log Snapshots</h2><pre>"
+        echo "<h2>Current Node List</h2><pre>"
         tail -n 40 "$NODES_LOG"
         echo "</pre>"
-
         echo "</body></html>"
     } > "$STATS_HTML"
 }
