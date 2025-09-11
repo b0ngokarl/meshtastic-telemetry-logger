@@ -1,0 +1,25 @@
+{
+    "list": [
+        {
+            "dt": 1757625065,
+            "main": {"temp": 29},
+            "weather": [{"main": "Clouds", "description": "scattered clouds"}],
+            "clouds": {"all": 19},
+            "dt_txt": "2025-09-11 23:00:00"
+        },
+        {
+            "dt": 1757635865,
+            "main": {"temp": 15},
+            "weather": [{"main": "Rain", "description": "light rain"}],
+            "clouds": {"all": 85},
+            "dt_txt": "2025-09-12 02:00:00"
+        },
+        {
+            "dt": 1757646665,
+            "main": {"temp": 24},
+            "weather": [{"main": "Clear", "description": "clear sky"}],
+            "clouds": {"all": 86},
+            "dt_txt": "2025-09-12 05:00:00"
+        }
+    ]
+}

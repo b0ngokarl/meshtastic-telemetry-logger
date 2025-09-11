@@ -137,6 +137,62 @@ get_value_class() {
     esac
 }
 
+# Get weather predictions for a specific node
+get_weather_predictions() {
+    local node_id="$1"
+    local predictions_file="weather_predictions.json"
+    
+    # Default values if predictions not available
+    local pred_6h="N/A"
+    local pred_12h="N/A" 
+    local pred_24h="N/A"
+    
+    if [ -f "$predictions_file" ]; then
+        # Extract prediction for this node ID
+        local prediction_text=$(jq -r --arg id "$node_id" '.predictions[] | select(.node_id == $id) | .prediction' "$predictions_file" 2>/dev/null)
+        
+        if [ -n "$prediction_text" ] && [ "$prediction_text" != "null" ] && [ "$prediction_text" != "Unknown battery level" ]; then
+            # Parse prediction text like "+3h: 93% 🔋 (Clear, 5% clouds) | +6h: 87% 🔋 (Clear, 92% clouds) | +9h: 81% 🔋 (Clear, 66% clouds)"
+            # Extract 6h prediction (which is actually +6h in the format)
+            pred_6h=$(echo "$prediction_text" | sed -n 's/.*+6h: \([0-9]\+%[^|]*\).*/\1/p' | sed 's/^ *//')
+            
+            # For 12h and 24h, we'll extrapolate based on the trend
+            local current_battery=$(jq -r --arg id "$node_id" '.predictions[] | select(.node_id == $id) | .current_battery' "$predictions_file" 2>/dev/null)
+            local h6_battery=$(echo "$pred_6h" | sed 's/%.*$//')
+            
+            if [ -n "$current_battery" ] && [ "$current_battery" != "Unknown" ] && [ -n "$h6_battery" ] && [ "$h6_battery" != "" ]; then
+                # Calculate battery change rate per hour
+                local battery_change=$(echo "scale=2; ($h6_battery - ${current_battery%.*}) / 6" | bc 2>/dev/null)
+                
+                if [ -n "$battery_change" ]; then
+                    # Project 12h and 24h assuming linear trend (simplified)
+                    local h12_battery=$(echo "scale=0; ${current_battery%.*} + $battery_change * 12" | bc 2>/dev/null)
+                    local h24_battery=$(echo "scale=0; ${current_battery%.*} + $battery_change * 24" | bc 2>/dev/null)
+                    
+                    # Clamp values between 0 and 100
+                    h12_battery=$(echo "$h12_battery" | awk '{print ($1 < 0) ? 0 : ($1 > 100) ? 100 : int($1)}')
+                    h24_battery=$(echo "$h24_battery" | awk '{print ($1 < 0) ? 0 : ($1 > 100) ? 100 : int($1)}')
+                    
+                    # Determine status icons based on battery level and trend
+                    local h12_icon="🔋"
+                    local h24_icon="🔋"
+                    
+                    if (( $(echo "$battery_change > 0.5" | bc -l 2>/dev/null) )); then
+                        h12_icon="⚡"; h24_icon="⚡"  # Charging
+                    elif (( $(echo "$battery_change < -1" | bc -l 2>/dev/null) )); then
+                        h12_icon="📉"; h24_icon="📉"  # Fast drain
+                    fi
+                    
+                    pred_12h="${h12_battery}% ${h12_icon}"
+                    pred_24h="${h24_battery}% ${h24_icon}"
+                fi
+            fi
+        fi
+    fi
+    
+    echo "$pred_6h|$pred_12h|$pred_24h"
+}
+
 run_telemetry() {
     local addr="$1"
     local ts
@@ -318,6 +374,14 @@ generate_stats_html() {
         .util-very-high { background-color: #ffebee; color: #c62828; font-weight: bold; }
         .voltage-low { background-color: #fff3e0; color: #ef6c00; }
         .time-critical { background-color: #ffcdd2; color: #c62828; font-weight: bold; }
+        
+        /* Weather prediction styling */
+        .prediction { 
+            font-family: monospace; 
+            font-size: 0.9em; 
+            background-color: #f8f9fa;
+            padding: 4px;
+        }
         .time-warning { background-color: #ffe0b2; color: #ef6c00; }
         
         /* Sortable table styles */
@@ -351,6 +415,11 @@ generate_stats_html() {
         
         /* Hide rows when filtering */
         .hidden-row { display: none !important; }
+        
+        /* GPS link styling */
+        a { color: #1976d2; text-decoration: none; }
+        a:hover { color: #0d47a1; text-decoration: underline; }
+        a[title]:hover { cursor: help; }
     </style>
     <script>
         function makeSortable(tableId) {
@@ -486,7 +555,8 @@ EOF
         # Display monitored addresses with resolved names
         echo "<h3>Monitored Addresses</h3>"
         echo "<table>"
-        echo "<tr><th>Address</th><th>Device Name</th></tr>"
+        echo "<tr><th>#</th><th>Address</th><th>Device Name</th></tr>"
+        index=1
         for addr in "${ADDRESSES[@]}"; do
             device_name="$(get_node_info "$addr")"
             if [ -n "$device_name" ] && [ "$device_name" != "$addr" ]; then
@@ -494,10 +564,36 @@ EOF
             else
                 resolved_name="Unknown"
             fi
+            
+            # Check if this address has GPS coordinates in the nodes CSV
+            if [ -f "$NODES_CSV" ]; then
+                gps_coords=$(awk -F, -v id="$addr" '$2 == id {
+                    lat = $7; gsub(/^"|"$/, "", lat)
+                    lon = $8; gsub(/^"|"$/, "", lon)
+                    if (lat != "" && lon != "" && lat != "N/A" && lon != "N/A" && 
+                        lat != "0.0" && lon != "0.0" && lat != "0" && lon != "0") {
+                        print lat "," lon
+                    }
+                    exit
+                }' "$NODES_CSV")
+                
+                if [ -n "$gps_coords" ]; then
+                    lat=$(echo "$gps_coords" | cut -d',' -f1)
+                    lon=$(echo "$gps_coords" | cut -d',' -f2)
+                    device_name_display="<a href=\"https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}&zoom=15\" target=\"_blank\" title=\"View ${resolved_name} on OpenStreetMap (${lat}, ${lon})\">${resolved_name}</a>"
+                else
+                    device_name_display="$resolved_name"
+                fi
+            else
+                device_name_display="$resolved_name"
+            fi
+            
             echo "<tr>"
+            echo "<td class=\"number\">$index</td>"
             echo "<td class=\"address\">$addr</td>"
-            echo "<td>$resolved_name</td>"
+            echo "<td>$device_name_display</td>"
             echo "</tr>"
+            index=$((index + 1))
         done
         echo "</table>"
 
@@ -507,7 +603,7 @@ EOF
         # Per-Node Statistics Summary
         echo "<h2>Node Summary Statistics</h2>"
         echo "<table>"
-        echo "<tr><th>Address</th><th>Last Seen</th><th>Success</th><th>Failures</th><th>Success Rate</th><th>Battery (%)</th><th>Voltage (V)</th><th>Channel Util (%)</th><th>Tx Util (%)</th><th>Uptime (s)</th><th>Min Battery</th><th>Max Battery</th><th>Max Channel Util</th><th>Max Tx Util</th><th>Est. Time Left (h)</th></tr>"
+        echo "<tr><th>Address</th><th>Last Seen</th><th>Success</th><th>Failures</th><th>Success Rate</th><th>Battery (%)</th><th>Voltage (V)</th><th>Channel Util (%)</th><th>Tx Util (%)</th><th>Uptime (s)</th><th>Min Battery</th><th>Max Battery</th><th>Max Channel Util</th><th>Max Tx Util</th><th>Est. Time Left (h)</th><th>Power in 6h</th><th>Power in 12h</th><th>Power in 24h</th></tr>"
         
         cut -d',' -f2 /tmp/all_success.csv | sort | uniq | while read address; do
             if [ -z "$address" ]; then continue; fi
@@ -736,6 +832,14 @@ EOF
             echo "<td class=\"number $max_channel_util_class\">${max_channel_util:-N/A}</td>"
             echo "<td class=\"number $max_tx_util_class\">${max_tx_util:-N/A}</td>"
             echo "<td class=\"number $time_left_class\">$est_hours_left</td>"
+            
+            # Get weather predictions for this node
+            weather_predictions=$(get_weather_predictions "$address")
+            IFS='|' read -r pred_6h pred_12h pred_24h <<< "$weather_predictions"
+            
+            echo "<td class=\"prediction\">${pred_6h}</td>"
+            echo "<td class=\"prediction\">${pred_12h}</td>"
+            echo "<td class=\"prediction\">${pred_24h}</td>"
             echo "</tr>"
         done
         echo "</table>"
@@ -816,9 +920,10 @@ EOF
         if [ -f "$NODES_CSV" ]; then
             echo "<h2>Current Node List</h2>"
             echo "<table>"
-            echo "<tr><th>User</th><th>ID</th><th>Hardware</th><th>Battery (%)</th><th>Channel Util (%)</th><th>Last Heard</th></tr>"
+            echo "<tr><th>#</th><th>User</th><th>ID</th><th>Hardware</th><th>Battery (%)</th><th>Channel Util (%)</th><th>Last Heard</th></tr>"
             
             # Sort with nodes having valid Last Heard first, then N/A entries at bottom
+            index=1
             tail -n +2 "$NODES_CSV" 2>/dev/null | awk -F',' '{
                 # Check if Last Heard field (column 16) is empty or N/A
                 if ($16 == "" || $16 == "N/A") {
@@ -830,21 +935,74 @@ EOF
                 # Remove quotes if present
                 user=$(echo "$user" | sed 's/^"//;s/"$//')
                 hardware=$(echo "$hardware" | sed 's/^"//;s/"$//')
+                latitude=$(echo "$latitude" | sed 's/^"//;s/"$//')
+                longitude=$(echo "$longitude" | sed 's/^"//;s/"$//')
+                
+                # Check if GPS coordinates are valid (not empty, not 0.0, not "N/A")
+                if [ -n "$latitude" ] && [ -n "$longitude" ] && \
+                   [ "$latitude" != "N/A" ] && [ "$longitude" != "N/A" ] && \
+                   [ "$latitude" != "0.0" ] && [ "$longitude" != "0.0" ] && \
+                   [ "$latitude" != "0" ] && [ "$longitude" != "0" ]; then
+                    # Create clickable link to OpenStreetMap
+                    user_display="<a href=\"https://www.openstreetmap.org/?mlat=${latitude}&mlon=${longitude}&zoom=15\" target=\"_blank\" title=\"View ${user:-Unknown} on OpenStreetMap (${latitude}, ${longitude})\">${user:-N/A}</a>"
+                else
+                    user_display="${user:-N/A}"
+                fi
                 
                 # Get CSS classes for color coding
                 battery_class=$(get_value_class "$battery" "battery")
                 channel_util_class=$(get_value_class "$channel_util" "channel_util")
                 
                 echo "<tr>"
-                echo "<td>${user:-N/A}</td>"
+                echo "<td class=\"number\">$index</td>"
+                echo "<td>$user_display</td>"
                 echo "<td class=\"address\">$id</td>"
                 echo "<td>${hardware:-N/A}</td>"
                 echo "<td class=\"number $battery_class\">${battery:-N/A}</td>"
                 echo "<td class=\"number $channel_util_class\">${channel_util:-N/A}</td>"
                 echo "<td class=\"timestamp\">${lastheard:-N/A}</td>"
                 echo "</tr>"
+                index=$((index + 1))
             done
             echo "</table>"
+        fi
+        
+        # Weather-based Energy Predictions Section
+        if [[ -f "weather_predictions.json" ]]; then
+            echo "<h2>☀️ Weather-Based Energy Predictions</h2>"
+            echo "<p><em>Solar energy predictions based on weather forecast and current battery levels</em></p>"
+            echo "<table>"
+            echo "<tr>"
+            echo "<th>#</th>"
+            echo "<th>Node</th>"
+            echo "<th>Location</th>"
+            echo "<th>Current Battery</th>"
+            echo "<th>Weather Prediction</th>"
+            echo "</tr>"
+            
+            # Parse JSON predictions and display
+            local weather_index=1
+            if command -v jq &> /dev/null; then
+                jq -r '.predictions[] | "\(.node_id)|\(.user)|\(.location.latitude),\(.location.longitude)|\(.current_battery)|\(.prediction)"' weather_predictions.json 2>/dev/null | while IFS='|' read -r node_id user location current_battery prediction; do
+                    echo "<tr>"
+                    echo "<td>$weather_index</td>"
+                    echo "<td>$(echo "$user" | sed 's/</\&lt;/g; s/>/\&gt;/g')</td>"
+                    echo "<td>$location</td>"
+                    echo "<td>$current_battery</td>"
+                    echo "<td class=\"prediction\">$prediction</td>"
+                    echo "</tr>"
+                    weather_index=$((weather_index + 1))
+                done
+            else
+                echo "<tr><td colspan=\"5\">Weather predictions require 'jq' tool. Install with: sudo apt install jq</td></tr>"
+            fi
+            
+            echo "</table>"
+            echo "<p><em>Legend: ⚡ Charging | 📉 Slow drain | 🔋 Fast drain | 📊 Stable</em></p>"
+            echo "<p><em>Note: Predictions are estimates based on weather data and typical solar panel performance</em></p>"
+        else
+            echo "<h2>☀️ Weather-Based Energy Predictions</h2>"
+            echo "<p><em>Weather predictions will appear here after the next data collection cycle</em></p>"
         fi
         
         echo "</body></html>"
@@ -865,5 +1023,12 @@ while true; do
     update_nodes_log
     parse_nodes_to_csv "$NODES_LOG" "$NODES_CSV"
     generate_stats_html
+    
+    # Generate weather predictions for solar nodes
+    if [[ -f "weather_integration.sh" ]]; then
+        echo "Generating weather-based energy predictions..."
+        ./weather_integration.sh nodes_log.csv telemetry_log.csv weather_predictions.json
+    fi
+    
     sleep "$INTERVAL"
 done
