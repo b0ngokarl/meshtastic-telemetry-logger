@@ -12,7 +12,7 @@ debug_log() {
         printf '[DEBUG] %s\n' "$*" >&2
     fi
 }
-ADDRESSES=('!9eed0410' '!2c9e092b' '!849c4818' '!fd17c0ed' '!a0cc8008' '!ba656304' '!2df67288' '!277db5ca') # Add/change as needed
+ADDRESSES=('!9eed0410' '!2c9e092b' '!849c4818' '!fd17c0ed' '!a0cc8008' '!ba656304' '!2df67288' '!277db5ca' '!75e98c18') # Add/change as needed
 INTERVAL=300                        # Polling interval in seconds
 TELEMETRY_CSV="telemetry_log.csv"
 NODES_LOG="nodes_log.txt"
