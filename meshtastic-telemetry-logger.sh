@@ -16,6 +16,27 @@ fi
 
 # ---- FUNCTIONS ----
 
+get_node_info() {
+    local node_id="$1"
+    if [ -f "$NODES_CSV" ]; then
+        # Look up node information from CSV (User, Hardware)
+        awk -F, -v id="$node_id" '$2 == id {
+            user = $1; gsub(/^"|"$/, "", user)  # Remove quotes if present
+            hardware = $4; gsub(/^"|"$/, "", hardware)  # Remove quotes if present
+            if (user != "" && hardware != "") {
+                print user " " hardware
+            } else if (user != "") {
+                print user
+            } else {
+                print id
+            }
+            exit
+        }' "$NODES_CSV"
+    else
+        echo "$node_id"
+    fi
+}
+
 run_telemetry() {
     local addr="$1"
     local ts
@@ -140,18 +161,35 @@ generate_stats_html() {
     {
         echo "<html><head><title>Meshtastic Telemetry Stats</title></head><body>"
         echo "<h1>Meshtastic Telemetry - Last Results</h1>"
-        echo "<table border=1><tr><th>Timestamp</th><th>Address</th><th>Status</th><th>Battery</th><th>Voltage</th><th>Channel Util</th><th>Tx Util</th><th>Uptime</th></tr>"
-        tail -n 20 "$TELEMETRY_CSV" | awk -F, 'NR>1 {print "<tr><td>"$1"</td><td>"$2"</td><td>"$3"</td><td>"$4"</td><td>"$5"</td><td>"$6"</td><td>"$7"</td><td>"$8"</td></tr>"}'
+        echo "<table border=1><tr><th>Timestamp</th><th>Node</th><th>Address</th><th>Status</th><th>Battery</th><th>Voltage</th><th>Channel Util</th><th>Tx Util</th><th>Uptime</th></tr>"
+        
+        # Process telemetry data and add node information
+        while IFS=',' read -r timestamp address status battery voltage channel_util tx_util uptime; do
+            if [ "$timestamp" != "timestamp" ]; then  # Skip header
+                node_info=$(get_node_info "$address")
+                if [ -z "$node_info" ]; then
+                    node_info="$address"
+                fi
+                echo "<tr><td>$timestamp</td><td>$node_info</td><td>$address</td><td>$status</td><td>$battery</td><td>$voltage</td><td>$channel_util</td><td>$tx_util</td><td>$uptime</td></tr>"
+            fi
+        done < <(tail -n 20 "$TELEMETRY_CSV")
+        
         echo "</table>"
 
-        # Simple stats
+        # Enhanced stats with node information
         echo "<h2>Success Rate</h2><ul>"
         for addr in "${ADDRESSES[@]}"; do
             total=$(grep "$addr" "$TELEMETRY_CSV" | wc -l)
             success=$(grep "$addr" "$TELEMETRY_CSV" | grep "success" | wc -l)
             rate=0
             if [ "$total" -gt 0 ]; then rate=$((100 * success / total)); fi
-            echo "<li>$addr: $rate% ($success / $total)</li>"
+            
+            # Get node info for display
+            node_info=$(get_node_info "$addr")
+            if [ -z "$node_info" ]; then
+                node_info="$addr"
+            fi
+            echo "<li>$node_info ($addr): $rate% ($success / $total)</li>"
         done
         echo "</ul>"
 
