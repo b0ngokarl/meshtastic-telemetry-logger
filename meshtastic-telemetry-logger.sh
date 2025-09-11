@@ -14,7 +14,19 @@ if [ ! -f "$TELEMETRY_CSV" ]; then
     echo "timestamp,address,status,battery,voltage,channel_util,tx_util,uptime" > "$TELEMETRY_CSV"
 fi
 
+
 # ---- FUNCTIONS ----
+
+# Portable ISO 8601 date function (supports macOS and Linux)
+iso8601_date() {
+    if date --version >/dev/null 2>&1; then
+        # GNU date (Linux)
+        date --iso-8601=seconds
+    else
+        # BSD date (macOS)
+        date "+%Y-%m-%dT%H:%M:%S%z"
+    fi
+}
 
 get_node_info() {
     local node_id="$1"
@@ -40,7 +52,7 @@ get_node_info() {
 run_telemetry() {
     local addr="$1"
     local ts
-    ts=$(date --iso-8601=seconds)
+    ts=$(iso8601_date)
     local out
     out=$(meshtastic --request-telemetry --dest "'$addr'" 2>&1)
     local status="unknown"
@@ -65,7 +77,7 @@ run_telemetry() {
 
 update_nodes_log() {
     local ts
-    ts=$(date --iso-8601=seconds)
+    ts=$(iso8601_date)
     local out
     out=$(meshtastic --nodes 2>&1)
     echo "===== $ts =====" >> "$NODES_LOG"
