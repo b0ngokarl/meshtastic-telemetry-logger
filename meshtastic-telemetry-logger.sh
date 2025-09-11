@@ -272,23 +272,48 @@ generate_stats_html() {
         avg_voltage=$(echo "scale=2; $sum_voltage / $count_voltage" | bc)
         if [ "$count_uptime" -gt 0 ]; then avg_uptime=$((sum_uptime/count_uptime)); else avg_uptime=0; fi
 
-        echo "<h2>Global Statistics (Last Success Only)</h2>"
-        echo "<table border=1><tr><th>Metric</th><th>Min</th><th>Max</th><th>Avg</th></tr>"
-        echo "<tr><td>Battery (%)</td><td>$min_battery</td><td>$max_battery</td><td>$avg_battery</td></tr>"
-        echo "<tr><td>Voltage (V)</td><td>$min_voltage</td><td>$max_voltage</td><td>$avg_voltage</td></tr>"
-        echo "<tr><td>Uptime (s)</td><td>$min_uptime</td><td>$max_uptime</td><td>$avg_uptime</td></tr>"
-        echo "</table>"
+        # Build a map of per-node stats for quick lookup
+        declare -A min_battery_map max_battery_map min_voltage_map max_voltage_map min_uptime_map max_uptime_map est_hours_left_map last_success_map
+        cut -d',' -f2 /tmp/all_success.csv | sort | uniq | while read address; do
+            node_data=$(grep ",$address," /tmp/all_success.csv)
+            min_battery_map[$address]=$(echo "$node_data" | awk -F',' '{print $4}' | sort -n | head -1)
+            max_battery_map[$address]=$(echo "$node_data" | awk -F',' '{print $4}' | sort -nr | head -1)
+            min_voltage_map[$address]=$(echo "$node_data" | awk -F',' '{print $5}' | sort -n | head -1)
+            max_voltage_map[$address]=$(echo "$node_data" | awk -F',' '{print $5}' | sort -nr | head -1)
+            min_uptime_map[$address]=$(echo "$node_data" | awk -F',' '{print $8}' | sort -n | head -1)
+            max_uptime_map[$address]=$(echo "$node_data" | awk -F',' '{print $8}' | sort -nr | head -1)
+            first_battery=$(echo "$node_data" | awk -F',' '{print $4}' | head -1)
+            last_battery=$(echo "$node_data" | awk -F',' '{print $4}' | tail -1)
+            first_uptime=$(echo "$node_data" | awk -F',' '{print $8}' | head -1)
+            last_uptime=$(echo "$node_data" | awk -F',' '{print $8}' | tail -1)
+            battery_drop=$(echo "$first_battery - $last_battery" | bc)
+            time_diff=$((last_uptime-first_uptime))
+            if [ "$battery_drop" != "0" ] && [ "$time_diff" -gt 0 ]; then
+                drop_per_hour=$(echo "scale=2; $battery_drop / ($time_diff/3600)" | bc)
+                if (( $(echo "$drop_per_hour > 0" | bc -l) )); then
+                    est_hours_left_map[$address]=$(echo "scale=1; $last_battery / $drop_per_hour" | bc)
+                else
+                    est_hours_left_map[$address]="N/A"
+                fi
+            else
+                est_hours_left_map[$address]="N/A"
+            fi
+            # Get latest success record for this address
+            last_success_map[$address]=$(echo "$node_data" | sort -t',' -k1,1r | head -1)
+        done
 
-        echo "<table border=1><tr><th>Timestamp</th><th>Address</th><th>Battery</th><th>Voltage</th><th>Channel Util</th><th>Tx Util</th><th>Uptime</th></tr>"
-        while IFS=',' read -r timestamp address status battery voltage channel_util tx_util uptime; do
+        echo "<h2>Node Telemetry & Statistics (Merged)</h2>"
+        echo "<table border=1><tr><th>Timestamp</th><th>Address</th><th>Battery</th><th>Min Battery</th><th>Max Battery</th><th>Voltage</th><th>Min Voltage</th><th>Max Voltage</th><th>Channel Util</th><th>Tx Util</th><th>Uptime</th><th>Min Uptime</th><th>Max Uptime</th><th>Est. Time Left (h)</th></tr>"
+        for address in "${!last_success_map[@]}"; do
+            IFS=',' read -r timestamp addr status battery voltage channel_util tx_util uptime <<< "${last_success_map[$address]}"
             device_name="$(get_node_info "$address")"
             if [ -n "$device_name" ] && [ "$device_name" != "$address" ]; then
                 address_display="$address ($device_name)"
             else
                 address_display="$address"
             fi
-            echo "<tr><td>$timestamp</td><td>$address_display</td><td>$battery</td><td>$voltage</td><td>$channel_util</td><td>$tx_util</td><td>$uptime</td></tr>"
-        done < /tmp/last_success.csv
+            echo "<tr><td>$timestamp</td><td>$address_display</td><td>$battery</td><td>${min_battery_map[$address]}</td><td>${max_battery_map[$address]}</td><td>$voltage</td><td>${min_voltage_map[$address]}</td><td>${max_voltage_map[$address]}</td><td>$channel_util</td><td>$tx_util</td><td>$uptime</td><td>${min_uptime_map[$address]}</td><td>${max_uptime_map[$address]}</td><td>${est_hours_left_map[$address]}</td></tr>"
+        done
         echo "</table>"
 
     echo "<h2>Telemetry Success History</h2>"
