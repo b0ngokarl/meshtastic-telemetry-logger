@@ -1,5 +1,5 @@
 {
-  "generated": "2025-09-11T21:55:02Z",
+  "generated": "2025-09-11T22:05:21Z",
   "predictions": [
     {
       "node_id": "!0ba10986",
@@ -10,7 +10,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:17Z",
+      "last_updated": "2025-09-11T22:05:17Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -30,7 +30,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:17Z",
+      "last_updated": "2025-09-11T22:05:17Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -50,1187 +50,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:17Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!da5a1530",
-      "user": "DB9UQ-Router JN49BO",
-      "location": {
-        "latitude": 49.6112,
-        "longitude": 8.1643
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:17Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!1c507e08",
-      "user": "FD1 Pfungstadt-Hahn",
-      "location": {
-        "latitude": 49.7961,
-        "longitude": 8.5556
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:17Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!f96a92d4",
-      "user": "AFG 92d4",
-      "location": {
-        "latitude": 50.0826,
-        "longitude": 8.1134
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:17Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!957405e3",
-      "user": "HAL 9000 05e3",
-      "location": {
-        "latitude": 50.0957,
-        "longitude": 8.1002
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:17Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!ba656304",
-      "user": "EinmachglasV2",
-      "location": {
-        "latitude": 49.8860,
-        "longitude": 8.3624
-      },
-      "current_battery": "52.00",
-      "prediction": "+3h: 46% 🔋 (Clear, 70% clouds) | +6h: 40% 🔋 (Rain, 44% clouds) | +9h: 34% 🔋 (Clear, 63% clouds)",
-      "last_updated": "2025-09-11T21:42:17Z",
-      "ml_predictions": {
-        "power_6h": "34.00%",
-        "power_12h": "32.50%",
-        "power_24h": "26.50%",
-        "accuracy_score": "100.0%",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!05b0a395",
-      "user": "Meshtastic a395",
-      "location": {
-        "latitude": 50.1481,
-        "longitude": 8.4148
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:17Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!fd17c0ed",
-      "user": "Meshtastic c0ed",
-      "location": {
-        "latitude": 49.8860,
-        "longitude": 8.3100
-      },
-      "current_battery": "98.00",
-      "prediction": "+3h: 92% 🔋 (Clear, 95% clouds) | +6h: 86% 🔋 (Clear, 15% clouds) | +9h: 80% 🔋 (Clear, 30% clouds)",
-      "last_updated": "2025-09-11T21:42:17Z",
-      "ml_predictions": {
-        "power_6h": "89.00%",
-        "power_12h": "87.50%",
-        "power_24h": "81.50%",
-        "accuracy_score": "100.0%",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!fa68926c",
-      "user": "Meshtastic 926c",
-      "location": {
-        "latitude": 50.1039,
-        "longitude": 8.6229
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:17Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!849c4818",
-      "user": "Ondas_fix_Nierstein_RLP",
-      "location": {
-        "latitude": 49.8696,
-        "longitude": 8.3263
-      },
-      "current_battery": "99.00",
-      "prediction": "+3h: 93% 🔋 (Clear, 5% clouds) | +6h: 87% 🔋 (Clear, 92% clouds) | +9h: 81% 🔋 (Clear, 66% clouds)",
-      "last_updated": "2025-09-11T21:42:17Z",
-      "ml_predictions": {
-        "power_6h": "90.00%",
-        "power_12h": "88.50%",
-        "power_24h": "82.50%",
-        "accuracy_score": "100.0%",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!2c9e092b",
-      "user": "Meshtastic 092b mobile node",
-      "location": {
-        "latitude": 49.8729,
-        "longitude": 8.3231
-      },
-      "current_battery": "78.00",
-      "prediction": "+3h: 72% 🔋 (Clear, 8% clouds) | +6h: 66% 🔋 (Clear, 67% clouds) | +9h: 60% 🔋 (Clouds, 31% clouds)",
-      "last_updated": "2025-09-11T21:42:17Z",
-      "ml_predictions": {
-        "power_6h": "69.00%",
-        "power_12h": "67.50%",
-        "power_24h": "61.50%",
-        "accuracy_score": "100.0%",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!9eed0410",
-      "user": "Schwabsburg Funklochfueller 0410 solar",
-      "location": {
-        "latitude": 49.8860,
-        "longitude": 8.3100
-      },
-      "current_battery": "68.00",
-      "prediction": "+3h: 62% 🔋 (Clear, 95% clouds) | +6h: 56% 🔋 (Clear, 15% clouds) | +9h: 50% 🔋 (Clear, 30% clouds)",
-      "last_updated": "2025-09-11T21:42:17Z",
-      "ml_predictions": {
-        "power_6h": "60.00%",
-        "power_12h": "58.50%",
-        "power_24h": "52.50%",
-        "accuracy_score": "100.0%",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!849c1cc0",
-      "user": "Arheilgen 24W17R",
-      "location": {
-        "latitude": 49.8860,
-        "longitude": 8.6245
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:17Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!cbf7cc77",
-      "user": "ABird02",
-      "location": {
-        "latitude": 50.0564,
-        "longitude": 9.2144
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:17Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!106b9dde",
-      "user": "MH 06 ÖF | meshhessen.de",
-      "location": {
-        "latitude": 50.2563,
-        "longitude": 8.5426
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:17Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!db2fad7c",
-      "user": "Meshtastic ad7c",
-      "location": {
-        "latitude": 50.1481,
-        "longitude": 8.5197
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:17Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!925b5a9d",
-      "user": "MH 05 https://meshhessen.de/",
-      "location": {
-        "latitude": 49.8303,
-        "longitude": 7.7562
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:17Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!6c698854",
-      "user": "Flintstone-868-12",
-      "location": {
-        "latitude": 49.9909,
-        "longitude": 8.6770
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:17Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!2df67288",
-      "user": "TRUTZTURM Solar",
-      "location": {
-        "latitude": 49.8532,
-        "longitude": 8.3427
-      },
-      "current_battery": "",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:17Z",
-      "ml_predictions": {
-        "power_6h": "91.00%",
-        "power_12h": "89.50%",
-        "power_24h": "83.50%",
-        "accuracy_score": "100.0%",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!d422deb0",
-      "user": "LowRider RAK by an3das.de",
-      "location": {
-        "latitude": 50.3054,
-        "longitude": 9.2537
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:17Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!a0cc8008",
-      "user": "DL0TRZ Trutzturm Oppenheim",
-      "location": {
-        "latitude": 49.8532,
-        "longitude": 8.3427
-      },
-      "current_battery": "",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:17Z",
-      "ml_predictions": {
-        "power_6h": "92.00%",
-        "power_12h": "90.50%",
-        "power_24h": "84.50%",
-        "accuracy_score": "100.0%",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!a0cb110c",
-      "user": "Arheilgen 01 | meshhessen.de",
-      "location": {
-        "latitude": 49.9073,
-        "longitude": 8.6524
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:18Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!866ac2e5",
-      "user": "Meshtastic c2e5",
-      "location": {
-        "latitude": 49.3617,
-        "longitude": 8.2575
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:18Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!1309d960",
-      "user": "RiedLee05",
-      "location": {
-        "latitude": 49.8336,
-        "longitude": 8.4148
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:18Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!0b161383",
-      "user": "Dave42",
-      "location": {
-        "latitude": 50.0957,
-        "longitude": 8.1002
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:18Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!ad8dac3e",
-      "user": "Meshtastic ac3e solar",
-      "location": {
-        "latitude": 50.1481,
-        "longitude": 8.4148
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:18Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!435a86f4",
-      "user": "Meshtastic 86f4",
-      "location": {
-        "latitude": 49.4469,
-        "longitude": 8.4214
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:18Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!0eeb4fdf",
-      "user": "Orschel_Solar",
-      "location": {
-        "latitude": 50.1809,
-        "longitude": 8.5918
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:18Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!671fe56c",
-      "user": "Sbkn@solar",
-      "location": {
-        "latitude": 49.8303,
-        "longitude": 7.8742
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:18Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!fb33512e",
-      "user": "NanoNode by an3das.de",
-      "location": {
-        "latitude": 50.3054,
-        "longitude": 9.2537
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:18Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!433b8c00",
-      "user": "SLo 8c00",
-      "location": {
-        "latitude": 50.1039,
-        "longitude": 8.6229
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:18Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!e2e3cc1e",
-      "user": "Meshtastic cc1e",
-      "location": {
-        "latitude": 49.9909,
-        "longitude": 8.2051
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:18Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!b03cfa4c",
-      "user": "BS05 Heltec V3 2.7.8",
-      "location": {
-        "latitude": 49.6959,
-        "longitude": 8.6049
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:18Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!a0caffac",
-      "user": "DUEW LOC TEST ffac",
-      "location": {
-        "latitude": 49.4535,
-        "longitude": 8.1658
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:18Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!db2b6970",
-      "user": "peabody",
-      "location": {
-        "latitude": 50.0957,
-        "longitude": 8.6245
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:18Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!97003f48",
-      "user": "Holger Weinsheim Portabel",
-      "location": {
-        "latitude": 49.8205,
-        "longitude": 7.7464
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:18Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!db2b64a8",
-      "user": "Mesh Beindersheim 🏡",
-      "location": {
-        "latitude": 49.5616,
-        "longitude": 8.3198
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:18Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!433be688",
-      "user": "BEA | Dienheim | meshhessen.de",
-      "location": {
-        "latitude": 49.8434,
-        "longitude": 8.3526
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:18Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!55b6688c",
-      "user": "ABird01",
-      "location": {
-        "latitude": 50.0482,
-        "longitude": 9.2324
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:18Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!466ea2bd",
-      "user": "Meshtastic a2bd",
-      "location": {
-        "latitude": 49.7811,
-        "longitude": 8.9391
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:18Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!050c357c",
-      "user": "KatKarl-357c",
-      "location": {
-        "latitude": 50.3054,
-        "longitude": 9.3061
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:18Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!fe4384a5",
-      "user": "Mesh Niddatal",
-      "location": {
-        "latitude": 50.2923,
-        "longitude": 8.8211
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:18Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!fcf1a472",
-      "user": "flipstar_wiesbaden_frauenstein",
-      "location": {
-        "latitude": 50.0662,
-        "longitude": 8.1494
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:18Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!db2ab850",
-      "user": "Arheilgen3",
-      "location": {
-        "latitude": 49.9139,
-        "longitude": 8.6622
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:18Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!99bb8798",
-      "user": "Morpheus-03",
-      "location": {
-        "latitude": 50.3054,
-        "longitude": 9.2537
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:18Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!a299d1be",
-      "user": "Solar_Parrot_03",
-      "location": {
-        "latitude": 50.0957,
-        "longitude": 8.1527
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:18Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!433ce28c",
-      "user": "Meshtastic e28c",
-      "location": {
-        "latitude": 49.7287,
-        "longitude": 8.5721
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:18Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!bba8293c",
-      "user": "IronCat 00",
-      "location": {
-        "latitude": 49.6239,
-        "longitude": 8.3624
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:18Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!c0c30f4c",
-      "user": "ITU",
-      "location": {
-        "latitude": 49.8336,
-        "longitude": 8.4673
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:18Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!16a434f8",
-      "user": "Meshtastic 34f8",
-      "location": {
-        "latitude": 49.7027,
-        "longitude": 8.6179
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:18Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!8ec7caad",
-      "user": "M-02 500 | meshhessen.de",
-      "location": {
-        "latitude": 50.2530,
-        "longitude": 9.3580
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:18Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!e0d0338c",
-      "user": "Morpheus-02 Gateway",
-      "location": {
-        "latitude": 50.3087,
-        "longitude": 9.2635
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:18Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!8b7cb028",
-      "user": "Klaus-DF3GU-b028",
-      "location": {
-        "latitude": 49.5780,
-        "longitude": 8.6180
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:18Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!c17cf0c7",
-      "user": "Cyberdyne-Core",
-      "location": {
-        "latitude": 48.9166,
-        "longitude": 8.3941
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:18Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!1ea53fad",
-      "user": "DF6WO",
-      "location": {
-        "latitude": 49.9909,
-        "longitude": 8.2575
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:18Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!849ba180",
-      "user": "DB9UQ-Client JN49BO",
-      "location": {
-        "latitude": 49.6112,
-        "longitude": 8.1643
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:18Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!c8a0acfa",
-      "user": "Morpheus | meshhessen.de",
-      "location": {
-        "latitude": 50.4857,
-        "longitude": 9.2766
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:18Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!f6707bef",
-      "user": "MN_Bergstrasse_9",
-      "location": {
-        "latitude": 49.7550,
-        "longitude": 8.6348
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:18Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!4c616a06",
-      "user": "MeshHessen DP6T 04",
-      "location": {
-        "latitude": 50.3054,
-        "longitude": 9.2537
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:18Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!db952071",
-      "user": "Frankfurt Sachsenhausen 60598_Solar",
-      "location": {
-        "latitude": 50.0875,
-        "longitude": 8.6884
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:18Z",
+      "last_updated": "2025-09-11T22:05:17Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -1250,687 +70,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:18Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!db2f64f0",
-      "user": "CSC1 Ffm Seckbach (Dach)",
-      "location": {
-        "latitude": 50.1424,
-        "longitude": 8.7253
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:18Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!aabe449d",
-      "user": "Maurice",
-      "location": {
-        "latitude": 49.9073,
-        "longitude": 8.6524
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:18Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!1845dc78",
-      "user": "greencap*meshhessen.de*",
-      "location": {
-        "latitude": 50.0113,
-        "longitude": 8.2567
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:18Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!ba620738",
-      "user": "Martini Mainz 0738",
-      "location": {
-        "latitude": 49.9974,
-        "longitude": 8.2379
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:18Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!ba6a8344",
-      "user": "Zörner DLZ weiß 8344",
-      "location": {
-        "latitude": 49.9941,
-        "longitude": 8.2543
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:18Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!20fa65a5",
-      "user": "Markus (Heltec T114)",
-      "location": {
-        "latitude": 49.8799,
-        "longitude": 8.4003
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:18Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!a0cce680",
-      "user": "Mannheim 68199-G",
-      "location": {
-        "latitude": 49.4535,
-        "longitude": 8.4541
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:18Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!bfd62d09",
-      "user": "Meshtastic 2d09 solar",
-      "location": {
-        "latitude": 50.1481,
-        "longitude": 8.4148
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:18Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!17f91fba",
-      "user": "NN2 (http://nerdnet.network)",
-      "location": {
-        "latitude": 50.0957,
-        "longitude": 8.6245
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:19Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!bc8b4517",
-      "user": "Mesh Reichelsheim Wetterau",
-      "location": {
-        "latitude": 50.3611,
-        "longitude": 8.8703
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:19Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!433b4040",
-      "user": "Casper_HX",
-      "location": {
-        "latitude": 49.8860,
-        "longitude": 8.2575
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:19Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!1309dfa0",
-      "user": "SC ad dfa0",
-      "location": {
-        "latitude": 50.1481,
-        "longitude": 8.5721
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:19Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!2015cf8a",
-      "user": "Mesh Hessen https://meshhessen.de",
-      "location": {
-        "latitude": 49.9483,
-        "longitude": 8.9358
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:19Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!3a48290e",
-      "user": "Meshtastic 290e",
-      "location": {
-        "latitude": 49.8336,
-        "longitude": 8.8343
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:19Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!849a6a18",
-      "user": "〽️eshtastic MD SRS f51 📡",
-      "location": {
-        "latitude": 50.2530,
-        "longitude": 9.4110
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:19Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!519765d2",
-      "user": "KD Mobile Tracker",
-      "location": {
-        "latitude": 50.4726,
-        "longitude": 8.8834
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:19Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!849b5970",
-      "user": "DL9FAI",
-      "location": {
-        "latitude": 50.5676,
-        "longitude": 8.7818
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:19Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!fb164ea0",
-      "user": "DM4VL-3 solar",
-      "location": {
-        "latitude": 50.2006,
-        "longitude": 8.4148
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:19Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!b03d94d0",
-      "user": "Worms Neuhausen DF3WG",
-      "location": {
-        "latitude": 49.6439,
-        "longitude": 8.3538
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:19Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!842be3a4",
-      "user": "Meshtastic e3a4",
-      "location": {
-        "latitude": 50.3579,
-        "longitude": 8.7818
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:19Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!9ee77b80",
-      "user": "Meshtastic 7b80",
-      "location": {
-        "latitude": 49.8336,
-        "longitude": 8.7294
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:19Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!fbd24e7a",
-      "user": "Mesh Babenhausen | meshhessen.de",
-      "location": {
-        "latitude": 49.9450,
-        "longitude": 8.9326
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:19Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!849a57cc",
-      "user": "BS03 Heltec Wireless Paper 2.7.7",
-      "location": {
-        "latitude": 50.0105,
-        "longitude": 8.3558
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:19Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!c9df8922",
-      "user": "IronCat",
-      "location": {
-        "latitude": 49.6239,
-        "longitude": 8.3624
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:19Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!5b4672c9",
-      "user": "Mesh Eppertshausen 01",
-      "location": {
-        "latitude": 49.9515,
-        "longitude": 8.8474
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:19Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!605763d8",
-      "user": "EDFE",
-      "location": {
-        "latitude": 49.9532,
-        "longitude": 8.6393
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:19Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!da5b06fc",
-      "user": "Meshtastic 06fc",
-      "location": {
-        "latitude": 49.4731,
-        "longitude": 8.2117
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:19Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!76c00ede",
-      "user": "MW01 Moerfelden",
-      "location": {
-        "latitude": 49.9712,
-        "longitude": 8.5656
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:19Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!6c73c150",
-      "user": "OrbitingMeshNode",
-      "location": {
-        "latitude": 50.4103,
-        "longitude": 8.7818
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:19Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!6c6989e4",
-      "user": "FlintStone-868-FE",
-      "location": {
-        "latitude": 49.9384,
-        "longitude": 8.6245
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:19Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!b03d89c8",
-      "user": "Amateur Radio Club Worms DL0WJ Jn49ep",
-      "location": {
-        "latitude": 49.6441,
-        "longitude": 8.3333
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:19Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!a0cc6904",
-      "user": "Khazad-dûm",
-      "location": {
-        "latitude": 49.8336,
-        "longitude": 7.8381
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:19Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!acdc4fa1",
-      "user": "NW MG mobil Arbeit FW 2.7.8",
-      "location": {
-        "latitude": 49.3617,
-        "longitude": 8.1527
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:19Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!c0c319a0",
-      "user": "DF4WP",
-      "location": {
-        "latitude": 49.8381,
-        "longitude": 8.1056
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:19Z",
+      "last_updated": "2025-09-11T22:05:17Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -1950,7 +90,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:19Z",
+      "last_updated": "2025-09-11T22:05:17Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -1962,55 +102,75 @@
       }
     },
     {
-      "node_id": "!db2fad18",
-      "user": "Meshtastic ad18",
+      "node_id": "!2df67288",
+      "user": "TRUTZTURM Solar",
       "location": {
-        "latitude": 50.1350,
-        "longitude": 8.5328
+        "latitude": 49.8532,
+        "longitude": 8.3427
       },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:19Z",
+      "current_battery": "100.00",
+      "prediction": "+3h: 94% 🔋 (Clear, 50% clouds) | +6h: 88% 🔋 (Rain, 13% clouds) | +9h: 82% 🔋 (Clouds, 24% clouds)",
+      "last_updated": "2025-09-11T22:05:17Z",
       "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
+        "power_6h": "85.00%",
+        "power_12h": "87.00%",
+        "power_24h": "83.50%",
+        "accuracy_score": "96.7%",
+        "last_error_6h": "6.00",
+        "last_error_12h": "4.00",
+        "last_error_24h": "0"
       }
     },
     {
-      "node_id": "!3368779c",
-      "user": "Neuenhain 2",
-      "location": {
-        "latitude": 50.1481,
-        "longitude": 8.4673
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:19Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!6c73e700",
-      "user": "ROXBASE",
+      "node_id": "!ba656304",
+      "user": "EinmachglasV2",
       "location": {
         "latitude": 49.8860,
-        "longitude": 7.7857
+        "longitude": 8.3624
+      },
+      "current_battery": "",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:17Z",
+      "ml_predictions": {
+        "power_6h": "34.00%",
+        "power_12h": "34.00%",
+        "power_24h": "26.50%",
+        "accuracy_score": "100.0%",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!a0cc8008",
+      "user": "DL0TRZ Trutzturm Oppenheim",
+      "location": {
+        "latitude": 49.8532,
+        "longitude": 8.3427
+      },
+      "current_battery": "101.00",
+      "prediction": "+3h: 95% 🔋 (Clear, 50% clouds) | +6h: 89% 🔋 (Rain, 13% clouds) | +9h: 83% 🔋 (Clouds, 24% clouds)",
+      "last_updated": "2025-09-11T22:05:17Z",
+      "ml_predictions": {
+        "power_6h": "92.00%",
+        "power_12h": "92.00%",
+        "power_24h": "84.50%",
+        "accuracy_score": "100.0%",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!433be688",
+      "user": "BEA | Dienheim | meshhessen.de",
+      "location": {
+        "latitude": 49.8434,
+        "longitude": 8.3526
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:19Z",
+      "last_updated": "2025-09-11T22:05:17Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -2022,15 +182,55 @@
       }
     },
     {
-      "node_id": "!433e23c8",
-      "user": "PSH_R",
+      "node_id": "!fd17c0ed",
+      "user": "Meshtastic c0ed",
       "location": {
-        "latitude": 49.8336,
-        "longitude": 7.9430
+        "latitude": 49.8860,
+        "longitude": 8.3100
+      },
+      "current_battery": "98.00",
+      "prediction": "+3h: 92% 🔋 (Clear, 95% clouds) | +6h: 86% 🔋 (Clear, 15% clouds) | +9h: 80% 🔋 (Clear, 30% clouds)",
+      "last_updated": "2025-09-11T22:05:17Z",
+      "ml_predictions": {
+        "power_6h": "89.00%",
+        "power_12h": "89.00%",
+        "power_24h": "81.50%",
+        "accuracy_score": "100.0%",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!849c4818",
+      "user": "Ondas_fix_Nierstein_RLP",
+      "location": {
+        "latitude": 49.8696,
+        "longitude": 8.3263
+      },
+      "current_battery": "99.00",
+      "prediction": "+3h: 93% 🔋 (Clear, 5% clouds) | +6h: 87% 🔋 (Clear, 92% clouds) | +9h: 81% 🔋 (Clear, 66% clouds)",
+      "last_updated": "2025-09-11T22:05:17Z",
+      "ml_predictions": {
+        "power_6h": "90.00%",
+        "power_12h": "90.00%",
+        "power_24h": "82.50%",
+        "accuracy_score": "100.0%",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!16a434f8",
+      "user": "Meshtastic 34f8",
+      "location": {
+        "latitude": 49.7027,
+        "longitude": 8.6180
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:19Z",
+      "last_updated": "2025-09-11T22:05:17Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -2042,55 +242,55 @@
       }
     },
     {
-      "node_id": "!4f262446",
-      "user": "FFMKalbach Solar",
+      "node_id": "!2c9e092b",
+      "user": "Meshtastic 092b mobile node",
       "location": {
-        "latitude": 50.1895,
-        "longitude": 8.6365
+        "latitude": 49.8729,
+        "longitude": 8.3231
       },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:19Z",
+      "current_battery": "77.00",
+      "prediction": "+3h: 71% 🔋 (Clear, 8% clouds) | +6h: 65% 🔋 (Clear, 67% clouds) | +9h: 59% 🔋 (Clouds, 31% clouds)",
+      "last_updated": "2025-09-11T22:05:17Z",
       "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
+        "power_6h": "69.00%",
+        "power_12h": "71.00%",
+        "power_24h": "67.50%",
+        "accuracy_score": "96.3%",
+        "last_error_6h": "-1.00",
+        "last_error_12h": "-3.00",
+        "last_error_24h": "-7.00"
+      }
+    },
+    {
+      "node_id": "!9eed0410",
+      "user": "Schwabsburg Funklochfueller 0410 solar",
+      "location": {
+        "latitude": 49.8860,
+        "longitude": 8.3100
+      },
+      "current_battery": "67.00",
+      "prediction": "+3h: 61% 🔋 (Clear, 95% clouds) | +6h: 55% 🔋 (Clear, 15% clouds) | +9h: 49% 🔋 (Clear, 30% clouds)",
+      "last_updated": "2025-09-11T22:05:17Z",
+      "ml_predictions": {
+        "power_6h": "58.00%",
+        "power_12h": "58.00%",
+        "power_24h": "50.50%",
+        "accuracy_score": "100.0%",
         "last_error_6h": "N/A",
         "last_error_12h": "N/A",
         "last_error_24h": "N/A"
       }
     },
     {
-      "node_id": "!c5679928",
-      "user": "JHM1",
+      "node_id": "!866ac2e5",
+      "user": "Meshtastic c2e5",
       "location": {
-        "latitude": 49.7961,
-        "longitude": 8.6550
+        "latitude": 49.3617,
+        "longitude": 8.2575
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:19Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!718d1b9a",
-      "user": "Meshtastic 1b9a",
-      "location": {
-        "latitude": 50.1338,
-        "longitude": 8.7405
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:19Z",
+      "last_updated": "2025-09-11T22:05:17Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -2110,7 +310,167 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:19Z",
+      "last_updated": "2025-09-11T22:05:17Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!f96a92d4",
+      "user": "AFG 92d4",
+      "location": {
+        "latitude": 50.0826,
+        "longitude": 8.1134
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:17Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!0b161383",
+      "user": "Dave42",
+      "location": {
+        "latitude": 50.0957,
+        "longitude": 8.1002
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:17Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!5b4672c9",
+      "user": "Mesh Eppertshausen 01",
+      "location": {
+        "latitude": 49.9515,
+        "longitude": 8.8474
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:17Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!605763d8",
+      "user": "EDFE",
+      "location": {
+        "latitude": 49.9532,
+        "longitude": 8.6393
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:17Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!2015cf8a",
+      "user": "Mesh Hessen https://meshhessen.de",
+      "location": {
+        "latitude": 49.9483,
+        "longitude": 8.9358
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:17Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!97003f48",
+      "user": "Holger Weinsheim Portabel",
+      "location": {
+        "latitude": 49.8205,
+        "longitude": 7.7464
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:17Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!aabe449d",
+      "user": "Maurice",
+      "location": {
+        "latitude": 49.9073,
+        "longitude": 8.6524
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:17Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!fcf1a472",
+      "user": "flipstar_wiesbaden_frauenstein",
+      "location": {
+        "latitude": 50.0662,
+        "longitude": 8.1494
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:17Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -2130,7 +490,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:19Z",
+      "last_updated": "2025-09-11T22:05:17Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -2142,235 +502,15 @@
       }
     },
     {
-      "node_id": "!050c2e38",
-      "user": "LIA2_2e38",
+      "node_id": "!3a48290e",
+      "user": "Meshtastic 290e",
       "location": {
-        "latitude": 50.3808,
-        "longitude": 8.8048
+        "latitude": 49.8336,
+        "longitude": 8.8343
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:19Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!11093e42",
-      "user": "LT Mobile Tracker",
-      "location": {
-        "latitude": 50.4726,
-        "longitude": 8.8965
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:19Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!b63fa9af",
-      "user": "MH 01 https://meshhessen.de/",
-      "location": {
-        "latitude": 49.7353,
-        "longitude": 8.9194
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:19Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!c0c2b0dc",
-      "user": "Meshtastic b0dc",
-      "location": {
-        "latitude": 50.1414,
-        "longitude": 8.5722
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:19Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!cea835ed",
-      "user": "Node Hungen FIX | MQTT",
-      "location": {
-        "latitude": 50.4660,
-        "longitude": 8.8900
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:19Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!0d581ba5",
-      "user": "Sbkn@mobil",
-      "location": {
-        "latitude": 49.8303,
-        "longitude": 7.8742
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:19Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!be6fe245",
-      "user": "Meshtastic e245",
-      "location": {
-        "latitude": 49.8467,
-        "longitude": 8.7425
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:19Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!1c664190",
-      "user": "NN0 (http://nerdnet.network)",
-      "location": {
-        "latitude": 50.1088,
-        "longitude": 8.6376
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:19Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!55c5eab0",
-      "user": "NW MG Home FW 2.7.7",
-      "location": {
-        "latitude": 49.3748,
-        "longitude": 8.1658
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:19Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!d8b9ee45",
-      "user": "Meshtastic ee45",
-      "location": {
-        "latitude": 50.0885,
-        "longitude": 8.6465
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:19Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!9af0231f",
-      "user": "MN_Bergstrasse_4",
-      "location": {
-        "latitude": 49.7716,
-        "longitude": 8.6459
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:19Z",
-      "ml_predictions": {
-        "power_6h": "calculating...",
-        "power_12h": "calculating...",
-        "power_24h": "calculating...",
-        "accuracy_score": "learning...",
-        "last_error_6h": "N/A",
-        "last_error_12h": "N/A",
-        "last_error_24h": "N/A"
-      }
-    },
-    {
-      "node_id": "!ba6a9a6c",
-      "user": "Meenzer1986",
-      "location": {
-        "latitude": 49.9909,
-        "longitude": 8.2575
-      },
-      "current_battery": "Unknown",
-      "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:19Z",
+      "last_updated": "2025-09-11T22:05:17Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -2390,7 +530,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:19Z",
+      "last_updated": "2025-09-11T22:05:17Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -2402,15 +542,15 @@
       }
     },
     {
-      "node_id": "!4f244a42",
-      "user": "Meshtastic 4a42",
+      "node_id": "!da5a1530",
+      "user": "DB9UQ-Router JN49BO",
       "location": {
-        "latitude": 49.4797,
-        "longitude": 8.3755
+        "latitude": 49.6112,
+        "longitude": 8.1643
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:20Z",
+      "last_updated": "2025-09-11T22:05:17Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -2422,15 +562,15 @@
       }
     },
     {
-      "node_id": "!d20e1284",
-      "user": "Idstein01",
+      "node_id": "!1c507e08",
+      "user": "FD1 Pfungstadt-Hahn",
       "location": {
-        "latitude": 50.2248,
-        "longitude": 8.2846
+        "latitude": 49.7961,
+        "longitude": 8.5556
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:20Z",
+      "last_updated": "2025-09-11T22:05:18Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -2442,15 +582,15 @@
       }
     },
     {
-      "node_id": "!db4a983e",
-      "user": "Meshtastic 983e",
+      "node_id": "!db2b64a8",
+      "user": "Mesh Beindersheim 🏡",
       "location": {
-        "latitude": 49.4535,
-        "longitude": 8.4279
+        "latitude": 49.5616,
+        "longitude": 8.3198
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:20Z",
+      "last_updated": "2025-09-11T22:05:18Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -2462,15 +602,15 @@
       }
     },
     {
-      "node_id": "!928b4a3a",
-      "user": "Meshtastic 4a3a",
+      "node_id": "!671fe56c",
+      "user": "Sbkn@solar",
       "location": {
-        "latitude": 49.4171,
-        "longitude": 8.6743
+        "latitude": 49.8303,
+        "longitude": 7.8742
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:20Z",
+      "last_updated": "2025-09-11T22:05:18Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -2482,15 +622,15 @@
       }
     },
     {
-      "node_id": "!ae609a4c",
-      "user": "NW D1 FW2.6.11",
+      "node_id": "!17f91fba",
+      "user": "NN2 (http://nerdnet.network)",
       "location": {
-        "latitude": 49.3634,
-        "longitude": 8.1543
+        "latitude": 50.0957,
+        "longitude": 8.6245
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:20Z",
+      "last_updated": "2025-09-11T22:05:18Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -2502,15 +642,15 @@
       }
     },
     {
-      "node_id": "!9ee70b18",
-      "user": "mbe1 Meshtastic 0b18",
+      "node_id": "!050c2e38",
+      "user": "LIA2_2e38",
       "location": {
-        "latitude": 49.8401,
-        "longitude": 8.2379
+        "latitude": 50.3808,
+        "longitude": 8.8048
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:20Z",
+      "last_updated": "2025-09-11T22:05:18Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -2522,15 +662,15 @@
       }
     },
     {
-      "node_id": "!33654514",
-      "user": "RDL1",
+      "node_id": "!cbf7cc77",
+      "user": "ABird02",
       "location": {
-        "latitude": 49.9199,
-        "longitude": 8.4841
+        "latitude": 50.0564,
+        "longitude": 9.2144
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:20Z",
+      "last_updated": "2025-09-11T22:05:18Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -2542,15 +682,95 @@
       }
     },
     {
-      "node_id": "!3674532c",
-      "user": "Meshtastic ZGKM",
+      "node_id": "!99bb8798",
+      "user": "Morpheus-03",
       "location": {
-        "latitude": 49.4141,
-        "longitude": 8.6770
+        "latitude": 50.3054,
+        "longitude": 9.2537
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:20Z",
+      "last_updated": "2025-09-11T22:05:18Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!4c616a06",
+      "user": "MeshHessen DP6T 04",
+      "location": {
+        "latitude": 50.3054,
+        "longitude": 9.2537
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:18Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!fbd24e7a",
+      "user": "Mesh Babenhausen | meshhessen.de",
+      "location": {
+        "latitude": 49.9450,
+        "longitude": 8.9326
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:18Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!05b0a395",
+      "user": "Meshtastic a395",
+      "location": {
+        "latitude": 50.1481,
+        "longitude": 8.4148
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:18Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!ad8dac3e",
+      "user": "Meshtastic ac3e solar",
+      "location": {
+        "latitude": 50.1481,
+        "longitude": 8.4148
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:18Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -2570,7 +790,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:20Z",
+      "last_updated": "2025-09-11T22:05:18Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -2582,15 +802,15 @@
       }
     },
     {
-      "node_id": "!087a6cc4",
-      "user": "RiedLee01",
+      "node_id": "!b03cfa4c",
+      "user": "BS05 Heltec V3 2.7.8",
       "location": {
-        "latitude": 49.8336,
-        "longitude": 8.4673
+        "latitude": 49.6959,
+        "longitude": 8.6049
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:20Z",
+      "last_updated": "2025-09-11T22:05:18Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -2602,15 +822,15 @@
       }
     },
     {
-      "node_id": "!1496c87d",
-      "user": "RiedLee02",
+      "node_id": "!106b9dde",
+      "user": "MH 06 ÖF | meshhessen.de",
       "location": {
-        "latitude": 49.8602,
-        "longitude": 8.4414
+        "latitude": 50.2563,
+        "longitude": 8.5426
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:20Z",
+      "last_updated": "2025-09-11T22:05:18Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -2622,15 +842,155 @@
       }
     },
     {
-      "node_id": "!43b5acc4",
-      "user": "DO7RKL 02 H3 Mobi",
+      "node_id": "!fb164ea0",
+      "user": "DM4VL-3 solar",
+      "location": {
+        "latitude": 50.2006,
+        "longitude": 8.4148
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:18Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!c9df8922",
+      "user": "IronCat",
+      "location": {
+        "latitude": 49.6239,
+        "longitude": 8.3624
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:18Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!a0cb110c",
+      "user": "Arheilgen 01 | meshhessen.de",
+      "location": {
+        "latitude": 49.9073,
+        "longitude": 8.6524
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:18Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!957405e3",
+      "user": "HAL 9000 05e3",
+      "location": {
+        "latitude": 50.0957,
+        "longitude": 8.1002
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:18Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!ba6a8344",
+      "user": "Zörner DLZ weiß 8344",
+      "location": {
+        "latitude": 49.9941,
+        "longitude": 8.2543
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:18Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!433ce28c",
+      "user": "Meshtastic e28c",
+      "location": {
+        "latitude": 49.7287,
+        "longitude": 8.5721
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:18Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!a299d1be",
+      "user": "Solar_Parrot_03",
+      "location": {
+        "latitude": 50.0957,
+        "longitude": 8.1527
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:18Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!6c6989e4",
+      "user": "FlintStone-868-FE",
       "location": {
         "latitude": 49.9384,
         "longitude": 8.6245
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:20Z",
+      "last_updated": "2025-09-11T22:05:18Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -2650,7 +1010,1647 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:20Z",
+      "last_updated": "2025-09-11T22:05:18Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!fa68926c",
+      "user": "Meshtastic 926c",
+      "location": {
+        "latitude": 50.1039,
+        "longitude": 8.6229
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:18Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!849c1cc0",
+      "user": "Arheilgen 24W17R",
+      "location": {
+        "latitude": 49.8860,
+        "longitude": 8.6245
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:18Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!db2fad7c",
+      "user": "Meshtastic ad7c",
+      "location": {
+        "latitude": 50.1481,
+        "longitude": 8.5197
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:18Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!925b5a9d",
+      "user": "MH 05 https://meshhessen.de/",
+      "location": {
+        "latitude": 49.8303,
+        "longitude": 7.7562
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:18Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!6c698854",
+      "user": "Flintstone-868-12",
+      "location": {
+        "latitude": 49.9909,
+        "longitude": 8.6770
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:18Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!d422deb0",
+      "user": "LowRider RAK by an3das.de",
+      "location": {
+        "latitude": 50.3054,
+        "longitude": 9.2537
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:18Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!1309d960",
+      "user": "RiedLee05",
+      "location": {
+        "latitude": 49.8336,
+        "longitude": 8.4148
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:18Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!435a86f4",
+      "user": "Meshtastic 86f4",
+      "location": {
+        "latitude": 49.4469,
+        "longitude": 8.4214
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:18Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!0eeb4fdf",
+      "user": "Orschel_Solar",
+      "location": {
+        "latitude": 50.1809,
+        "longitude": 8.5918
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:18Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!fb33512e",
+      "user": "NanoNode by an3das.de",
+      "location": {
+        "latitude": 50.3054,
+        "longitude": 9.2537
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:18Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!433b8c00",
+      "user": "SLo 8c00",
+      "location": {
+        "latitude": 50.1039,
+        "longitude": 8.6229
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:18Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!e2e3cc1e",
+      "user": "Meshtastic cc1e",
+      "location": {
+        "latitude": 49.9909,
+        "longitude": 8.2051
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:18Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!a0caffac",
+      "user": "DUEW LOC TEST ffac",
+      "location": {
+        "latitude": 49.4535,
+        "longitude": 8.1658
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:18Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!db2b6970",
+      "user": "peabody",
+      "location": {
+        "latitude": 50.0957,
+        "longitude": 8.6245
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:18Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!55b6688c",
+      "user": "ABird01",
+      "location": {
+        "latitude": 50.0482,
+        "longitude": 9.2324
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:18Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!466ea2bd",
+      "user": "Meshtastic a2bd",
+      "location": {
+        "latitude": 49.7811,
+        "longitude": 8.9391
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:18Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!050c357c",
+      "user": "KatKarl-357c",
+      "location": {
+        "latitude": 50.3054,
+        "longitude": 9.3061
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:18Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!fe4384a5",
+      "user": "Mesh Niddatal",
+      "location": {
+        "latitude": 50.2923,
+        "longitude": 8.8211
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:18Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!db2ab850",
+      "user": "Arheilgen3",
+      "location": {
+        "latitude": 49.9139,
+        "longitude": 8.6622
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:18Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!bba8293c",
+      "user": "IronCat 00",
+      "location": {
+        "latitude": 49.6239,
+        "longitude": 8.3624
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:18Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!c0c30f4c",
+      "user": "ITU",
+      "location": {
+        "latitude": 49.8336,
+        "longitude": 8.4673
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:18Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!8ec7caad",
+      "user": "M-02 500 | meshhessen.de",
+      "location": {
+        "latitude": 50.2530,
+        "longitude": 9.3580
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:18Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!e0d0338c",
+      "user": "Morpheus-02 Gateway",
+      "location": {
+        "latitude": 50.3087,
+        "longitude": 9.2635
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:18Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!8b7cb028",
+      "user": "Klaus-DF3GU-b028",
+      "location": {
+        "latitude": 49.5780,
+        "longitude": 8.6180
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:18Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!c17cf0c7",
+      "user": "Cyberdyne-Core",
+      "location": {
+        "latitude": 48.9166,
+        "longitude": 8.3941
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:18Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!1ea53fad",
+      "user": "DF6WO",
+      "location": {
+        "latitude": 49.9909,
+        "longitude": 8.2575
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:18Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!849ba180",
+      "user": "DB9UQ-Client JN49BO",
+      "location": {
+        "latitude": 49.6112,
+        "longitude": 8.1643
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:18Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!c8a0acfa",
+      "user": "Morpheus | meshhessen.de",
+      "location": {
+        "latitude": 50.4857,
+        "longitude": 9.2766
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:18Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!f6707bef",
+      "user": "MN_Bergstrasse_9",
+      "location": {
+        "latitude": 49.7550,
+        "longitude": 8.6348
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:18Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!db952071",
+      "user": "Frankfurt Sachsenhausen 60598_Solar",
+      "location": {
+        "latitude": 50.0875,
+        "longitude": 8.6884
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:18Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!db2f64f0",
+      "user": "CSC1 Ffm Seckbach (Dach)",
+      "location": {
+        "latitude": 50.1424,
+        "longitude": 8.7253
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:18Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!1845dc78",
+      "user": "greencap*meshhessen.de*",
+      "location": {
+        "latitude": 50.0113,
+        "longitude": 8.2567
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:19Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!ba620738",
+      "user": "Martini Mainz 0738",
+      "location": {
+        "latitude": 49.9974,
+        "longitude": 8.2379
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:19Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!20fa65a5",
+      "user": "Markus (Heltec T114)",
+      "location": {
+        "latitude": 49.8799,
+        "longitude": 8.4003
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:19Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!a0cce680",
+      "user": "Mannheim 68199-G",
+      "location": {
+        "latitude": 49.4535,
+        "longitude": 8.4541
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:19Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!bfd62d09",
+      "user": "Meshtastic 2d09 solar",
+      "location": {
+        "latitude": 50.1481,
+        "longitude": 8.4148
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:19Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!bc8b4517",
+      "user": "Mesh Reichelsheim Wetterau",
+      "location": {
+        "latitude": 50.3611,
+        "longitude": 8.8703
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:19Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!433b4040",
+      "user": "Casper_HX",
+      "location": {
+        "latitude": 49.8860,
+        "longitude": 8.2575
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:19Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!1309dfa0",
+      "user": "SC ad dfa0",
+      "location": {
+        "latitude": 50.1481,
+        "longitude": 8.5721
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:19Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!849a6a18",
+      "user": "〽️eshtastic MD SRS f51 📡",
+      "location": {
+        "latitude": 50.2530,
+        "longitude": 9.4110
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:19Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!519765d2",
+      "user": "KD Mobile Tracker",
+      "location": {
+        "latitude": 50.4726,
+        "longitude": 8.8834
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:19Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!849b5970",
+      "user": "DL9FAI",
+      "location": {
+        "latitude": 50.5676,
+        "longitude": 8.7818
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:19Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!b03d94d0",
+      "user": "Worms Neuhausen DF3WG",
+      "location": {
+        "latitude": 49.6439,
+        "longitude": 8.3538
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:19Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!842be3a4",
+      "user": "Meshtastic e3a4",
+      "location": {
+        "latitude": 50.3579,
+        "longitude": 8.7818
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:19Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!9ee77b80",
+      "user": "Meshtastic 7b80",
+      "location": {
+        "latitude": 49.8336,
+        "longitude": 8.7294
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:19Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!849a57cc",
+      "user": "BS03 Heltec Wireless Paper 2.7.7",
+      "location": {
+        "latitude": 50.0105,
+        "longitude": 8.3558
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:19Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!da5b06fc",
+      "user": "Meshtastic 06fc",
+      "location": {
+        "latitude": 49.4731,
+        "longitude": 8.2117
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:19Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!76c00ede",
+      "user": "MW01 Moerfelden",
+      "location": {
+        "latitude": 49.9712,
+        "longitude": 8.5656
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:19Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!6c73c150",
+      "user": "OrbitingMeshNode",
+      "location": {
+        "latitude": 50.4103,
+        "longitude": 8.7818
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:19Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!b03d89c8",
+      "user": "Amateur Radio Club Worms DL0WJ Jn49ep",
+      "location": {
+        "latitude": 49.6441,
+        "longitude": 8.3333
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:19Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!a0cc6904",
+      "user": "Khazad-dûm",
+      "location": {
+        "latitude": 49.8336,
+        "longitude": 7.8381
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:19Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!acdc4fa1",
+      "user": "NW MG mobil Arbeit FW 2.7.8",
+      "location": {
+        "latitude": 49.3617,
+        "longitude": 8.1527
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:19Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!c0c319a0",
+      "user": "DF4WP",
+      "location": {
+        "latitude": 49.8381,
+        "longitude": 8.1056
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:19Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!db2fad18",
+      "user": "Meshtastic ad18",
+      "location": {
+        "latitude": 50.1350,
+        "longitude": 8.5328
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:19Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!3368779c",
+      "user": "Neuenhain 2",
+      "location": {
+        "latitude": 50.1481,
+        "longitude": 8.4673
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:19Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!6c73e700",
+      "user": "ROXBASE",
+      "location": {
+        "latitude": 49.8860,
+        "longitude": 7.7857
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:19Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!433e23c8",
+      "user": "PSH_R",
+      "location": {
+        "latitude": 49.8336,
+        "longitude": 7.9430
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:19Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!4f262446",
+      "user": "FFMKalbach Solar",
+      "location": {
+        "latitude": 50.1895,
+        "longitude": 8.6365
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:19Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!c5679928",
+      "user": "JHM1",
+      "location": {
+        "latitude": 49.7961,
+        "longitude": 8.6550
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:19Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!718d1b9a",
+      "user": "Meshtastic 1b9a",
+      "location": {
+        "latitude": 50.1338,
+        "longitude": 8.7405
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:19Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!11093e42",
+      "user": "LT Mobile Tracker",
+      "location": {
+        "latitude": 50.4726,
+        "longitude": 8.8965
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:19Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!b63fa9af",
+      "user": "MH 01 https://meshhessen.de/",
+      "location": {
+        "latitude": 49.7353,
+        "longitude": 8.9194
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:19Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!c0c2b0dc",
+      "user": "Meshtastic b0dc",
+      "location": {
+        "latitude": 50.1414,
+        "longitude": 8.5722
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:19Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!cea835ed",
+      "user": "Node Hungen FIX | MQTT",
+      "location": {
+        "latitude": 50.4660,
+        "longitude": 8.8900
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:19Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!0d581ba5",
+      "user": "Sbkn@mobil",
+      "location": {
+        "latitude": 49.8303,
+        "longitude": 7.8742
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:19Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!be6fe245",
+      "user": "Meshtastic e245",
+      "location": {
+        "latitude": 49.8467,
+        "longitude": 8.7425
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:19Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!1c664190",
+      "user": "NN0 (http://nerdnet.network)",
+      "location": {
+        "latitude": 50.1088,
+        "longitude": 8.6376
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:19Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!55c5eab0",
+      "user": "NW MG Home FW 2.7.7",
+      "location": {
+        "latitude": 49.3748,
+        "longitude": 8.1658
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:19Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!d8b9ee45",
+      "user": "Meshtastic ee45",
+      "location": {
+        "latitude": 50.0885,
+        "longitude": 8.6465
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:19Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!9af0231f",
+      "user": "MN_Bergstrasse_4",
+      "location": {
+        "latitude": 49.7716,
+        "longitude": 8.6459
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:19Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!ba6a9a6c",
+      "user": "Meenzer1986",
+      "location": {
+        "latitude": 49.9909,
+        "longitude": 8.2575
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:19Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!4f244a42",
+      "user": "Meshtastic 4a42",
+      "location": {
+        "latitude": 49.4797,
+        "longitude": 8.3755
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:19Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!d20e1284",
+      "user": "Idstein01",
+      "location": {
+        "latitude": 50.2248,
+        "longitude": 8.2846
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:19Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!db4a983e",
+      "user": "Meshtastic 983e",
+      "location": {
+        "latitude": 49.4535,
+        "longitude": 8.4279
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:19Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!928b4a3a",
+      "user": "Meshtastic 4a3a",
+      "location": {
+        "latitude": 49.4171,
+        "longitude": 8.6743
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:19Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!ae609a4c",
+      "user": "NW D1 FW2.6.11",
+      "location": {
+        "latitude": 49.3634,
+        "longitude": 8.1543
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:19Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!9ee70b18",
+      "user": "mbe1 Meshtastic 0b18",
+      "location": {
+        "latitude": 49.8401,
+        "longitude": 8.2379
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:20Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!33654514",
+      "user": "RDL1",
+      "location": {
+        "latitude": 49.9199,
+        "longitude": 8.4841
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:20Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!3674532c",
+      "user": "Meshtastic ZGKM",
+      "location": {
+        "latitude": 49.4141,
+        "longitude": 8.6770
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:20Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!087a6cc4",
+      "user": "RiedLee01",
+      "location": {
+        "latitude": 49.8336,
+        "longitude": 8.4673
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:20Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!1496c87d",
+      "user": "RiedLee02",
+      "location": {
+        "latitude": 49.8602,
+        "longitude": 8.4414
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:20Z",
+      "ml_predictions": {
+        "power_6h": "calculating...",
+        "power_12h": "calculating...",
+        "power_24h": "calculating...",
+        "accuracy_score": "learning...",
+        "last_error_6h": "N/A",
+        "last_error_12h": "N/A",
+        "last_error_24h": "N/A"
+      }
+    },
+    {
+      "node_id": "!43b5acc4",
+      "user": "DO7RKL 02 H3 Mobi",
+      "location": {
+        "latitude": 49.9384,
+        "longitude": 8.6245
+      },
+      "current_battery": "Unknown",
+      "prediction": "Unknown battery level",
+      "last_updated": "2025-09-11T22:05:20Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -2670,7 +2670,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:20Z",
+      "last_updated": "2025-09-11T22:05:20Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -2690,7 +2690,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:20Z",
+      "last_updated": "2025-09-11T22:05:20Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -2710,7 +2710,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:20Z",
+      "last_updated": "2025-09-11T22:05:20Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -2730,7 +2730,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:20Z",
+      "last_updated": "2025-09-11T22:05:20Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -2750,7 +2750,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:20Z",
+      "last_updated": "2025-09-11T22:05:20Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -2770,7 +2770,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:20Z",
+      "last_updated": "2025-09-11T22:05:20Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -2790,7 +2790,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:20Z",
+      "last_updated": "2025-09-11T22:05:20Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -2810,7 +2810,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:20Z",
+      "last_updated": "2025-09-11T22:05:20Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -2830,7 +2830,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:20Z",
+      "last_updated": "2025-09-11T22:05:20Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -2850,7 +2850,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:20Z",
+      "last_updated": "2025-09-11T22:05:20Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -2870,7 +2870,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:20Z",
+      "last_updated": "2025-09-11T22:05:20Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -2890,7 +2890,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:20Z",
+      "last_updated": "2025-09-11T22:05:20Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -2910,7 +2910,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:20Z",
+      "last_updated": "2025-09-11T22:05:20Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -2930,7 +2930,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:21Z",
+      "last_updated": "2025-09-11T22:05:20Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -2950,7 +2950,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:21Z",
+      "last_updated": "2025-09-11T22:05:20Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -2970,7 +2970,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:21Z",
+      "last_updated": "2025-09-11T22:05:20Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -2990,7 +2990,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:21Z",
+      "last_updated": "2025-09-11T22:05:20Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -3010,7 +3010,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:21Z",
+      "last_updated": "2025-09-11T22:05:20Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -3030,7 +3030,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:21Z",
+      "last_updated": "2025-09-11T22:05:20Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -3050,7 +3050,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:21Z",
+      "last_updated": "2025-09-11T22:05:20Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -3070,7 +3070,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:21Z",
+      "last_updated": "2025-09-11T22:05:20Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -3090,7 +3090,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:21Z",
+      "last_updated": "2025-09-11T22:05:20Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -3110,7 +3110,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:21Z",
+      "last_updated": "2025-09-11T22:05:20Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -3130,7 +3130,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:21Z",
+      "last_updated": "2025-09-11T22:05:20Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -3150,7 +3150,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:21Z",
+      "last_updated": "2025-09-11T22:05:20Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -3170,7 +3170,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:21Z",
+      "last_updated": "2025-09-11T22:05:20Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -3190,7 +3190,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:21Z",
+      "last_updated": "2025-09-11T22:05:20Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -3210,7 +3210,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:21Z",
+      "last_updated": "2025-09-11T22:05:20Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -3230,7 +3230,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:21Z",
+      "last_updated": "2025-09-11T22:05:20Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -3250,7 +3250,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:21Z",
+      "last_updated": "2025-09-11T22:05:20Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -3270,7 +3270,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:21Z",
+      "last_updated": "2025-09-11T22:05:20Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -3290,7 +3290,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:21Z",
+      "last_updated": "2025-09-11T22:05:20Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -3310,7 +3310,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:21Z",
+      "last_updated": "2025-09-11T22:05:20Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -3330,7 +3330,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:21Z",
+      "last_updated": "2025-09-11T22:05:20Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -3350,7 +3350,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:21Z",
+      "last_updated": "2025-09-11T22:05:20Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -3370,7 +3370,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:21Z",
+      "last_updated": "2025-09-11T22:05:20Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -3390,7 +3390,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:22Z",
+      "last_updated": "2025-09-11T22:05:21Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -3410,7 +3410,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:22Z",
+      "last_updated": "2025-09-11T22:05:21Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -3430,7 +3430,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:22Z",
+      "last_updated": "2025-09-11T22:05:21Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -3450,7 +3450,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:22Z",
+      "last_updated": "2025-09-11T22:05:21Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -3470,7 +3470,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:22Z",
+      "last_updated": "2025-09-11T22:05:21Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -3490,7 +3490,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:22Z",
+      "last_updated": "2025-09-11T22:05:21Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -3510,7 +3510,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:22Z",
+      "last_updated": "2025-09-11T22:05:21Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -3530,7 +3530,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:22Z",
+      "last_updated": "2025-09-11T22:05:21Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -3550,7 +3550,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:22Z",
+      "last_updated": "2025-09-11T22:05:21Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -3570,7 +3570,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:22Z",
+      "last_updated": "2025-09-11T22:05:21Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
@@ -3590,7 +3590,7 @@
       },
       "current_battery": "Unknown",
       "prediction": "Unknown battery level",
-      "last_updated": "2025-09-11T21:42:22Z",
+      "last_updated": "2025-09-11T22:05:21Z",
       "ml_predictions": {
         "power_6h": "calculating...",
         "power_12h": "calculating...",
