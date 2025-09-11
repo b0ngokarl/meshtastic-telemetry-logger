@@ -29,6 +29,7 @@ A simple Bash-based logger for Meshtastic node telemetry.
 
 - `telemetry_log.csv` - Telemetry results
 - `nodes_log.txt` - Node table snapshots
+- `nodes_log.csv` - Parsed node data from nodes_log.txt, sorted by LastHeard
 - `stats.html` - Statistics and last results
 - `error.log` - Any errors encountered
 

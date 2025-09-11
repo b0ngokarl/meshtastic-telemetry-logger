@@ -5,6 +5,7 @@ ADDRESSES=('!9eed0410' '!2df67288') # Add/change as needed
 INTERVAL=300                        # Polling interval in seconds
 TELEMETRY_CSV="telemetry_log.csv"
 NODES_LOG="nodes_log.txt"
+NODES_CSV="nodes_log.csv"
 STATS_HTML="stats.html"
 ERROR_LOG="error.log"
 
@@ -50,6 +51,91 @@ update_nodes_log() {
     echo "$out" >> "$NODES_LOG"
 }
 
+parse_nodes_to_csv() {
+    local input_file="$1"
+    local output_file="$2"
+    
+    if [ ! -f "$input_file" ]; then
+        echo "Error: Input file $input_file not found"
+        return 1
+    fi
+    
+    # Create temporary files
+    local temp_csv="/tmp/nodes_unsorted.csv"
+    local temp_data="/tmp/data_rows.txt"
+    
+    # Extract data rows (skip header row with "N │ User" and separator rows)
+    grep "│.*│" "$input_file" | grep -v "│   N │ User" | grep -v "├─" | grep -v "╞═" | grep -v "╘═" | grep -v "╒═" > "$temp_data"
+    
+    # Check if we have any data rows
+    if [ ! -s "$temp_data" ]; then
+        echo "No data rows found in $input_file"
+        rm -f "$temp_data"
+        return 1
+    fi
+    
+    # Write CSV header (skip first column N)
+    echo "User,ID,AKA,Hardware,Pubkey,Role,Latitude,Longitude,Altitude,Battery,Channel_util,Tx_air_util,SNR,Hops,Channel,LastHeard,Since" > "$temp_csv"
+    
+    # Process each data row
+    while IFS= read -r line; do
+        if [ -n "$line" ]; then
+            # Split by │ and trim whitespace, skip first field (N)
+            echo "$line" | awk -F'│' '{
+                # Skip first field (index 2 is actually second field due to leading │)
+                user = $3; gsub(/^[ ]+|[ ]+$/, "", user)
+                id = $4; gsub(/^[ ]+|[ ]+$/, "", id)
+                aka = $5; gsub(/^[ ]+|[ ]+$/, "", aka)
+                hardware = $6; gsub(/^[ ]+|[ ]+$/, "", hardware)
+                pubkey = $7; gsub(/^[ ]+|[ ]+$/, "", pubkey)
+                role = $8; gsub(/^[ ]+|[ ]+$/, "", role)
+                latitude = $9; gsub(/^[ ]+|[ ]+$/, "", latitude)
+                longitude = $10; gsub(/^[ ]+|[ ]+$/, "", longitude)
+                altitude = $11; gsub(/^[ ]+|[ ]+$/, "", altitude)
+                battery = $12; gsub(/^[ ]+|[ ]+$/, "", battery)
+                channel_util = $13; gsub(/^[ ]+|[ ]+$/, "", channel_util)
+                tx_util = $14; gsub(/^[ ]+|[ ]+$/, "", tx_util)
+                snr = $15; gsub(/^[ ]+|[ ]+$/, "", snr)
+                hops = $16; gsub(/^[ ]+|[ ]+$/, "", hops)
+                channel = $17; gsub(/^[ ]+|[ ]+$/, "", channel)
+                lastheard = $18; gsub(/^[ ]+|[ ]+$/, "", lastheard)
+                since = $19; gsub(/^[ ]+|[ ]+$/, "", since)
+                
+                # Escape commas in fields by wrapping in quotes if they contain commas
+                if (match(user, /,/)) user = "\"" user "\""
+                if (match(id, /,/)) id = "\"" id "\""
+                if (match(aka, /,/)) aka = "\"" aka "\""
+                if (match(hardware, /,/)) hardware = "\"" hardware "\""
+                if (match(pubkey, /,/)) pubkey = "\"" pubkey "\""
+                if (match(role, /,/)) role = "\"" role "\""
+                if (match(latitude, /,/)) latitude = "\"" latitude "\""
+                if (match(longitude, /,/)) longitude = "\"" longitude "\""
+                if (match(altitude, /,/)) altitude = "\"" altitude "\""
+                if (match(battery, /,/)) battery = "\"" battery "\""
+                if (match(channel_util, /,/)) channel_util = "\"" channel_util "\""
+                if (match(tx_util, /,/)) tx_util = "\"" tx_util "\""
+                if (match(snr, /,/)) snr = "\"" snr "\""
+                if (match(hops, /,/)) hops = "\"" hops "\""
+                if (match(channel, /,/)) channel = "\"" channel "\""
+                if (match(lastheard, /,/)) lastheard = "\"" lastheard "\""
+                if (match(since, /,/)) since = "\"" since "\""
+                
+                print user","id","aka","hardware","pubkey","role","latitude","longitude","altitude","battery","channel_util","tx_util","snr","hops","channel","lastheard","since
+            }' >> "$temp_csv"
+        fi
+    done < "$temp_data"
+    
+    # Sort by LastHeard column (column 16, 0-indexed) and write to output
+    # First extract header
+    head -n 1 "$temp_csv" > "$output_file"
+    
+    # Sort data rows by LastHeard (column 16) - newer timestamps first (reverse sort)
+    tail -n +2 "$temp_csv" | sort -t, -k16,16r >> "$output_file"
+    
+    # Clean up temporary files
+    rm -f "$temp_csv" "$temp_data"
+}
+
 generate_stats_html() {
     {
         echo "<html><head><title>Meshtastic Telemetry Stats</title></head><body>"
@@ -83,6 +169,7 @@ while true; do
         run_telemetry "$addr"
     done
     update_nodes_log
+    parse_nodes_to_csv "$NODES_LOG" "$NODES_CSV"
     generate_stats_html
     sleep "$INTERVAL"
 done
