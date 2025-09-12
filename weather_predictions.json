@@ -1,0 +1,132 @@
+{
+    "timestamp": "$(date -Iseconds)",
+    "predictions": [
+        {
+            "node_id": "User",
+            "longname": "ID",
+            "coordinates": {
+                "lat": 50.1109,
+                "lon": 8.6821
+            },
+            "current_battery": Latitude,
+            "sunrise": "5:24",
+            "sunset": "17:27",
+            "predictions": {
+                "6h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 23,
+                    "clouds": 48
+                },
+                "12h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 16,
+                    "clouds": 42
+                },
+                "24h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 20,
+                    "clouds": 81
+                }
+            }
+        }
+,
+        {
+            "node_id": "TestNode1",
+            "longname": "!test001",
+            "coordinates": {
+                "lat": 50.1109,
+                "lon": 8.6821
+            },
+            "current_battery": 50.1109,
+            "sunrise": "5:24",
+            "sunset": "17:27",
+            "predictions": {
+                "6h": {
+                    "battery_level": 38.1,
+                    "solar_efficiency": 0,
+                    "temperature": 28,
+                    "clouds": 76
+                },
+                "12h": {
+                    "battery_level": 26.1,
+                    "solar_efficiency": 0,
+                    "temperature": 20,
+                    "clouds": 39
+                },
+                "24h": {
+                    "battery_level": 2.1,
+                    "solar_efficiency": 0,
+                    "temperature": 20,
+                    "clouds": 59
+                }
+            }
+        }
+,
+        {
+            "node_id": "TestNode2",
+            "longname": "!test002",
+            "coordinates": {
+                "lat": 50.1109,
+                "lon": 8.6821
+            },
+            "current_battery": 50.1110,
+            "sunrise": "5:24",
+            "sunset": "17:27",
+            "predictions": {
+                "6h": {
+                    "battery_level": 38.1,
+                    "solar_efficiency": 0,
+                    "temperature": 20,
+                    "clouds": 7
+                },
+                "12h": {
+                    "battery_level": 26.1,
+                    "solar_efficiency": 0,
+                    "temperature": 22,
+                    "clouds": 30
+                },
+                "24h": {
+                    "battery_level": 2.1,
+                    "solar_efficiency": 0,
+                    "temperature": 26,
+                    "clouds": 65
+                }
+            }
+        }
+,
+        {
+            "node_id": "TestNode3",
+            "longname": "!test003",
+            "coordinates": {
+                "lat": 50.1109,
+                "lon": 8.6821
+            },
+            "current_battery": 50.1111,
+            "sunrise": "5:24",
+            "sunset": "17:27",
+            "predictions": {
+                "6h": {
+                    "battery_level": 38.1,
+                    "solar_efficiency": 0,
+                    "temperature": 24,
+                    "clouds": 64
+                },
+                "12h": {
+                    "battery_level": 26.1,
+                    "solar_efficiency": 0,
+                    "temperature": 15,
+                    "clouds": 62
+                },
+                "24h": {
+                    "battery_level": 2.1,
+                    "solar_efficiency": 0,
+                    "temperature": 21,
+                    "clouds": 22
+                }
+            }
+        }
+    ]
+}

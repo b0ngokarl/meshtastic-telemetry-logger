@@ -61,6 +61,39 @@ debug_log() {
     fi
 }
 
+# Global cache for node information
+declare -A NODE_INFO_CACHE
+NODE_INFO_CACHE_TIMESTAMP=0
+
+# Load node information into cache
+load_node_info_cache() {
+    if [ ! -f "$NODES_CSV" ]; then
+        return
+    fi
+    
+    local file_timestamp
+    file_timestamp=$(stat -c %Y "$NODES_CSV" 2>/dev/null || stat -f %m "$NODES_CSV" 2>/dev/null || echo 0)
+    
+    # Only reload if file is newer than cache
+    if [ "$file_timestamp" -gt "$NODE_INFO_CACHE_TIMESTAMP" ]; then
+        debug_log "Reloading node info cache from $NODES_CSV"
+        NODE_INFO_CACHE=()
+        while IFS=, read -r user id _ hardware _; do
+            # Remove quotes if present
+            user=$(echo "$user" | sed 's/^"//; s/"$//')
+            hardware=$(echo "$hardware" | sed 's/^"//; s/"$//')
+            id=$(echo "$id" | sed 's/^"//; s/"$//')
+            
+            if [ -n "$user" ] && [ -n "$hardware" ]; then
+                NODE_INFO_CACHE["$id"]="$user $hardware"
+            elif [ -n "$user" ]; then
+                NODE_INFO_CACHE["$id"]="$user"
+            fi
+        done < "$NODES_CSV"
+        NODE_INFO_CACHE_TIMESTAMP="$file_timestamp"
+    fi
+}
+
 # ---- INIT ----
 if [ ! -f "$TELEMETRY_CSV" ]; then
     echo "timestamp,address,status,battery,voltage,channel_util,tx_util,uptime" > "$TELEMETRY_CSV"
@@ -82,23 +115,68 @@ iso8601_date() {
 
 get_node_info() {
     local node_id="$1"
-    if [ -f "$NODES_CSV" ]; then
-        # Look up node information from CSV (User, Hardware)
-        awk -F, -v id="$node_id" '$2 == id {
-            user = $1; gsub(/^"|"$/, "", user)  # Remove quotes if present
-            hardware = $4; gsub(/^"|"$/, "", hardware)  # Remove quotes if present
-            if (user != "" && hardware != "") {
-                print user " " hardware
-            } else if (user != "") {
-                print user
-            } else {
-                print id
-            }
-            exit
-        }' "$NODES_CSV"
+    
+    # Load cache if needed
+    load_node_info_cache
+    
+    # Check cache first
+    if [ -n "${NODE_INFO_CACHE[$node_id]}" ]; then
+        echo "${NODE_INFO_CACHE[$node_id]}"
     else
         echo "$node_id"
     fi
+}
+
+# Efficient CSV statistics computation
+compute_telemetry_stats() {
+    if [ ! -f "$TELEMETRY_CSV" ]; then
+        return
+    fi
+    
+    local temp_stats="/tmp/telemetry_stats_$$"
+    
+    # Single awk pass to compute all statistics we need
+    awk -F',' 'NR>1 && $2 != "" {
+        addr = $2
+        status = $3
+        timestamp = $1
+        battery = $4
+        voltage = $5
+        
+        # Count attempts and successes
+        total_attempts[addr]++
+        if (status == "success") {
+            success_count[addr]++
+            latest_success[addr] = timestamp
+            if (battery != "" && battery != "N/A") {
+                if (min_battery[addr] == "" || battery < min_battery[addr]) 
+                    min_battery[addr] = battery
+                if (max_battery[addr] == "" || battery > max_battery[addr]) 
+                    max_battery[addr] = battery
+                current_battery[addr] = battery
+            }
+            if (voltage != "" && voltage != "N/A") {
+                current_voltage[addr] = voltage
+            }
+        }
+        latest_timestamp[addr] = timestamp
+    } END {
+        for (addr in total_attempts) {
+            success = (success_count[addr] ? success_count[addr] : 0)
+            failures = total_attempts[addr] - success
+            rate = (total_attempts[addr] > 0 ? (success * 100.0 / total_attempts[addr]) : 0)
+            
+            print addr "|" total_attempts[addr] "|" success "|" failures "|" rate "|" \
+                  (latest_timestamp[addr] ? latest_timestamp[addr] : "Never") "|" \
+                  (latest_success[addr] ? latest_success[addr] : "Never") "|" \
+                  (current_battery[addr] ? current_battery[addr] : "N/A") "|" \
+                  (current_voltage[addr] ? current_voltage[addr] : "N/A") "|" \
+                  (min_battery[addr] ? min_battery[addr] : "N/A") "|" \
+                  (max_battery[addr] ? max_battery[addr] : "N/A")
+        }
+    }' "$TELEMETRY_CSV" > "$temp_stats"
+    
+    echo "$temp_stats"
 }
 
 # Function to get CSS class for value-based color coding
@@ -432,8 +510,7 @@ get_weather_predictions() {
 
 run_telemetry() {
     local addr="$1"
-    local ts
-    ts=$(iso8601_date)
+    local ts="$2"  # Accept timestamp as parameter to avoid multiple calls
     local out
     debug_log "Requesting telemetry for $addr at $ts"
     # Use timeout command to give telemetry request up to 5 minutes to complete
@@ -449,11 +526,14 @@ run_telemetry() {
         debug_log "Telemetry timeout (300s) for $addr"
     elif echo "$out" | grep -q "Telemetry received:"; then
         status="success"
-        battery=$(echo "$out" | grep "Battery level:" | awk -F: '{print $2}' | tr -d ' %')
-        voltage=$(echo "$out" | grep "Voltage:" | awk -F: '{print $2}' | tr -d ' V')
-        channel_util=$(echo "$out" | grep "Total channel utilization:" | awk -F: '{print $2}' | tr -d ' %')
-        tx_util=$(echo "$out" | grep "Transmit air utilization:" | awk -F: '{print $2}' | tr -d ' %')
-        uptime=$(echo "$out" | grep "Uptime:" | awk -F: '{print $2}' | tr -d ' s')
+        # Optimize parsing with single awk call instead of multiple grep/awk operations
+        eval "$(echo "$out" | awk '
+        /Battery level:/ { gsub(/[^0-9.]/, "", $3); print "battery=" $3 }
+        /Voltage:/ { gsub(/[^0-9.]/, "", $2); print "voltage=" $2 }
+        /Total channel utilization:/ { gsub(/[^0-9.]/, "", $4); print "channel_util=" $4 }
+        /Transmit air utilization:/ { gsub(/[^0-9.]/, "", $4); print "tx_util=" $4 }
+        /Uptime:/ { gsub(/[^0-9.]/, "", $2); print "uptime=" $2 }
+        ')"
         debug_log "Telemetry success: battery=$battery, voltage=$voltage, channel_util=$channel_util, tx_util=$tx_util, uptime=$uptime"
     elif echo "$out" | grep -q "Timed out waiting for telemetry"; then
         status="timeout"
@@ -464,7 +544,40 @@ run_telemetry() {
         echo "$ts [$addr] ERROR: $out" >> "$ERROR_LOG"
     fi
 
-    echo "$ts,$addr,$status,$battery,$voltage,$channel_util,$tx_util,$uptime" >> "$TELEMETRY_CSV"
+    # Return CSV line instead of directly writing to file (for parallel processing)
+    echo "$ts,$addr,$status,$battery,$voltage,$channel_util,$tx_util,$uptime"
+}
+
+# Parallel telemetry collection function
+run_telemetry_parallel() {
+    local ts
+    ts=$(iso8601_date)
+    local temp_results="/tmp/telemetry_results_$$"
+    
+    debug_log "Starting parallel telemetry collection for ${#ADDRESSES[@]} nodes at $ts"
+    
+    # Start background processes for each address
+    local pids=()
+    for addr in "${ADDRESSES[@]}"; do
+        {
+            result=$(run_telemetry "$addr" "$ts")
+            echo "$result" >> "$temp_results"
+        } &
+        pids+=($!)
+    done
+    
+    # Wait for all background processes to complete
+    for pid in "${pids[@]}"; do
+        wait "$pid"
+    done
+    
+    # Append all results to telemetry CSV in one operation
+    if [ -f "$temp_results" ]; then
+        cat "$temp_results" >> "$TELEMETRY_CSV"
+        rm -f "$temp_results"
+    fi
+    
+    debug_log "Parallel telemetry collection completed"
 }
 
 update_nodes_log() {
@@ -920,6 +1033,11 @@ EOF
         echo "<table>"
         echo "<tr><th>#</th><th>Address</th><th>Device Name</th><th>Success</th><th>Failures</th><th>Success Rate</th><th>Last Seen</th></tr>"
         index=1
+        
+        # Pre-compute all statistics with single awk pass
+        local stats_file
+        stats_file=$(compute_telemetry_stats)
+        
         for addr in "${ADDRESSES[@]}"; do
             device_name="$(get_node_info "$addr")"
             if [ -n "$device_name" ] && [ "$device_name" != "$addr" ]; then
@@ -928,23 +1046,23 @@ EOF
                 resolved_name="Unknown"
             fi
             
-            # Calculate success/failure rates for this address
-            all_attempts=$(grep ",$addr," "$TELEMETRY_CSV" | sort -t',' -k1,1)
-            total_attempts=$(echo "$all_attempts" | wc -l)
-            
-            if [ "$total_attempts" -gt 0 ]; then
-                # Count success and failures
-                success_count=$(echo "$all_attempts" | awk -F',' '$3=="success"' | wc -l)
-                failure_count=$(echo "$all_attempts" | awk -F',' '$3!="success" && $3!=""' | wc -l)
-                
-                # Calculate success rate
-                success_rate=$(echo "scale=1; $success_count * 100 / $total_attempts" | bc 2>/dev/null)
-                success_rate="${success_rate}%"
-                
-                # Get latest timestamp
-                latest_timestamp=$(echo "$all_attempts" | tail -1 | cut -d',' -f1)
-                display_timestamp=$(echo "$latest_timestamp" | sed 's/:[0-9][0-9]+[0-9:+-]*$//')
+            # Read pre-computed statistics
+            if [ -f "$stats_file" ]; then
+                local stats_line
+                stats_line=$(grep "^$addr|" "$stats_file")
+                if [ -n "$stats_line" ]; then
+                    IFS='|' read -r _ total_attempts success_count failure_count success_rate_num latest_timestamp _ _ _ _ _ <<< "$stats_line"
+                    success_rate="${success_rate_num}%"
+                    display_timestamp=$(echo "$latest_timestamp" | sed 's/:[0-9][0-9]+[0-9:+-]*$//')
+                else
+                    total_attempts=0
+                    success_count=0
+                    failure_count=0
+                    success_rate="N/A"
+                    display_timestamp="Never"
+                fi
             else
+                total_attempts=0
                 success_count=0
                 failure_count=0
                 success_rate="N/A"
@@ -953,12 +1071,12 @@ EOF
             
             # Color code success rate
             if [ "$total_attempts" -gt 0 ]; then
-                success_rate_num=$(echo "$success_rate" | sed 's/%//')
-                if (( $(echo "$success_rate_num >= 90" | bc -l 2>/dev/null) )); then
+                success_rate_num_clean=$(echo "$success_rate" | sed 's/%//')
+                if (( $(echo "$success_rate_num_clean >= 90" | bc -l 2>/dev/null) )); then
                     success_rate_class="good"
-                elif (( $(echo "$success_rate_num >= 70" | bc -l 2>/dev/null) )); then
+                elif (( $(echo "$success_rate_num_clean >= 70" | bc -l 2>/dev/null) )); then
                     success_rate_class="normal"
-                elif (( $(echo "$success_rate_num >= 50" | bc -l 2>/dev/null) )); then
+                elif (( $(echo "$success_rate_num_clean >= 50" | bc -l 2>/dev/null) )); then
                     success_rate_class="warning"
                 else
                     success_rate_class="critical"
@@ -1002,6 +1120,9 @@ EOF
             index=$((index + 1))
         done
         echo "</table>"
+        
+        # Clean up stats file
+        [ -n "$stats_file" ] && rm -f "$stats_file"
 
         # Gather all successful telemetry for per-node stats
         awk -F',' '$3=="success"' "$TELEMETRY_CSV" > /tmp/all_success.csv
@@ -1603,12 +1724,10 @@ EOF
 
 # ---- MAIN LOOP ----
 while true; do
-    for addr in "${ADDRESSES[@]}"; do
-        # Lookup node info from nodes_log.csv every round
-        node_info="$(get_node_info "$addr")"
-        debug_log "Node info for $addr: $node_info"
-        run_telemetry "$addr"
-    done
+    # Use parallel telemetry collection instead of sequential
+    run_telemetry_parallel
+    
+    # Update nodes and generate HTML
     update_nodes_log
     parse_nodes_to_csv "$NODES_LOG" "$NODES_CSV"
     generate_stats_html

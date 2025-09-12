@@ -3,9 +3,10 @@
 # Weather integration script for solar power predictions
 # Provides enhanced solar efficiency calculations with astronomical accuracy
 
-# Configuration
+# Configuration with better defaults
 WEATHER_API_KEY="${WEATHER_API_KEY:-}"
-WEATHER_CACHE_DIR="/tmp/weather_cache"
+WEATHER_CACHE_DIR="${WEATHER_CACHE_DIR:-/tmp/weather_cache}"
+WEATHER_CACHE_TTL="${WEATHER_CACHE_TTL:-3600}"  # Use configurable TTL, default 1 hour
 mkdir -p "$WEATHER_CACHE_DIR"
 
 # Default coordinates (from environment or Frankfurt, Germany)
@@ -91,8 +92,8 @@ get_weather_data() {
     
     local cache_file="${WEATHER_CACHE_DIR}/weather_${lat}_${lon}.json"
     
-    # Check cache (valid for 30 minutes)
-    if [[ -f "$cache_file" ]] && [[ $(($(date +%s) - $(stat -c %Y "$cache_file"))) -lt 1800 ]]; then
+    # Check cache with configurable TTL
+    if [[ -f "$cache_file" ]] && [[ $(($(date +%s) - $(stat -c %Y "$cache_file" 2>/dev/null || stat -f %m "$cache_file" 2>/dev/null || echo 0))) -lt $WEATHER_CACHE_TTL ]]; then
         cat "$cache_file"
         return 0
     fi
