@@ -3200,3 +3200,803 @@
                 }
             }
         }
+,
+        {
+            "node_id": "NW D1 FW2.6.11",
+            "longname": "!ae609a4c",
+            "coordinates": {
+                "lat": 1,
+                "lon": 3
+            },
+            "current_battery": 49.3634°,
+            "sunrise": "5:48",
+            "sunset": "17:48",
+            "predictions": {
+                "6h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 24.47,
+                    "clouds": 49
+                },
+                "12h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 24.36,
+                    "clouds": 41
+                },
+                "24h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 24.2,
+                    "clouds": 100
+                }
+            }
+        }
+,
+        {
+            "node_id": "RiedLee01",
+            "longname": "!087a6cc4",
+            "coordinates": {
+                "lat": 01,
+                "lon": 11200
+            },
+            "current_battery": 49.8336°,
+            "sunrise": "0:00",
+            "sunset": "0:00",
+            "predictions": {
+                "6h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 20,
+                    "clouds": 50
+                },
+                "12h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 20,
+                    "clouds": 50
+                },
+                "24h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 20,
+                    "clouds": 50
+                }
+            }
+        }
+,
+        {
+            "node_id": "Meshtastic 096c",
+            "longname": "!43b7096c",
+            "coordinates": {
+                "lat": 096,
+                "lon": 3
+            },
+            "current_battery": N/A,
+            "sunrise": "5:58",
+            "sunset": "17:37",
+            "predictions": {
+                "6h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 20,
+                    "clouds": 50
+                },
+                "12h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 20,
+                    "clouds": 50
+                },
+                "24h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 20,
+                    "clouds": 50
+                }
+            }
+        }
+,
+        {
+            "node_id": "Dim",
+            "longname": "!06ce2300",
+            "coordinates": {
+                "lat": 50.1109,
+                "lon": 8.6821
+            },
+            "current_battery": 50.0654°,
+            "sunrise": "5:24",
+            "sunset": "17:27",
+            "predictions": {
+                "6h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 15.5,
+                    "clouds": 25
+                },
+                "12h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 15.14,
+                    "clouds": 55
+                },
+                "24h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 13.63,
+                    "clouds": 100
+                }
+            }
+        }
+,
+        {
+            "node_id": "Mesh Wölfersheim-Berstadt",
+            "longname": "!b03bd2fc",
+            "coordinates": {
+                "lat": 50.1109,
+                "lon": 8.6821
+            },
+            "current_battery": 50.4238°,
+            "sunrise": "5:24",
+            "sunset": "17:27",
+            "predictions": {
+                "6h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 15.5,
+                    "clouds": 25
+                },
+                "12h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 15.14,
+                    "clouds": 55
+                },
+                "24h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 13.63,
+                    "clouds": 100
+                }
+            }
+        }
+,
+        {
+            "node_id": "Martini Mainz 0738",
+            "longname": "!ba620738",
+            "coordinates": {
+                "lat": 1,
+                "lon": 3
+            },
+            "current_battery": 49.9974°,
+            "sunrise": "5:48",
+            "sunset": "17:48",
+            "predictions": {
+                "6h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 24.47,
+                    "clouds": 49
+                },
+                "12h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 24.36,
+                    "clouds": 41
+                },
+                "24h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 24.2,
+                    "clouds": 100
+                }
+            }
+        }
+,
+        {
+            "node_id": "SLo 8c00",
+            "longname": "!433b8c00",
+            "coordinates": {
+                "lat": 50.1109,
+                "lon": 8.6821
+            },
+            "current_battery": 50.1039°,
+            "sunrise": "5:24",
+            "sunset": "17:27",
+            "predictions": {
+                "6h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 15.5,
+                    "clouds": 25
+                },
+                "12h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 15.14,
+                    "clouds": 55
+                },
+                "24h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 13.63,
+                    "clouds": 100
+                }
+            }
+        }
+,
+        {
+            "node_id": "Mesh Eppertshausen 01",
+            "longname": "!5b4672c9",
+            "coordinates": {
+                "lat": 1,
+                "lon": 4631
+            },
+            "current_battery": 49.9515°,
+            "sunrise": "0:00",
+            "sunset": "0:00",
+            "predictions": {
+                "6h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 20,
+                    "clouds": 50
+                },
+                "12h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 20,
+                    "clouds": 50
+                },
+                "24h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 20,
+                    "clouds": 50
+                }
+            }
+        }
+,
+        {
+            "node_id": "DUEW LOC TEST d251",
+            "longname": "!cfa8d251",
+            "coordinates": {
+                "lat": 50.1109,
+                "lon": 8.6821
+            },
+            "current_battery": 49.4600°,
+            "sunrise": "5:24",
+            "sunset": "17:27",
+            "predictions": {
+                "6h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 15.5,
+                    "clouds": 25
+                },
+                "12h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 15.14,
+                    "clouds": 55
+                },
+                "24h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 13.63,
+                    "clouds": 100
+                }
+            }
+        }
+,
+        {
+            "node_id": "Globetrotter 🌍",
+            "longname": "!0c1cfd34",
+            "coordinates": {
+                "lat": 50.1109,
+                "lon": 8.6821
+            },
+            "current_battery": 50.0957°,
+            "sunrise": "5:24",
+            "sunset": "17:27",
+            "predictions": {
+                "6h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 15.5,
+                    "clouds": 25
+                },
+                "12h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 15.14,
+                    "clouds": 55
+                },
+                "24h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 13.63,
+                    "clouds": 100
+                }
+            }
+        }
+,
+        {
+            "node_id": "Meshtastic 4976",
+            "longname": "!25ca4976",
+            "coordinates": {
+                "lat": 4976,
+                "lon": 4631
+            },
+            "current_battery": N/A,
+            "sunrise": "0:00",
+            "sunset": "0:00",
+            "predictions": {
+                "6h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 20,
+                    "clouds": 50
+                },
+                "12h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 20,
+                    "clouds": 50
+                },
+                "24h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 20,
+                    "clouds": 50
+                }
+            }
+        }
+,
+        {
+            "node_id": "flipstar_8e9c",
+            "longname": "!f4838e9c",
+            "coordinates": {
+                "lat": 50.1109,
+                "lon": 8.6821
+            },
+            "current_battery": 50.0433°,
+            "sunrise": "5:24",
+            "sunset": "17:27",
+            "predictions": {
+                "6h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 15.5,
+                    "clouds": 25
+                },
+                "12h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 15.14,
+                    "clouds": 55
+                },
+                "24h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 13.63,
+                    "clouds": 100
+                }
+            }
+        }
+,
+        {
+            "node_id": "NanoNode by an3das.de",
+            "longname": "!fb33512e",
+            "coordinates": {
+                "lat": 50.1109,
+                "lon": 8.6821
+            },
+            "current_battery": 50.3054°,
+            "sunrise": "5:24",
+            "sunset": "17:27",
+            "predictions": {
+                "6h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 15.5,
+                    "clouds": 25
+                },
+                "12h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 15.14,
+                    "clouds": 55
+                },
+                "24h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 13.63,
+                    "clouds": 100
+                }
+            }
+        }
+,
+        {
+            "node_id": "Meshtastic 34f8",
+            "longname": "!16a434f8",
+            "coordinates": {
+                "lat": 348,
+                "lon": 4631
+            },
+            "current_battery": 49.7027°,
+            "sunrise": "0:00",
+            "sunset": "0:00",
+            "predictions": {
+                "6h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 20,
+                    "clouds": 50
+                },
+                "12h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 20,
+                    "clouds": 50
+                },
+                "24h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 20,
+                    "clouds": 50
+                }
+            }
+        }
+,
+        {
+            "node_id": "Meshtastic 06fc",
+            "longname": "!da5b06fc",
+            "coordinates": {
+                "lat": 50.1109,
+                "lon": 8.6821
+            },
+            "current_battery": N/A,
+            "sunrise": "5:24",
+            "sunset": "17:27",
+            "predictions": {
+                "6h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 15.5,
+                    "clouds": 25
+                },
+                "12h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 15.14,
+                    "clouds": 55
+                },
+                "24h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 13.63,
+                    "clouds": 100
+                }
+            }
+        }
+,
+        {
+            "node_id": "DO4PT/m | meshhessen.de",
+            "longname": "!e20de9fd",
+            "coordinates": {
+                "lat": 4,
+                "lon": 1000
+            },
+            "current_battery": N/A,
+            "sunrise": "0:00",
+            "sunset": "0:00",
+            "predictions": {
+                "6h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 20,
+                    "clouds": 50
+                },
+                "12h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 20,
+                    "clouds": 50
+                },
+                "24h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 20,
+                    "clouds": 50
+                }
+            }
+        }
+,
+        {
+            "node_id": "LIA2_2e38",
+            "longname": "!050c2e38",
+            "coordinates": {
+                "lat": 50.1109,
+                "lon": 8.6821
+            },
+            "current_battery": 50.3808°,
+            "sunrise": "5:24",
+            "sunset": "17:27",
+            "predictions": {
+                "6h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 15.5,
+                    "clouds": 25
+                },
+                "12h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 15.14,
+                    "clouds": 55
+                },
+                "24h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 13.63,
+                    "clouds": 100
+                }
+            }
+        }
+,
+        {
+            "node_id": "flipstar_wiesbaden_nordost",
+            "longname": "!da75c1ac",
+            "coordinates": {
+                "lat": 50.1109,
+                "lon": 8.6821
+            },
+            "current_battery": 50.0892°,
+            "sunrise": "5:24",
+            "sunset": "17:27",
+            "predictions": {
+                "6h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 15.5,
+                    "clouds": 25
+                },
+                "12h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 15.14,
+                    "clouds": 55
+                },
+                "24h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 13.63,
+                    "clouds": 100
+                }
+            }
+        }
+,
+        {
+            "node_id": "Mesh Babenhausen | meshhessen.de",
+            "longname": "!fbd24e7a",
+            "coordinates": {
+                "lat": 50.1109,
+                "lon": 8.6821
+            },
+            "current_battery": 49.9450°,
+            "sunrise": "5:24",
+            "sunset": "17:27",
+            "predictions": {
+                "6h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 15.5,
+                    "clouds": 25
+                },
+                "12h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 15.14,
+                    "clouds": 55
+                },
+                "24h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 13.63,
+                    "clouds": 100
+                }
+            }
+        }
+,
+        {
+            "node_id": "AS01",
+            "longname": "!433c750c",
+            "coordinates": {
+                "lat": 01,
+                "lon": 3
+            },
+            "current_battery": N/A,
+            "sunrise": "5:48",
+            "sunset": "17:48",
+            "predictions": {
+                "6h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 24.47,
+                    "clouds": 49
+                },
+                "12h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 24.36,
+                    "clouds": 41
+                },
+                "24h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 24.2,
+                    "clouds": 100
+                }
+            }
+        }
+,
+        {
+            "node_id": "PSH_R",
+            "longname": "!433e23c8",
+            "coordinates": {
+                "lat": 50.1109,
+                "lon": 8.6821
+            },
+            "current_battery": 49.8336°,
+            "sunrise": "5:24",
+            "sunset": "17:27",
+            "predictions": {
+                "6h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 15.5,
+                    "clouds": 25
+                },
+                "12h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 15.14,
+                    "clouds": 55
+                },
+                "24h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 13.63,
+                    "clouds": 100
+                }
+            }
+        }
+,
+        {
+            "node_id": "flipstar_wiesbaden_frauenstein",
+            "longname": "!fcf1a472",
+            "coordinates": {
+                "lat": 50.1109,
+                "lon": 8.6821
+            },
+            "current_battery": 50.0662°,
+            "sunrise": "5:24",
+            "sunset": "17:27",
+            "predictions": {
+                "6h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 15.5,
+                    "clouds": 25
+                },
+                "12h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 15.14,
+                    "clouds": 55
+                },
+                "24h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 13.63,
+                    "clouds": 100
+                }
+            }
+        }
+,
+        {
+            "node_id": "DL9FAI",
+            "longname": "!849b5970",
+            "coordinates": {
+                "lat": 50.1109,
+                "lon": 8.6821
+            },
+            "current_battery": 50.5676°,
+            "sunrise": "5:24",
+            "sunset": "17:27",
+            "predictions": {
+                "6h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 15.5,
+                    "clouds": 25
+                },
+                "12h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 15.14,
+                    "clouds": 55
+                },
+                "24h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 13.63,
+                    "clouds": 100
+                }
+            }
+        }
+,
+        {
+            "node_id": "Meshtastic cfd8",
+            "longname": "!98dccfd8",
+            "coordinates": {
+                "lat": 50.1109,
+                "lon": 8.6821
+            },
+            "current_battery": 50.4865°,
+            "sunrise": "5:24",
+            "sunset": "17:27",
+            "predictions": {
+                "6h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 15.5,
+                    "clouds": 25
+                },
+                "12h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 15.14,
+                    "clouds": 55
+                },
+                "24h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 13.63,
+                    "clouds": 100
+                }
+            }
+        }
+,
+        {
+            "node_id": "Commonwealth_2",
+            "longname": "!3c04bbe1",
+            "coordinates": {
+                "lat": 2,
+                "lon": 4631
+            },
+            "current_battery": N/A,
+            "sunrise": "0:00",
+            "sunset": "0:00",
+            "predictions": {
+                "6h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 20,
+                    "clouds": 50
+                },
+                "12h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 20,
+                    "clouds": 50
+                },
+                "24h": {
+                    "battery_level": 0.0,
+                    "solar_efficiency": 0,
+                    "temperature": 20,
+                    "clouds": 50
+                }
+            }
+        }
