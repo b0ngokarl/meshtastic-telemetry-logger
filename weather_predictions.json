@@ -1,5 +1,5 @@
 {
-  "generated_at": "2025-09-12T19:03:54+02:00",
+  "generated_at": "2025-09-12T19:16:10+02:00",
   "predictions": [
     {
       "node_id": "!9eed0410",
@@ -21396,6 +21396,74 @@
         "6h": 95,
         "12h": 90,
         "24h": 85
+      },
+      "weather": {
+        "condition": "unknown",
+        "cloud_cover": 50,
+        "temperature": 20
+      }
+    }
+,
+    {
+      "node_id": "!75e98c18",
+      "user": "success",
+      "current_battery": 100,
+      "solar_efficiency": 60,
+      "predictions": {
+        "6h": 95,
+        "12h": 90,
+        "24h": 85
+      },
+      "weather": {
+        "condition": "unknown",
+        "cloud_cover": 50,
+        "temperature": 20
+      }
+    }
+,
+    {
+      "node_id": "!9eed0410",
+      "user": "success",
+      "current_battery": 100,
+      "solar_efficiency": 60,
+      "predictions": {
+        "6h": 95,
+        "12h": 90,
+        "24h": 85
+      },
+      "weather": {
+        "condition": "unknown",
+        "cloud_cover": 50,
+        "temperature": 20
+      }
+    }
+,
+    {
+      "node_id": "!2c9e092b",
+      "user": "success",
+      "current_battery": 72.00,
+      "solar_efficiency": 60,
+      "predictions": {
+        "6h": 67.00,
+        "12h": 62.00,
+        "24h": 57.00
+      },
+      "weather": {
+        "condition": "unknown",
+        "cloud_cover": 50,
+        "temperature": 20
+      }
+    }
+,
+    {
+      "node_id": "!849c4818",
+      "user": "success",
+      "current_battery": 99.00,
+      "solar_efficiency": 60,
+      "predictions": {
+        "6h": 94.00,
+        "12h": 89.00,
+        "24h": 84.00
       },
       "weather": {
         "condition": "unknown",

@@ -1571,17 +1571,15 @@ while true; do
     generate_stats_html
     
     # Generate weather predictions for solar nodes
-    if [[ -f "weather_integration_simple.sh" ]]; then
-        echo "Generating simplified weather-based energy predictions..."
-        timeout 300 ./weather_integration_simple.sh generate telemetry_log.csv
+    if [[ -f "weather_integration.sh" ]]; then
+        echo "Generating weather-based energy predictions..."
+        timeout 300 ./weather_integration.sh nodes_log.csv telemetry_log.csv weather_predictions.json
     fi
     
     # Run ML power predictor to learn and improve predictions
-    if [[ -f "ml_power_predictor.sh" ]] && [[ "$ENABLE_ML" == "true" ]]; then
+    if [[ -f "ml_power_predictor.sh" ]]; then
         echo "Running ML power prediction analysis..."
         timeout 300 ./ml_power_predictor.sh run
-    else
-        echo "ML prediction disabled for faster processing"
     fi
     
     sleep "$INTERVAL"
