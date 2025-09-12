@@ -24,7 +24,7 @@ calculate_sunrise_sunset() {
     # Astronomical calculations for sunrise/sunset
     # Based on solar angle calculations
     
-    # Solar declination angle (degrees)
+    # Solar declination angle (in degrees)
     local declination=$(echo "scale=6; 23.45 * s((284 + $day_of_year) * 3.14159/180 * 365.25/365)" | bc -l)
     
     # Hour angle for sunrise/sunset
@@ -192,7 +192,7 @@ calculate_solar_efficiency() {
     # Cloud factor (0-100% clouds reduces efficiency)
     local cloud_factor=$(echo "scale=2; 100 - $clouds" | bc -l)
     
-    # Temperature factor (optimal around 25°C)
+    # Temperature factor (optimal around 25C)
     local temp_factor=100
     if (( $(echo "$temp > 25" | bc -l) )); then
         temp_factor=$(echo "scale=2; 100 - ($temp - 25) * 0.5" | bc -l)

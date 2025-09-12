@@ -393,12 +393,18 @@ run_telemetry() {
     ts=$(iso8601_date)
     local out
     debug_log "Requesting telemetry for $addr at $ts"
-    out=$(meshtastic --request-telemetry --dest "$addr" 2>&1)
+    # Use timeout command to give telemetry request up to 5 minutes to complete
+    out=$(timeout 300 meshtastic --request-telemetry --dest "$addr" 2>&1)
+    local exit_code=$?
     debug_log "Telemetry output: $out"
     local status="unknown"
     local battery="" voltage="" channel_util="" tx_util="" uptime=""
 
-    if echo "$out" | grep -q "Telemetry received:"; then
+    if [ $exit_code -eq 124 ]; then
+        # timeout command returned 124 for timeout
+        status="timeout"
+        debug_log "Telemetry timeout (300s) for $addr"
+    elif echo "$out" | grep -q "Telemetry received:"; then
         status="success"
         battery=$(echo "$out" | grep "Battery level:" | awk -F: '{print $2}' | tr -d ' %')
         voltage=$(echo "$out" | grep "Voltage:" | awk -F: '{print $2}' | tr -d ' V')
@@ -423,7 +429,8 @@ update_nodes_log() {
     ts=$(iso8601_date)
     debug_log "Updating nodes log at $ts"
     local out
-    out=$(meshtastic --nodes 2>&1)
+    # Use timeout command to give nodes request up to 5 minutes to complete
+    out=$(timeout 300 meshtastic --nodes 2>&1)
     debug_log "Nodes output: $out"
     echo "===== $ts =====" >> "$NODES_LOG"
     echo "$out" >> "$NODES_LOG"
@@ -796,7 +803,7 @@ EOF
         echo "<a href='#latest-telemetry' class='nav-link' style='text-decoration: none; padding: 8px 12px; background: #fff3e0; border-radius: 4px; color: #f57c00;'>📈 Latest Telemetry</a>"
         echo "<a href='#telemetry-history' class='nav-link' style='text-decoration: none; padding: 8px 12px; background: #fce4ec; border-radius: 4px; color: #c2185b;'>📋 Telemetry History</a>"
         echo "<a href='#current-nodes' class='nav-link' style='text-decoration: none; padding: 8px 12px; background: #f3e5f5; border-radius: 4px; color: #7b1fa2;'>🌐 Current Nodes</a>"
-        echo "<a href='#all-nodes' class='nav-link' style='text-decoration: none; padding: 8px 12px; background: #ede7f6; border-radius: 4px; color: #5e35b1;'>📡 All Nodes Ever Heard</a>"
+        echo "<a href='#all-nodes-header' class='nav-link' style='text-decoration: none; padding: 8px 12px; background: #ede7f6; border-radius: 4px; color: #5e35b1;'>📡 All Nodes Ever Heard</a>"
         echo "<a href='#weather-predictions' class='nav-link' style='text-decoration: none; padding: 8px 12px; background: #e0f7fa; border-radius: 4px; color: #00796b;'>☀️ Weather Predictions</a>"
         echo "</div>"
         echo "</div>"
@@ -1424,10 +1431,10 @@ EOF
         
         # All Nodes Ever Heard Section
         if [ -f "$NODES_CSV" ]; then
-            echo "<h2 id='all-nodes' onclick=\"toggleSection('all-nodes')\" style=\"cursor: pointer; user-select: none;\">"
+            echo "<h2 id='all-nodes-header' onclick=\"toggleSection('all-nodes-content')\" style=\"cursor: pointer; user-select: none;\">"
             echo "📡 All Nodes Ever Heard <span id=\"all-nodes-toggle\" style=\"font-size: 0.8em; color: #666;\">[click to expand]</span>"
             echo "</h2>"
-            echo "<div id=\"all-nodes\" style=\"display: none;\">"
+            echo "<div id=\"all-nodes-content\" style=\"display: none;\">"
             echo "<p><em>Comprehensive list of all nodes that have ever been detected on the mesh network, sorted by first appearance</em></p>"
             echo "<table>"
             echo "<tr><th>#</th><th>User</th><th>ID</th><th>Hardware</th><th>Role</th><th>GPS</th><th>First Heard</th><th>Last Heard</th><th>Status</th></tr>"
@@ -1564,15 +1571,17 @@ while true; do
     generate_stats_html
     
     # Generate weather predictions for solar nodes
-    if [[ -f "weather_integration.sh" ]]; then
-        echo "Generating weather-based energy predictions..."
-        ./weather_integration.sh nodes_log.csv telemetry_log.csv weather_predictions.json
+    if [[ -f "weather_integration_simple.sh" ]]; then
+        echo "Generating simplified weather-based energy predictions..."
+        timeout 300 ./weather_integration_simple.sh generate telemetry_log.csv
     fi
     
     # Run ML power predictor to learn and improve predictions
-    if [[ -f "ml_power_predictor.sh" ]]; then
+    if [[ -f "ml_power_predictor.sh" ]] && [[ "$ENABLE_ML" == "true" ]]; then
         echo "Running ML power prediction analysis..."
-        ./ml_power_predictor.sh run
+        timeout 300 ./ml_power_predictor.sh run
+    else
+        echo "ML prediction disabled for faster processing"
     fi
     
     sleep "$INTERVAL"
