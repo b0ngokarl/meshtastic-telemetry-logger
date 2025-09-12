@@ -212,6 +212,112 @@ get_ml_predictions() {
     echo "$pred_6h|$pred_12h|$pred_24h|$accuracy"
 }
 
+# Calculate trend for a value based on historical data
+calculate_trend() {
+    local node_id="$1"
+    local field="$2"
+    local current_value="$3"
+    
+    # Validate inputs
+    if [ -z "$node_id" ] || [ -z "$field" ] || [ -z "$current_value" ] || [ "$current_value" = "N/A" ]; then
+        echo "↔️"
+        return
+    fi
+    
+    # Get historical data from telemetry log (last 10 entries for this node)
+    local history=$(grep ",$node_id," "$TELEMETRY_LOG" | tail -10 | head -9)
+    
+    if [ -z "$history" ]; then
+        echo "↔️"
+        return
+    fi
+    
+    # Determine field position in CSV based on field name
+    local field_pos=""
+    case "$field" in
+        "battery") field_pos="5" ;;
+        "voltage") field_pos="6" ;;
+        "channel_util") field_pos="7" ;;
+        "tx_util") field_pos="8" ;;
+        "snr") field_pos="9" ;;
+        "rssi") field_pos="10" ;;
+        *) echo "↔️"; return ;;
+    esac
+    
+    # Get the average of the last few values
+    local avg_previous=$(echo "$history" | awk -F',' -v pos="$field_pos" '
+        BEGIN { sum=0; count=0 }
+        { 
+            if($pos != "" && $pos != "N/A" && $pos ~ /^[0-9.-]+$/) {
+                sum += $pos
+                count++
+            }
+        }
+        END { 
+            if(count > 0) 
+                printf "%.2f", sum/count 
+            else 
+                print "N/A"
+        }')
+    
+    if [ "$avg_previous" = "N/A" ] || ! [[ "$current_value" =~ ^[0-9.-]+$ ]]; then
+        echo "↔️"
+        return
+    fi
+    
+    # Calculate percentage change
+    local change=$(echo "scale=2; ($current_value - $avg_previous) / $avg_previous * 100" | bc 2>/dev/null)
+    
+    # Determine trend based on change and field type
+    local abs_change=$(echo "$change" | sed 's/-//')
+    local trend_icon="↔️"
+    local trend_class=""
+    
+    # Different thresholds for different field types
+    case "$field" in
+        "battery"|"voltage")
+            if (( $(echo "$change > 5" | bc -l 2>/dev/null) )); then
+                trend_icon="📈"
+                trend_class="trend-up"
+            elif (( $(echo "$change < -5" | bc -l 2>/dev/null) )); then
+                trend_icon="📉"
+                trend_class="trend-down"
+            fi
+            ;;
+        "channel_util"|"tx_util")
+            # For utilization, down is good, up is bad
+            if (( $(echo "$change > 10" | bc -l 2>/dev/null) )); then
+                trend_icon="📈"
+                trend_class="trend-up-bad"
+            elif (( $(echo "$change < -10" | bc -l 2>/dev/null) )); then
+                trend_icon="📉"
+                trend_class="trend-down-good"
+            fi
+            ;;
+        "snr"|"rssi")
+            if (( $(echo "$change > 10" | bc -l 2>/dev/null) )); then
+                trend_icon="📈"
+                trend_class="trend-up"
+            elif (( $(echo "$change < -10" | bc -l 2>/dev/null) )); then
+                trend_icon="📉"
+                trend_class="trend-down"
+            fi
+            ;;
+    esac
+    
+    # Format the change percentage
+    local change_str=""
+    if (( $(echo "$abs_change > 1" | bc -l 2>/dev/null) )); then
+        if (( $(echo "$change > 0" | bc -l 2>/dev/null) )); then
+            change_str=" (+${change}%)"
+        else
+            change_str=" (${change}%)"
+        fi
+    fi
+    
+    echo "<span class='trend-indicator $trend_class' title='Trend vs recent average${change_str}'>${trend_icon}</span>"
+}
+
 # Get weather predictions for a specific node (enhanced with ML)
 get_weather_predictions() {
     local node_id="$1"
@@ -508,6 +614,33 @@ generate_stats_html() {
         a { color: #1976d2; text-decoration: none; }
         a:hover { color: #0d47a1; text-decoration: underline; }
         a[title]:hover { cursor: help; }
+        
+        /* Smooth scrolling for navigation */
+        html { scroll-behavior: smooth; }
+        
+        /* Navigation link hover effects */
+        .nav-link { transition: transform 0.2s, box-shadow 0.2s; }
+        .nav-link:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1); 
+            text-decoration: none !important; 
+        }
+        
+        /* Trend indicator styles */
+        .trend-indicator {
+            font-size: 0.9em;
+            margin-left: 5px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .trend-up { color: #2e7d32; }
+        .trend-down { color: #c62828; }
+        .trend-up-bad { color: #c62828; } /* For utilization - up is bad */
+        .trend-down-good { color: #2e7d32; } /* For utilization - down is good */
+        .trend-indicator:hover {
+            transform: scale(1.2);
+            transition: transform 0.2s;
+        }
     </style>
     <script>
         function makeSortable(tableId) {
@@ -632,6 +765,20 @@ generate_stats_html() {
                 addTableFilter(table.id, placeholder);
             });
         });
+        
+        // Toggle section visibility
+        function toggleSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            const toggle = document.getElementById(sectionId + '-toggle');
+            
+            if (section.style.display === 'none') {
+                section.style.display = 'block';
+                toggle.textContent = '[click to collapse]';
+            } else {
+                section.style.display = 'none';
+                toggle.textContent = '[click to expand]';
+            }
+        }
     </script>
 </head>
 <body>
@@ -640,8 +787,22 @@ EOF
         echo "<h1>Meshtastic Telemetry Statistics</h1>"
         echo "<p><em>Last updated: $(date)</em></p>"
         
+        # Navigation Index
+        echo "<div style='background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #007bff;'>"
+        echo "<h3 style='margin-top: 0; color: #007bff;'>📍 Quick Navigation</h3>"
+        echo "<div style='display: flex; flex-wrap: wrap; gap: 15px;'>"
+        echo "<a href='#ml-status' class='nav-link' style='text-decoration: none; padding: 8px 12px; background: #e3f2fd; border-radius: 4px; color: #1976d2;'>🤖 ML Status</a>"
+        echo "<a href='#monitored-addresses' class='nav-link' style='text-decoration: none; padding: 8px 12px; background: #e8f5e9; border-radius: 4px; color: #388e3c;'>📊 Monitored Addresses</a>"
+        echo "<a href='#latest-telemetry' class='nav-link' style='text-decoration: none; padding: 8px 12px; background: #fff3e0; border-radius: 4px; color: #f57c00;'>📈 Latest Telemetry</a>"
+        echo "<a href='#telemetry-history' class='nav-link' style='text-decoration: none; padding: 8px 12px; background: #fce4ec; border-radius: 4px; color: #c2185b;'>📋 Telemetry History</a>"
+        echo "<a href='#current-nodes' class='nav-link' style='text-decoration: none; padding: 8px 12px; background: #f3e5f5; border-radius: 4px; color: #7b1fa2;'>🌐 Current Nodes</a>"
+        echo "<a href='#all-nodes' class='nav-link' style='text-decoration: none; padding: 8px 12px; background: #ede7f6; border-radius: 4px; color: #5e35b1;'>📡 All Nodes Ever Heard</a>"
+        echo "<a href='#weather-predictions' class='nav-link' style='text-decoration: none; padding: 8px 12px; background: #e0f7fa; border-radius: 4px; color: #00796b;'>☀️ Weather Predictions</a>"
+        echo "</div>"
+        echo "</div>"
+        
         # ML Learning Status Section
-        echo "<h2>🤖 Machine Learning Power Prediction Status</h2>"
+        echo "<h2 id='ml-status'>🤖 Machine Learning Power Prediction Status</h2>"
         
         # Check if ML system is active
         if [ -f "power_predictions.csv" ] && [ -f "prediction_accuracy.csv" ]; then
@@ -703,12 +864,11 @@ EOF
             echo "<p>Machine learning power predictor is collecting initial data. Improved predictions will be available after sufficient data is gathered.</p>"
             echo "</div>"
         fi
-        echo "<p>Generated: $(iso8601_date)</p>"
         
-        # Display monitored addresses with resolved names
-        echo "<h3>Monitored Addresses</h3>"
+        # Display monitored addresses with resolved names and success/failure rates
+        echo "<h3 id='monitored-addresses'>Monitored Addresses</h3>"
         echo "<table>"
-        echo "<tr><th>#</th><th>Address</th><th>Device Name</th></tr>"
+        echo "<tr><th>#</th><th>Address</th><th>Device Name</th><th>Success</th><th>Failures</th><th>Success Rate</th><th>Last Seen</th></tr>"
         index=1
         for addr in "${ADDRESSES[@]}"; do
             device_name="$(get_node_info "$addr")"
@@ -716,6 +876,45 @@ EOF
                 resolved_name="$device_name"
             else
                 resolved_name="Unknown"
+            fi
+            
+            # Calculate success/failure rates for this address
+            all_attempts=$(grep ",$addr," "$TELEMETRY_CSV" | sort -t',' -k1,1)
+            total_attempts=$(echo "$all_attempts" | wc -l)
+            
+            if [ "$total_attempts" -gt 0 ]; then
+                # Count success and failures
+                success_count=$(echo "$all_attempts" | awk -F',' '$3=="success"' | wc -l)
+                failure_count=$(echo "$all_attempts" | awk -F',' '$3!="success" && $3!=""' | wc -l)
+                
+                # Calculate success rate
+                success_rate=$(echo "scale=1; $success_count * 100 / $total_attempts" | bc 2>/dev/null)
+                success_rate="${success_rate}%"
+                
+                # Get latest timestamp
+                latest_timestamp=$(echo "$all_attempts" | tail -1 | cut -d',' -f1)
+                display_timestamp=$(echo "$latest_timestamp" | sed 's/:[0-9][0-9]+[0-9:+-]*$//')
+            else
+                success_count=0
+                failure_count=0
+                success_rate="N/A"
+                display_timestamp="Never"
+            fi
+            
+            # Color code success rate
+            if [ "$total_attempts" -gt 0 ]; then
+                success_rate_num=$(echo "$success_rate" | sed 's/%//')
+                if (( $(echo "$success_rate_num >= 90" | bc -l 2>/dev/null) )); then
+                    success_rate_class="good"
+                elif (( $(echo "$success_rate_num >= 70" | bc -l 2>/dev/null) )); then
+                    success_rate_class="normal"
+                elif (( $(echo "$success_rate_num >= 50" | bc -l 2>/dev/null) )); then
+                    success_rate_class="warning"
+                else
+                    success_rate_class="critical"
+                fi
+            else
+                success_rate_class="unknown"
             fi
             
             # Check if this address has GPS coordinates in the nodes CSV
@@ -745,6 +944,10 @@ EOF
             echo "<td class=\"number\">$index</td>"
             echo "<td class=\"address\">$addr</td>"
             echo "<td>$device_name_display</td>"
+            echo "<td class=\"number good\">$success_count</td>"
+            echo "<td class=\"number critical\">$failure_count</td>"
+            echo "<td class=\"number $success_rate_class\">$success_rate</td>"
+            echo "<td class=\"timestamp\">$display_timestamp</td>"
             echo "</tr>"
             index=$((index + 1))
         done
@@ -975,10 +1178,17 @@ EOF
             echo "<td class=\"number good\">$success_count</td>"
             echo "<td class=\"number critical\">$failure_count</td>"
             echo "<td class=\"number $success_rate_class\">$success_rate</td>"
-            echo "<td class=\"number $battery_class\">${latest_battery:-N/A}</td>"
-            echo "<td class=\"number $voltage_class\">${latest_voltage:-N/A}</td>"
-            echo "<td class=\"number $channel_util_class\">${latest_channel_util:-N/A}</td>"
-            echo "<td class=\"number $tx_util_class\">${latest_tx_util:-N/A}</td>"
+            
+            # Add trend indicators to key metrics
+            battery_trend=$(calculate_trend "$address" "battery" "$latest_battery")
+            voltage_trend=$(calculate_trend "$address" "voltage" "$latest_voltage")
+            channel_util_trend=$(calculate_trend "$address" "channel_util" "$latest_channel_util")
+            tx_util_trend=$(calculate_trend "$address" "tx_util" "$latest_tx_util")
+            
+            echo "<td class=\"number $battery_class\">${latest_battery:-N/A}${battery_trend}</td>"
+            echo "<td class=\"number $voltage_class\">${latest_voltage:-N/A}${voltage_trend}</td>"
+            echo "<td class=\"number $channel_util_class\">${latest_channel_util:-N/A}${channel_util_trend}</td>"
+            echo "<td class=\"number $tx_util_class\">${latest_tx_util:-N/A}${tx_util_trend}</td>"
             echo "<td class=\"number\">${latest_uptime:-N/A}</td>"
             echo "<td class=\"number $min_battery_class\">${min_battery:-N/A}</td>"
             echo "<td class=\"number $max_battery_class\">${max_battery:-N/A}</td>"
@@ -1025,7 +1235,7 @@ EOF
         echo "</table>"
 
         # Recent Telemetry Data
-        echo "<h2>Recent Telemetry Data (Last 20 Records)</h2>"
+        echo "<h2 id='latest-telemetry'>Recent Telemetry Data (Last 20 Records)</h2>"
         echo "<table>"
         echo "<tr><th>Timestamp</th><th>Address</th><th>Battery (%)</th><th>Voltage (V)</th><th>Channel Util (%)</th><th>Tx Util (%)</th><th>Uptime (s)</th></tr>"
         
@@ -1056,8 +1266,15 @@ EOF
         echo "</table>"
 
         # Per-Node History
-        echo "<h2>Telemetry History by Node</h2>"
+        echo "<h2 id='telemetry-history' onclick=\"toggleSection('telemetry-history')\" style=\"cursor: pointer; user-select: none;\">"
+        echo "📊 Telemetry History by Node <span id=\"telemetry-history-toggle\" style=\"font-size: 0.8em; color: #666;\">[click to expand]</span>"
+        echo "</h2>"
+        echo "<div id=\"telemetry-history\" style=\"display: none;\">"
         last_address=""
+        prev_battery=""
+        prev_voltage=""
+        prev_channel_util=""
+        prev_tx_util=""
         awk -F',' '$3=="success"' "$TELEMETRY_CSV" | sort -t',' -k2,2 -k1,1r | while IFS=',' read -r timestamp address status battery voltage channel_util tx_util uptime; do
             device_name="$(get_node_info "$address")"
             if [ -n "$device_name" ] && [ "$device_name" != "$address" ]; then
@@ -1075,6 +1292,11 @@ EOF
                 echo "<table>"
                 echo "<tr><th>Timestamp</th><th>Battery (%)</th><th>Voltage (V)</th><th>Channel Util (%)</th><th>Tx Util (%)</th><th>Uptime (s)</th></tr>"
                 last_address="$address"
+                # Reset previous values for new node
+                prev_battery=""
+                prev_voltage=""
+                prev_channel_util=""
+                prev_tx_util=""
             fi
             
             # Get CSS classes for color coding
@@ -1083,22 +1305,70 @@ EOF
             channel_util_class=$(get_value_class "$channel_util" "channel_util")
             tx_util_class=$(get_value_class "$tx_util" "tx_util")
             
+            # Calculate simple trend indicators compared to previous entry
+            battery_trend=""
+            voltage_trend=""
+            channel_util_trend=""
+            tx_util_trend=""
+            
+            if [ -n "$prev_battery" ] && [ -n "$battery" ] && [ "$battery" != "N/A" ] && [ "$prev_battery" != "N/A" ]; then
+                if (( $(echo "$battery > $prev_battery + 2" | bc -l 2>/dev/null) )); then
+                    battery_trend=" <span class='trend-indicator trend-up' title='Up from ${prev_battery}%'>📈</span>"
+                elif (( $(echo "$battery < $prev_battery - 2" | bc -l 2>/dev/null) )); then
+                    battery_trend=" <span class='trend-indicator trend-down' title='Down from ${prev_battery}%'>📉</span>"
+                fi
+            fi
+            
+            if [ -n "$prev_voltage" ] && [ -n "$voltage" ] && [ "$voltage" != "N/A" ] && [ "$prev_voltage" != "N/A" ]; then
+                if (( $(echo "$voltage > $prev_voltage + 0.1" | bc -l 2>/dev/null) )); then
+                    voltage_trend=" <span class='trend-indicator trend-up' title='Up from ${prev_voltage}V'>📈</span>"
+                elif (( $(echo "$voltage < $prev_voltage - 0.1" | bc -l 2>/dev/null) )); then
+                    voltage_trend=" <span class='trend-indicator trend-down' title='Down from ${prev_voltage}V'>📉</span>"
+                fi
+            fi
+            
+            if [ -n "$prev_channel_util" ] && [ -n "$channel_util" ] && [ "$channel_util" != "N/A" ] && [ "$prev_channel_util" != "N/A" ]; then
+                if (( $(echo "$channel_util > $prev_channel_util + 5" | bc -l 2>/dev/null) )); then
+                    channel_util_trend=" <span class='trend-indicator trend-up-bad' title='Up from ${prev_channel_util}%'>📈</span>"
+                elif (( $(echo "$channel_util < $prev_channel_util - 5" | bc -l 2>/dev/null) )); then
+                    channel_util_trend=" <span class='trend-indicator trend-down-good' title='Down from ${prev_channel_util}%'>📉</span>"
+                fi
+            fi
+            
+            if [ -n "$prev_tx_util" ] && [ -n "$tx_util" ] && [ "$tx_util" != "N/A" ] && [ "$prev_tx_util" != "N/A" ]; then
+                if (( $(echo "$tx_util > $prev_tx_util + 2" | bc -l 2>/dev/null) )); then
+                    tx_util_trend=" <span class='trend-indicator trend-up-bad' title='Up from ${prev_tx_util}%'>📈</span>"
+                elif (( $(echo "$tx_util < $prev_tx_util - 2" | bc -l 2>/dev/null) )); then
+                    tx_util_trend=" <span class='trend-indicator trend-down-good' title='Down from ${prev_tx_util}%'>📉</span>"
+                fi
+            fi
+            
             echo "<tr>"
             echo "<td class=\"timestamp\">$timestamp</td>"
-            echo "<td class=\"number $battery_class\">${battery:-N/A}</td>"
-            echo "<td class=\"number $voltage_class\">${voltage:-N/A}</td>"
-            echo "<td class=\"number $channel_util_class\">${channel_util:-N/A}</td>"
-            echo "<td class=\"number $tx_util_class\">${tx_util:-N/A}</td>"
+            echo "<td class=\"number $battery_class\">${battery:-N/A}${battery_trend}</td>"
+            echo "<td class=\"number $voltage_class\">${voltage:-N/A}${voltage_trend}</td>"
+            echo "<td class=\"number $channel_util_class\">${channel_util:-N/A}${channel_util_trend}</td>"
+            echo "<td class=\"number $tx_util_class\">${tx_util:-N/A}${tx_util_trend}</td>"
             echo "<td class=\"number\">${uptime:-N/A}</td>"
             echo "</tr>"
+            
+            # Store current values as previous for next iteration
+            prev_battery="$battery"
+            prev_voltage="$voltage"
+            prev_channel_util="$channel_util"
+            prev_tx_util="$tx_util"
         done
         if [ -n "$last_address" ]; then 
             echo "</table>"
         fi
+        echo "</div>"
 
         # Current Node List
         if [ -f "$NODES_CSV" ]; then
-            echo "<h2>Current Node List</h2>"
+            echo "<h2 id='current-nodes' onclick=\"toggleSection('current-nodes')\" style=\"cursor: pointer; user-select: none;\">"
+            echo "🌐 Current Node List <span id=\"current-nodes-toggle\" style=\"font-size: 0.8em; color: #666;\">[click to expand]</span>"
+            echo "</h2>"
+            echo "<div id=\"current-nodes\" style=\"display: none;\">"
             echo "<table>"
             echo "<tr><th>#</th><th>User</th><th>ID</th><th>Hardware</th><th>Battery (%)</th><th>Channel Util (%)</th><th>Last Heard</th></tr>"
             
@@ -1133,23 +1403,112 @@ EOF
                 battery_class=$(get_value_class "$battery" "battery")
                 channel_util_class=$(get_value_class "$channel_util" "channel_util")
                 
+                # Add trend indicators
+                battery_trend=$(calculate_trend "$id" "battery" "$battery")
+                channel_util_trend=$(calculate_trend "$id" "channel_util" "$channel_util")
+                
                 echo "<tr>"
                 echo "<td class=\"number\">$index</td>"
                 echo "<td>$user_display</td>"
                 echo "<td class=\"address\">$id</td>"
                 echo "<td>${hardware:-N/A}</td>"
-                echo "<td class=\"number $battery_class\">${battery:-N/A}</td>"
-                echo "<td class=\"number $channel_util_class\">${channel_util:-N/A}</td>"
+                echo "<td class=\"number $battery_class\">${battery:-N/A}${battery_trend}</td>"
+                echo "<td class=\"number $channel_util_class\">${channel_util:-N/A}${channel_util_trend}</td>"
                 echo "<td class=\"timestamp\">${lastheard:-N/A}</td>"
                 echo "</tr>"
                 index=$((index + 1))
             done
             echo "</table>"
+            echo "</div>"
         fi
         
+        # All Nodes Ever Heard Section
+        if [ -f "$NODES_CSV" ]; then
+            echo "<h2 id='all-nodes' onclick=\"toggleSection('all-nodes')\" style=\"cursor: pointer; user-select: none;\">"
+            echo "📡 All Nodes Ever Heard <span id=\"all-nodes-toggle\" style=\"font-size: 0.8em; color: #666;\">[click to expand]</span>"
+            echo "</h2>"
+            echo "<div id=\"all-nodes\" style=\"display: none;\">"
+            echo "<p><em>Comprehensive list of all nodes that have ever been detected on the mesh network, sorted by first appearance</em></p>"
+            echo "<table>"
+            echo "<tr><th>#</th><th>User</th><th>ID</th><th>Hardware</th><th>Role</th><th>GPS</th><th>First Heard</th><th>Last Heard</th><th>Status</th></tr>"
+            
+            # Get all unique nodes from nodes log, sorted by first appearance
+            index=1
+            tail -n +2 "$NODES_CSV" 2>/dev/null | awk -F',' '!seen[$2]++ {print}' | sort -t',' -k17,17 | while IFS=',' read -r user id aka hardware pubkey role latitude longitude altitude battery channel_util tx_util snr hops channel lastheard since; do
+                # Remove quotes if present
+                user=$(echo "$user" | sed 's/^"//;s/"$//')
+                hardware=$(echo "$hardware" | sed 's/^"//;s/"$//')
+                latitude=$(echo "$latitude" | sed 's/^"//;s/"$//')
+                longitude=$(echo "$longitude" | sed 's/^"//;s/"$//')
+                
+                # Check if GPS coordinates are valid
+                if [ -n "$latitude" ] && [ -n "$longitude" ] && \
+                   [ "$latitude" != "N/A" ] && [ "$longitude" != "N/A" ] && \
+                   [ "$latitude" != "0.0" ] && [ "$longitude" != "0.0" ] && \
+                   [ "$latitude" != "0" ] && [ "$longitude" != "0" ]; then
+                    gps_display="<a href=\"https://www.openstreetmap.org/?mlat=${latitude}&mlon=${longitude}&zoom=15\" target=\"_blank\" title=\"View on map\">${latitude}, ${longitude}</a>"
+                else
+                    gps_display="N/A"
+                fi
+                
+                # Determine node status based on last heard time
+                status="Unknown"
+                status_class="unknown"
+                if [ -n "$lastheard" ] && [ "$lastheard" != "N/A" ]; then
+                    current_time=$(date +%s)
+                    last_heard_time=$(date -d "$lastheard" +%s 2>/dev/null)
+                    if [ -n "$last_heard_time" ]; then
+                        time_diff=$((current_time - last_heard_time))
+                        hours_ago=$((time_diff / 3600))
+                        
+                        if [ $hours_ago -lt 1 ]; then
+                            status="🟢 Active"
+                            status_class="good"
+                        elif [ $hours_ago -lt 24 ]; then
+                            status="🟡 Recent"
+                            status_class="warning"
+                        elif [ $hours_ago -lt 168 ]; then  # 1 week
+                            status="🟠 Inactive"
+                            status_class="critical"
+                        else
+                            status="🔴 Offline"
+                            status_class="critical"
+                        fi
+                    fi
+                fi
+                
+                # Format first heard time
+                first_heard="${since:-N/A}"
+                if [ "$first_heard" != "N/A" ] && [ -n "$first_heard" ]; then
+                    first_heard=$(date -d "$first_heard" "+%Y-%m-%d %H:%M" 2>/dev/null || echo "$first_heard")
+                fi
+                
+                # Format last heard time
+                last_heard="${lastheard:-N/A}"
+                if [ "$last_heard" != "N/A" ] && [ -n "$last_heard" ]; then
+                    last_heard=$(date -d "$last_heard" "+%Y-%m-%d %H:%M" 2>/dev/null || echo "$last_heard")
+                fi
+                
+                echo "<tr>"
+                echo "<td class=\"number\">$index</td>"
+                echo "<td>${user:-N/A}</td>"
+                echo "<td class=\"address\">$id</td>"
+                echo "<td>${hardware:-N/A}</td>"
+                echo "<td>${role:-N/A}</td>"
+                echo "<td>$gps_display</td>"
+                echo "<td class=\"timestamp\">$first_heard</td>"
+                echo "<td class=\"timestamp\">$last_heard</td>"
+                echo "<td class=\"$status_class\">$status</td>"
+                echo "</tr>"
+                index=$((index + 1))
+            done
+            echo "</table>"
+            echo "</div>"
+        fi
+
         # Weather-based Energy Predictions Section
         if [[ -f "weather_predictions.json" ]]; then
-            echo "<h2>☀️ Weather-Based Energy Predictions</h2>"
+            echo "<h2 id='weather-predictions'>☀️ Weather-Based Energy Predictions</h2>"
             echo "<p><em>Solar energy predictions based on weather forecast and current battery levels</em></p>"
             echo "<table>"
             echo "<tr>"

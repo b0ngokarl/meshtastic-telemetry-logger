@@ -1,56 +1,111 @@
 #!/bin/bash
 
-# Weather Integration for Meshtastic Telemetry Logger
-# Provides weather-based solar energy predictions for nodes
+# Weather integration script for solar power predictions
+# Provides enhanced solar efficiency calculations with astronomical accuracy
 
 # Configuration
-WEATHER_API_KEY=""  # Get free API key from openweathermap.org
-WEATHER_CACHE_DIR="weather_cache"
-WEATHER_CACHE_DURATION=3600  # 1 hour in seconds
-PREDICTIONS_FILE="weather_predictions.json"
-
-# Solar panel efficiency factors (adjustable based on your setup)
-SOLAR_PANEL_WATTS=5  # Typical small solar panel wattage
-BATTERY_CAPACITY_MAH=18650  # Typical 18650 battery
-CONVERSION_EFFICIENCY=0.85  # Solar charging efficiency
-
-# Create weather cache directory
+WEATHER_API_KEY="${WEATHER_API_KEY:-}"
+WEATHER_CACHE_DIR="/tmp/weather_cache"
 mkdir -p "$WEATHER_CACHE_DIR"
 
-# Function to get weather data for coordinates
+# Default coordinates (Frankfurt, Germany)
+DEFAULT_LAT=50.1109
+DEFAULT_LON=8.6821
+
+# File for saving predictions
+PREDICTIONS_FILE="weather_predictions.json"
+
+# Calculate astronomical sunrise and sunset times
+calculate_sunrise_sunset() {
+    local lat="$1"
+    local lon="$2"
+    local day_of_year="${3:-$(date +%j)}"
+    
+    # Astronomical calculations for sunrise/sunset
+    # Based on solar angle calculations
+    
+    # Solar declination angle (degrees)
+    local declination=$(echo "scale=6; 23.45 * s((284 + $day_of_year) * 3.14159/180 * 365.25/365)" | bc -l)
+    
+    # Hour angle for sunrise/sunset
+    local lat_rad=$(echo "scale=6; $lat * 3.14159/180" | bc -l)
+    local decl_rad=$(echo "scale=6; $declination * 3.14159/180" | bc -l)
+    
+    # Hour angle calculation
+    local cos_hour_angle=$(echo "scale=6; -1 * (s($lat_rad) * s($decl_rad)) / (c($lat_rad) * c($decl_rad))" | bc -l)
+    
+    # Check for polar day/night conditions
+    local hour_angle_deg
+    if (( $(echo "$cos_hour_angle > 1" | bc -l) )); then
+        # Polar night
+        hour_angle_deg=0
+    elif (( $(echo "$cos_hour_angle < -1" | bc -l) )); then
+        # Polar day
+        hour_angle_deg=180
+    else
+        hour_angle_deg=$(echo "scale=6; a(sqrt(1 - $cos_hour_angle^2) / $cos_hour_angle) * 180/3.14159" | bc -l)
+        if (( $(echo "$hour_angle_deg < 0" | bc -l) )); then
+            hour_angle_deg=$(echo "180 + $hour_angle_deg" | bc -l)
+        fi
+    fi
+    
+    # Calculate sunrise and sunset times
+    local solar_noon=12
+    local sunrise_time=$(echo "scale=2; $solar_noon - $hour_angle_deg/15" | bc -l)
+    local sunset_time=$(echo "scale=2; $solar_noon + $hour_angle_deg/15" | bc -l)
+    
+    # Apply longitude correction (rough approximation)
+    local lon_correction=$(echo "scale=2; $lon/15" | bc -l)
+    sunrise_time=$(echo "scale=2; $sunrise_time - $lon_correction" | bc -l)
+    sunset_time=$(echo "scale=2; $sunset_time - $lon_correction" | bc -l)
+    
+    # Convert to hours and minutes
+    local sunrise_hour=$(echo "$sunrise_time" | cut -d. -f1)
+    local sunset_hour=$(echo "$sunset_time" | cut -d. -f1)
+    local sunrise_min=$(echo "scale=0; ($sunrise_time - $sunrise_hour) * 60" | bc -l)
+    local sunset_min=$(echo "scale=0; ($sunset_time - $sunset_hour) * 60" | bc -l)
+    
+    # Clamp values to valid ranges
+    sunrise_hour=$(echo "$sunrise_hour" | awk '{printf "%d", ($1 < 0) ? 0 : ($1 > 23) ? 23 : $1}')
+    sunset_hour=$(echo "$sunset_hour" | awk '{printf "%d", ($1 < 0) ? 0 : ($1 > 23) ? 23 : $1}')
+    sunrise_min=$(echo "$sunrise_min" | awk '{printf "%02d", ($1 < 0) ? 0 : ($1 > 59) ? 59 : $1}')
+    sunset_min=$(echo "$sunset_min" | awk '{printf "%02d", ($1 < 0) ? 0 : ($1 > 59) ? 59 : $1}')
+    
+    echo "${sunrise_hour}:${sunrise_min}:${sunset_hour}:${sunset_min}"
+}
+
+# Get weather data from API or cache
 get_weather_data() {
     local lat="$1"
     local lon="$2"
+    
     local cache_file="${WEATHER_CACHE_DIR}/weather_${lat}_${lon}.json"
     
-    # Check if cached data exists and is fresh
-    if [[ -f "$cache_file" ]]; then
-        local cache_age=$(($(date +%s) - $(stat -c %Y "$cache_file")))
-        if [[ $cache_age -lt $WEATHER_CACHE_DURATION ]]; then
-            cat "$cache_file"
-            return 0
-        fi
+    # Check cache (valid for 30 minutes)
+    if [[ -f "$cache_file" ]] && [[ $(($(date +%s) - $(stat -c %Y "$cache_file"))) -lt 1800 ]]; then
+        cat "$cache_file"
+        return 0
     fi
     
-    # Fetch fresh weather data
     if [[ -n "$WEATHER_API_KEY" ]]; then
         local weather_url="https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${WEATHER_API_KEY}&units=metric"
-        if curl -s "$weather_url" > "$cache_file"; then
+        
+        if curl -s "$weather_url" > "$cache_file.tmp"; then
+            mv "$cache_file.tmp" "$cache_file"
             cat "$cache_file"
-            return 0
+        else
+            echo "Error: Failed to fetch weather data" >&2
+            generate_mock_weather "$lat" "$lon"
         fi
+    else
+        generate_mock_weather "$lat" "$lon"
     fi
-    
-    # Fallback: generate mock weather data for demonstration
-    generate_mock_weather "$lat" "$lon" > "$cache_file"
-    cat "$cache_file"
 }
 
-# Generate mock weather data for demonstration purposes
+# Generate mock weather data when API is not available
 generate_mock_weather() {
     local lat="$1"
     local lon="$2"
-    local current_hour=$(date +%H)
     
     cat << EOF
 {
@@ -60,234 +115,256 @@ generate_mock_weather() {
             "main": {"temp": $((15 + RANDOM % 15))},
             "weather": [{"main": "$([ $((RANDOM % 3)) -eq 0 ] && echo "Clouds" || echo "Clear")", "description": "scattered clouds"}],
             "clouds": {"all": $((RANDOM % 100))},
-            "dt_txt": "$(date '+%Y-%m-%d %H:00:00')"
-        },
-        {
-            "dt": $(($(date +%s) + 10800)),
-            "main": {"temp": $((15 + RANDOM % 15))},
-            "weather": [{"main": "$([ $((RANDOM % 4)) -eq 0 ] && echo "Rain" || echo "Clear")", "description": "light rain"}],
-            "clouds": {"all": $((RANDOM % 100))},
-            "dt_txt": "$(date -d '+3 hours' '+%Y-%m-%d %H:00:00')"
+            "dt_txt": "$(date '+%Y-%m-%d %H:%M:%S')"
         },
         {
             "dt": $(($(date +%s) + 21600)),
             "main": {"temp": $((15 + RANDOM % 15))},
-            "weather": [{"main": "$([ $((RANDOM % 3)) -eq 0 ] && echo "Clouds" || echo "Clear")", "description": "clear sky"}],
+            "weather": [{"main": "$([ $((RANDOM % 3)) -eq 0 ] && echo "Clouds" || echo "Clear")", "description": "scattered clouds"}],
             "clouds": {"all": $((RANDOM % 100))},
-            "dt_txt": "$(date -d '+6 hours' '+%Y-%m-%d %H:00:00')"
+            "dt_txt": "$(date -d '+6 hours' '+%Y-%m-%d %H:%M:%S')"
+        },
+        {
+            "dt": $(($(date +%s) + 43200)),
+            "main": {"temp": $((15 + RANDOM % 15))},
+            "weather": [{"main": "$([ $((RANDOM % 3)) -eq 0 ] && echo "Clouds" || echo "Clear")", "description": "scattered clouds"}],
+            "clouds": {"all": $((RANDOM % 100))},
+            "dt_txt": "$(date -d '+12 hours' '+%Y-%m-%d %H:%M:%S')"
         }
     ]
 }
 EOF
 }
 
-# Calculate solar generation potential based on weather
-calculate_solar_generation() {
-    local weather_condition="$1"
-    local cloud_coverage="$2"
+# Calculate solar efficiency based on weather and sun position
+calculate_solar_efficiency() {
+    local lat="$1"
+    local lon="$2"
     local hour="$3"
-    local temperature="$4"
+    local clouds="$4"
+    local temp="$5"
     
-    # Base solar efficiency (0-1 scale)
-    local base_efficiency=1.0
+    # Get sunrise and sunset times
+    local sun_times=$(calculate_sunrise_sunset "$lat" "$lon")
+    local sunrise_hour=$(echo "$sun_times" | cut -d: -f1)
+    local sunrise_min=$(echo "$sun_times" | cut -d: -f2)
+    local sunset_hour=$(echo "$sun_times" | cut -d: -f3)
+    local sunset_min=$(echo "$sun_times" | cut -d: -f4)
     
-    # Adjust for weather conditions
-    case "$weather_condition" in
-        "Clear"|"Sunny") base_efficiency=1.0 ;;
-        "Clouds") base_efficiency=0.7 ;;
-        "Rain"|"Drizzle") base_efficiency=0.3 ;;
-        "Snow") base_efficiency=0.2 ;;
-        "Thunderstorm") base_efficiency=0.1 ;;
-        *) base_efficiency=0.8 ;;
-    esac
+    # Convert to decimal hours
+    local sunrise_decimal=$(echo "scale=2; $sunrise_hour + $sunrise_min/60" | bc -l)
+    local sunset_decimal=$(echo "scale=2; $sunset_hour + $sunset_min/60" | bc -l)
     
-    # Adjust for cloud coverage (0-100%)
-    local cloud_factor=$(echo "scale=2; 1 - ($cloud_coverage / 100) * 0.5" | bc)
-    
-    # Adjust for time of day (simplified sun angle)
-    local hour_factor=0
-    if [[ $hour -ge 6 && $hour -le 18 ]]; then
-        # Simplified solar curve: peak at noon, reduced at morning/evening
-        if [[ $hour -ge 10 && $hour -le 14 ]]; then
-            hour_factor=1.0
-        elif [[ $hour -ge 8 && $hour -le 16 ]]; then
-            hour_factor=0.8
-        else
-            hour_factor=0.4
-        fi
+    # Check if it's daylight
+    if (( $(echo "$hour < $sunrise_decimal || $hour > $sunset_decimal" | bc -l) )); then
+        echo "0"
+        return
     fi
     
-    # Temperature derating (solar panels lose efficiency when hot)
-    local temp_factor=1.0
-    if [[ $(echo "$temperature > 25" | bc) -eq 1 ]]; then
-        temp_factor=$(echo "scale=2; 1 - (($temperature - 25) * 0.004)" | bc)
+    # Calculate sun elevation angle
+    local solar_noon=12
+    local hour_angle=$(echo "scale=6; ($hour - $solar_noon) * 15" | bc -l)
+    local day_of_year=$(date +%j)
+    
+    # Solar declination angle
+    local declination=$(echo "scale=6; 23.45 * s((284 + $day_of_year) * 3.14159/180 * 365.25/365)" | bc -l)
+    
+    # Sun elevation calculation
+    local lat_rad=$(echo "scale=6; $lat * 3.14159/180" | bc -l)
+    local decl_rad=$(echo "scale=6; $declination * 3.14159/180" | bc -l)
+    local hour_angle_rad=$(echo "scale=6; $hour_angle * 3.14159/180" | bc -l)
+    
+    local sin_elevation=$(echo "scale=6; s($lat_rad) * s($decl_rad) + c($lat_rad) * c($decl_rad) * c($hour_angle_rad)" | bc -l)
+    local elevation_deg=$(echo "scale=6; a($sin_elevation / sqrt(1 - $sin_elevation^2)) * 180/3.14159" | bc -l)
+    
+    # Ensure elevation is positive
+    if (( $(echo "$elevation_deg < 0" | bc -l) )); then
+        echo "0"
+        return
     fi
     
-    # Calculate final generation percentage
-    local generation=$(echo "scale=2; $base_efficiency * $cloud_factor * $hour_factor * $temp_factor" | bc)
-    echo "$generation"
+    # Base efficiency from sun angle (0-100%)
+    local sun_efficiency=$(echo "scale=2; $elevation_deg / 90 * 100" | bc -l)
+    if (( $(echo "$sun_efficiency > 100" | bc -l) )); then
+        sun_efficiency=100
+    fi
+    
+    # Cloud factor (0-100% clouds reduces efficiency)
+    local cloud_factor=$(echo "scale=2; 100 - $clouds" | bc -l)
+    
+    # Temperature factor (optimal around 25°C)
+    local temp_factor=100
+    if (( $(echo "$temp > 25" | bc -l) )); then
+        temp_factor=$(echo "scale=2; 100 - ($temp - 25) * 0.5" | bc -l)
+    elif (( $(echo "$temp < 0" | bc -l) )); then
+        temp_factor=$(echo "scale=2; 100 + $temp * 0.5" | bc -l)
+    fi
+    
+    # Ensure factors are within reasonable bounds
+    cloud_factor=$(echo "$cloud_factor" | awk '{printf "%.2f", ($1 < 0) ? 0 : ($1 > 100) ? 100 : $1}')
+    temp_factor=$(echo "$temp_factor" | awk '{printf "%.2f", ($1 < 50) ? 50 : ($1 > 100) ? 100 : $1}')
+    
+    # Calculate final efficiency
+    local efficiency=$(echo "scale=2; $sun_efficiency * $cloud_factor/100 * $temp_factor/100" | bc -l)
+    
+    # Ensure result is within bounds
+    efficiency=$(echo "$efficiency" | awk '{printf "%.2f", ($1 < 0) ? 0 : ($1 > 100) ? 100 : $1}')
+    
+    echo "$efficiency"
 }
 
-# Predict battery level changes
+# Predict battery level based on current state and weather
 predict_battery_level() {
     local current_battery="$1"
-    local current_voltage="$2"
-    local weather_data="$3"
-    local node_id="$4"
+    local solar_efficiency="$2"
+    local hours="$3"
+    local lat="${4:-$DEFAULT_LAT}"
+    local lon="${5:-$DEFAULT_LON}"
     
-    # Parse current battery level
-    if [[ "$current_battery" == "Powered" ]]; then
-        echo "Powered (No prediction needed)"
-        return
+    # Cap battery at 100% if it's over 100%
+    if (( $(echo "$current_battery > 100" | bc -l) )); then
+        current_battery=100
     fi
     
-    # Extract numeric battery percentage
-    local battery_percent=$(echo "$current_battery" | grep -o '[0-9]\+' | head -1)
-    if [[ -z "$battery_percent" ]]; then
-        echo "Unknown battery level"
-        return
+    # Base power consumption per hour (assuming 2% per hour average)
+    local base_consumption=2
+    
+    # Solar generation factor (efficiency affects how much power is generated)
+    # Assume optimal solar panels can generate 5% battery per hour in full sun
+    local max_solar_generation=5
+    local actual_generation=$(echo "scale=2; $max_solar_generation * $solar_efficiency / 100" | bc -l)
+    
+    # Net change per hour
+    local net_change=$(echo "scale=2; $actual_generation - $base_consumption" | bc -l)
+    
+    # Calculate predicted battery level
+    local predicted=$(echo "scale=2; $current_battery + ($net_change * $hours)" | bc -l)
+    
+    # Ensure battery level stays within 0-100% bounds
+    if (( $(echo "$predicted < 0" | bc -l) )); then
+        predicted=0
+    elif (( $(echo "$predicted > 100" | bc -l) )); then
+        predicted=100
     fi
     
-    # Calculate energy consumption (rough estimate)
-    local hourly_consumption=2  # Rough estimate: 2% per hour for typical usage
-    
-    local predictions=""
-    local current_level=$battery_percent
-    
-    # Process weather forecast (3 time periods)
-    for i in 0 1 2; do
-        local forecast=$(echo "$weather_data" | jq -r ".list[$i] // empty")
-        if [[ -z "$forecast" ]]; then
-            break
-        fi
-        
-        local weather_main=$(echo "$forecast" | jq -r '.weather[0].main // "Clear"')
-        local cloud_coverage=$(echo "$forecast" | jq -r '.clouds.all // 20')
-        local temperature=$(echo "$forecast" | jq -r '.main.temp // 20')
-        local forecast_time=$(echo "$forecast" | jq -r '.dt_txt // ""')
-        local hour=$(date -d "$forecast_time" +%H 2>/dev/null || echo "12")
-        
-        # Calculate solar generation for this period
-        local solar_gen=$(calculate_solar_generation "$weather_main" "$cloud_coverage" "$hour" "$temperature")
-        
-        # Estimate energy gain from solar (rough calculation)
-        local solar_gain=$(echo "scale=1; $solar_gen * 8" | bc)  # Up to 8% gain per 3-hour period
-        
-        # Calculate net battery change
-        local net_change=$(echo "scale=1; $solar_gain - ($hourly_consumption * 3)" | bc)
-        current_level=$(echo "scale=0; $current_level + $net_change" | bc)
-        
-        # Constrain between 0-100%
-        if [[ $(echo "$current_level < 0" | bc) -eq 1 ]]; then
-            current_level=0
-        elif [[ $(echo "$current_level > 100" | bc) -eq 1 ]]; then
-            current_level=100
-        fi
-        
-        local time_label
-        case $i in
-            0) time_label="+3h" ;;
-            1) time_label="+6h" ;;
-            2) time_label="+9h" ;;
-        esac
-        
-        local status_icon="📊"
-        if [[ $(echo "$net_change > 0" | bc) -eq 1 ]]; then
-            status_icon="⚡"  # Charging
-        elif [[ $(echo "$net_change < -3" | bc) -eq 1 ]]; then
-            status_icon="🔋"  # Draining fast
-        else
-            status_icon="📉"  # Slow drain
-        fi
-        
-        predictions+="$time_label: ${current_level}% $status_icon ($weather_main, ${cloud_coverage}% clouds) | "
-    done
-    
-    echo "${predictions%% | }"
+    printf "%.1f" "$predicted"
 }
 
-# Generate weather report for all nodes with GPS coordinates
+# Generate comprehensive weather report with predictions
 generate_weather_report() {
     local nodes_csv="$1"
     local telemetry_csv="$2"
     local output_file="$3"
     
-    echo "Generating weather-based energy predictions..."
+    echo "Generating enhanced weather-based predictions..."
     
-    # Start JSON output
-    cat > "$output_file" << EOF
+    # Initialize JSON output
+    cat > "$output_file" << 'EOF'
 {
-    "generated": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+    "timestamp": "$(date -Iseconds)",
     "predictions": [
 EOF
     
     local first_entry=true
     
-    # Read nodes with GPS coordinates
-    tail -n +2 "$nodes_csv" | while IFS=',' read -r user id aka hardware pubkey role latitude longitude altitude battery channel_util tx_air_util snr hops channel lastheard since; do
-        # Clean up the fields (remove quotes if present)
-        user=$(echo "$user" | sed 's/^"//;s/"$//')
-        id=$(echo "$id" | sed 's/^"//;s/"$//')
-        latitude=$(echo "$latitude" | sed 's/^"//;s/"$//;s/°//')
-        longitude=$(echo "$longitude" | sed 's/^"//;s/"$//;s/°//')
-        
-        # Skip nodes without GPS coordinates
-        if [[ "$latitude" == "N/A" || "$longitude" == "N/A" || -z "$latitude" || -z "$longitude" ]]; then
+    # Process each node from the CSV
+    while IFS=',' read -r node_id longname lat lon altitude last_seen battery voltage snr rssi hop_start channel tx_power || [[ -n "$node_id" ]]; do
+        # Skip header line
+        if [[ "$node_id" == "node_id" ]]; then
             continue
         fi
         
-        # Skip invalid coordinates
-        if [[ "$latitude" == "0.0" || "$longitude" == "0.0" ]]; then
+        # Skip empty lines
+        if [[ -z "$node_id" ]]; then
             continue
         fi
         
-        # Validate coordinates are numeric
-        if ! [[ "$latitude" =~ ^-?[0-9]+\.?[0-9]*$ ]] || ! [[ "$longitude" =~ ^-?[0-9]+\.?[0-9]*$ ]]; then
-            continue
+        # Use default coordinates if not provided
+        lat="${lat:-$DEFAULT_LAT}"
+        lon="${lon:-$DEFAULT_LON}"
+        battery="${battery:-50}"
+        
+        # Validate coordinates
+        if ! [[ "$lat" =~ ^-?[0-9]+\.?[0-9]*$ ]] || ! [[ "$lon" =~ ^-?[0-9]+\.?[0-9]*$ ]]; then
+            lat="$DEFAULT_LAT"
+            lon="$DEFAULT_LON"
         fi
         
-        # Get latest telemetry data for this node
-        local latest_telemetry=$(grep -F ",$id," "$telemetry_csv" | tail -1)
-        local current_battery="Unknown"
-        local current_voltage="Unknown"
+        echo "Processing node: $node_id at coordinates ($lat, $lon)..."
         
-        if [[ -n "$latest_telemetry" ]]; then
-            current_battery=$(echo "$latest_telemetry" | cut -d',' -f4)
-            current_voltage=$(echo "$latest_telemetry" | cut -d',' -f5)
-        fi
+        # Get weather data
+        local weather_data=$(get_weather_data "$lat" "$lon")
         
-        # Get weather data for this location
-        local weather_data=$(get_weather_data "$latitude" "$longitude")
+        # Extract weather information for different time periods
+        local temp_6h=$(echo "$weather_data" | jq -r '.list[0].main.temp // 20')
+        local clouds_6h=$(echo "$weather_data" | jq -r '.list[0].clouds.all // 50')
+        local temp_12h=$(echo "$weather_data" | jq -r '.list[1].main.temp // 20')
+        local clouds_12h=$(echo "$weather_data" | jq -r '.list[1].clouds.all // 50')
+        local temp_24h=$(echo "$weather_data" | jq -r '.list[2].main.temp // 20')
+        local clouds_24h=$(echo "$weather_data" | jq -r '.list[2].clouds.all // 50')
         
-        # Generate prediction
-        local prediction=$(predict_battery_level "$current_battery" "$current_voltage" "$weather_data" "$id")
+        # Calculate solar efficiency for different times
+        local current_hour=$(date +%H)
+        local efficiency_6h=$(calculate_solar_efficiency "$lat" "$lon" "$((current_hour + 6))" "$clouds_6h" "$temp_6h")
+        local efficiency_12h=$(calculate_solar_efficiency "$lat" "$lon" "$((current_hour + 12))" "$clouds_12h" "$temp_12h")
+        local efficiency_24h=$(calculate_solar_efficiency "$lat" "$lon" "$current_hour" "$clouds_24h" "$temp_24h")
         
-        # Add to JSON output
-        if [[ "$first_entry" != "true" ]]; then
+        # Get sunrise/sunset times
+        local sun_times=$(calculate_sunrise_sunset "$lat" "$lon")
+        local sunrise=$(echo "$sun_times" | cut -d: -f1-2 | tr ':' ':')
+        local sunset=$(echo "$sun_times" | cut -d: -f3-4 | tr ':' ':')
+        
+        # Predict battery levels
+        local battery_6h=$(predict_battery_level "$battery" "$efficiency_6h" "6" "$lat" "$lon")
+        local battery_12h=$(predict_battery_level "$battery" "$efficiency_12h" "12" "$lat" "$lon")
+        local battery_24h=$(predict_battery_level "$battery" "$efficiency_24h" "24" "$lat" "$lon")
+        
+        # Add comma if not first entry
+        if [[ "$first_entry" != true ]]; then
             echo "," >> "$output_file"
         fi
         first_entry=false
         
+        # Write prediction to JSON
         cat >> "$output_file" << EOF
         {
-            "node_id": "$id",
-            "user": "$(echo "$user" | sed 's/"/\\"/g')",
-            "location": {
-                "latitude": $latitude,
-                "longitude": $longitude
+            "node_id": "$node_id",
+            "longname": "$longname",
+            "coordinates": {
+                "lat": $lat,
+                "lon": $lon
             },
-            "current_battery": "$current_battery",
-            "prediction": "$prediction",
-            "last_updated": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            "current_battery": $battery,
+            "sunrise": "$sunrise",
+            "sunset": "$sunset",
+            "predictions": {
+                "6h": {
+                    "battery_level": $battery_6h,
+                    "solar_efficiency": $efficiency_6h,
+                    "temperature": $temp_6h,
+                    "clouds": $clouds_6h
+                },
+                "12h": {
+                    "battery_level": $battery_12h,
+                    "solar_efficiency": $efficiency_12h,
+                    "temperature": $temp_12h,
+                    "clouds": $clouds_12h
+                },
+                "24h": {
+                    "battery_level": $battery_24h,
+                    "solar_efficiency": $efficiency_24h,
+                    "temperature": $temp_24h,
+                    "clouds": $clouds_24h
+                }
+            }
         }
 EOF
-    done
+        
+    done < "$nodes_csv"
     
     # Close JSON
-    cat >> "$output_file" << 'EOF'
-    ]
-}
-EOF
+    echo '    ]' >> "$output_file"
+    echo '}' >> "$output_file"
     
     echo "Weather predictions saved to $output_file"
 }
@@ -304,8 +381,7 @@ main() {
     fi
     
     if [[ ! -f "$telemetry_csv" ]]; then
-        echo "Error: Telemetry CSV file not found: $telemetry_csv"
-        exit 1
+        echo "Warning: Telemetry CSV file not found: $telemetry_csv"
     fi
     
     # Check for required tools

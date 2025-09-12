@@ -227,6 +227,10 @@ check_prediction_accuracy() {
             local actual_battery=$(grep ",$node_id,success" "$TELEMETRY_LOG" | tail -1 | cut -d',' -f4)
             
             if [[ -n "$actual_battery" && "$actual_battery" != "" ]]; then
+                # Cap actual battery at 100% for accuracy calculations
+                if (( $(echo "$actual_battery > 100" | bc -l 2>/dev/null) )); then
+                    actual_battery=100
+                fi
                 local predicted_value
                 case $hours_diff in
                     6)  predicted_value="$pred_6h" ;;
@@ -257,6 +261,10 @@ generate_ml_predictions() {
         local current_battery=$(echo "$latest_data" | cut -d',' -f4)
         
         if [[ -n "$current_battery" && "$current_battery" != "" ]]; then
+            # Cap battery at 100% - treat 101%+ as fully charged
+            if (( $(echo "$current_battery > 100" | bc -l 2>/dev/null) )); then
+                current_battery=100
+            fi
             # Get node location and weather
             local location=$(get_node_location "$node_id")
             local lat=$(echo "$location" | cut -d',' -f1)
