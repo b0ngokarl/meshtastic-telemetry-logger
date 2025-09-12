@@ -548,36 +548,20 @@ run_telemetry() {
     echo "$ts,$addr,$status,$battery,$voltage,$channel_util,$tx_util,$uptime"
 }
 
-# Parallel telemetry collection function
-run_telemetry_parallel() {
+# Sequential telemetry collection function
+run_telemetry_sequential() {
     local ts
     ts=$(iso8601_date)
-    local temp_results="/tmp/telemetry_results_$$"
     
-    debug_log "Starting parallel telemetry collection for ${#ADDRESSES[@]} nodes at $ts"
+    debug_log "Starting sequential telemetry collection for ${#ADDRESSES[@]} nodes at $ts"
     
-    # Start background processes for each address
-    local pids=()
+    # Process each address sequentially (serial port can only be used by one process)
     for addr in "${ADDRESSES[@]}"; do
-        {
-            result=$(run_telemetry "$addr" "$ts")
-            echo "$result" >> "$temp_results"
-        } &
-        pids+=($!)
+        result=$(run_telemetry "$addr" "$ts")
+        echo "$result" >> "$TELEMETRY_CSV"
     done
     
-    # Wait for all background processes to complete
-    for pid in "${pids[@]}"; do
-        wait "$pid"
-    done
-    
-    # Append all results to telemetry CSV in one operation
-    if [ -f "$temp_results" ]; then
-        cat "$temp_results" >> "$TELEMETRY_CSV"
-        rm -f "$temp_results"
-    fi
-    
-    debug_log "Parallel telemetry collection completed"
+    debug_log "Sequential telemetry collection completed"
 }
 
 update_nodes_log() {
@@ -1724,8 +1708,8 @@ EOF
 
 # ---- MAIN LOOP ----
 while true; do
-    # Use parallel telemetry collection instead of sequential
-    run_telemetry_parallel
+    # Use sequential telemetry collection (serial port limitation)
+    run_telemetry_sequential
     
     # Update nodes and generate HTML
     update_nodes_log

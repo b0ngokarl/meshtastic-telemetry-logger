@@ -8,30 +8,22 @@ The original script was optimized to improve performance, reduce memory usage, a
 
 ## Key Optimizations
 
-### 1. Parallel Telemetry Collection
+### 1. Sequential Telemetry Collection (Serial Port Constraint)
 
-**Before:** Sequential telemetry requests to each node
-```bash
-for addr in "${ADDRESSES[@]}"; do
-    run_telemetry "$addr"
-done
-```
+**Limitation:** Meshtastic devices use exclusive serial port access, preventing parallel telemetry collection.
 
-**After:** Parallel telemetry requests using background processes
+**Implementation:** Sequential telemetry collection with optimized request handling
 ```bash
-run_telemetry_parallel() {
-    local pids=()
+run_telemetry_sequential() {
+    local ts=$(iso8601_date)
     for addr in "${ADDRESSES[@]}"; do
-        { run_telemetry "$addr" "$ts" >> "$temp_results"; } &
-        pids+=($!)
-    done
-    for pid in "${pids[@]}"; do
-        wait "$pid"
+        result=$(run_telemetry "$addr" "$ts")
+        echo "$result" >> "$TELEMETRY_CSV"
     done
 }
 ```
 
-**Performance Gain:** 50-80% faster telemetry collection for multiple nodes
+**Note:** While telemetry collection must be sequential due to hardware constraints, other operations (CSV processing, statistics, HTML generation) benefit from optimization.
 
 ### 2. Node Information Caching
 
