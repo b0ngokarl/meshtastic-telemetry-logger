@@ -182,6 +182,64 @@ compute_telemetry_stats() {
     echo "$temp_stats"
 }
 
+# Function to convert seconds to hours with appropriate formatting
+convert_uptime_to_hours() {
+    local uptime_seconds="$1"
+    
+    # Return N/A if empty or not a number
+    if [ -z "$uptime_seconds" ] || [ "$uptime_seconds" = "N/A" ] || ! [[ "$uptime_seconds" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
+        echo "N/A"
+        return
+    fi
+    
+    # Convert seconds to different units based on magnitude
+    if (( $(echo "$uptime_seconds < 60" | bc -l 2>/dev/null) )); then
+        # Less than 1 minute - show seconds
+        echo "${uptime_seconds}s"
+    elif (( $(echo "$uptime_seconds < 3600" | bc -l 2>/dev/null) )); then
+        # Less than 1 hour - show minutes
+        local minutes=$(echo "scale=0; $uptime_seconds / 60" | bc -l 2>/dev/null)
+        echo "${minutes}m"
+    elif (( $(echo "$uptime_seconds < 86400" | bc -l 2>/dev/null) )); then
+        # Less than 24 hours - show hours and minutes
+        local hours=$(echo "scale=0; $uptime_seconds / 3600" | bc -l 2>/dev/null)
+        local remaining_minutes=$(echo "scale=0; ($uptime_seconds % 3600) / 60" | bc -l 2>/dev/null)
+        if [ "$remaining_minutes" -gt 0 ]; then
+            echo "${hours}h${remaining_minutes}m"
+        else
+            echo "${hours}h"
+        fi
+    else
+        # 24 hours or more - show days and hours
+        local days=$(echo "scale=0; $uptime_seconds / 86400" | bc -l 2>/dev/null)
+        local remaining_hours=$(echo "scale=0; ($uptime_seconds % 86400) / 3600" | bc -l 2>/dev/null)
+        if [ "$remaining_hours" -gt 0 ]; then
+            echo "${days}d${remaining_hours}h"
+        else
+            echo "${days}d"
+        fi
+    fi
+}
+
+# Function to format timestamps for human readability
+format_human_time() {
+    local timestamp="$1"
+    
+    if [ -z "$timestamp" ] || [ "$timestamp" = "Never" ] || [ "$timestamp" = "N/A" ]; then
+        echo "$timestamp"
+        return
+    fi
+    
+    # Try to parse the timestamp and format it nicely
+    local parsed_date
+    if parsed_date=$(date -d "$timestamp" "+%Y-%m-%d %H:%M" 2>/dev/null); then
+        echo "$parsed_date"
+    else
+        # Fallback: just remove seconds and timezone info for shorter display
+        echo "$timestamp" | sed 's/:[0-9][0-9]+[0-9:+-]*$//' | sed 's/T/ /'
+    fi
+}
+
 # Function to get CSS class for value-based color coding
 get_value_class() {
     local value="$1"
@@ -213,26 +271,31 @@ get_value_class() {
             fi
             ;;
         "channel_util")
+            # Channel utilization: 25% starts queuing packets, higher values indicate network congestion
             if (( $(echo "$value >= 80" | bc -l 2>/dev/null) )); then
-                echo "util-very-high"
+                echo "util-very-high"   # Very high - severe congestion
             elif (( $(echo "$value >= 50" | bc -l 2>/dev/null) )); then
-                echo "util-high"
+                echo "util-high"        # High - significant congestion  
             elif (( $(echo "$value >= 25" | bc -l 2>/dev/null) )); then
-                echo "warning"
+                echo "util-medium"      # Medium - packets start queuing
+            elif (( $(echo "$value >= 15" | bc -l 2>/dev/null) )); then
+                echo "warning"          # Warning - elevated usage
             else
-                echo "normal"
+                echo "normal"           # Normal - low usage
             fi
             ;;
         "tx_util")
-            # 10% per hour airtime limitation - be much more strict
-            if (( $(echo "$value >= 8" | bc -l 2>/dev/null) )); then
-                echo "util-very-high"  # Critical - approaching 10% limit
+            # TX utilization: 10% per hour airtime limitation - node stops sending at 10%
+            if (( $(echo "$value >= 10" | bc -l 2>/dev/null) )); then
+                echo "util-critical"    # Critical - node stops transmitting
+            elif (( $(echo "$value >= 8" | bc -l 2>/dev/null) )); then
+                echo "util-very-high"   # Very high - approaching limit
             elif (( $(echo "$value >= 5" | bc -l 2>/dev/null) )); then
-                echo "util-high"       # High - getting close to limit
+                echo "util-high"        # High - getting close to limit
             elif (( $(echo "$value >= 2" | bc -l 2>/dev/null) )); then
-                echo "warning"         # Warning - moderate usage
+                echo "warning"          # Warning - moderate usage
             else
-                echo "normal"          # Normal - low usage
+                echo "normal"           # Normal - low usage
             fi
             ;;
         "time_left")
@@ -278,12 +341,23 @@ get_ml_predictions() {
         
         if [ -n "$latest_prediction" ]; then
             # Parse CSV: timestamp,node_id,current_battery,predicted_6h,predicted_12h,predicted_24h,weather_desc,cloud_cover,solar_efficiency
-            pred_6h=$(echo "$latest_prediction" | cut -d',' -f4)
-            pred_12h=$(echo "$latest_prediction" | cut -d',' -f5)
-            pred_24h=$(echo "$latest_prediction" | cut -d',' -f6)
+            local raw_6h=$(echo "$latest_prediction" | cut -d',' -f4)
+            local raw_12h=$(echo "$latest_prediction" | cut -d',' -f5)
+            local raw_24h=$(echo "$latest_prediction" | cut -d',' -f6)
             
-            # Add percentage signs and determine icons based on trend
-            if [ -n "$pred_6h" ] && [ "$pred_6h" != "" ]; then
+            # Validate that predictions are numeric and not empty
+            if [[ "$raw_6h" =~ ^[0-9]+(\.[0-9]+)?$ ]] && [ -n "$raw_6h" ]; then
+                pred_6h="$raw_6h"
+            fi
+            if [[ "$raw_12h" =~ ^[0-9]+(\.[0-9]+)?$ ]] && [ -n "$raw_12h" ]; then
+                pred_12h="$raw_12h"
+            fi
+            if [[ "$raw_24h" =~ ^[0-9]+(\.[0-9]+)?$ ]] && [ -n "$raw_24h" ]; then
+                pred_24h="$raw_24h"
+            fi
+            
+            # Add percentage signs and determine icons based on trend only if we have valid predictions
+            if [ "$pred_6h" != "N/A" ] && [ "$pred_12h" != "N/A" ] && [ "$pred_24h" != "N/A" ]; then
                 local current_battery=$(echo "$latest_prediction" | cut -d',' -f3)
                 local trend_6h=$(echo "scale=2; $pred_6h - $current_battery" | bc 2>/dev/null)
                 local trend_12h=$(echo "scale=2; $pred_12h - $current_battery" | bc 2>/dev/null)
@@ -730,32 +804,94 @@ generate_stats_html() {
         
         /* Sortable table styles */
         .sort-indicator { float: right; font-size: 12px; margin-left: 5px; }
-        .sort-asc::after { content: ' ▲'; }
-        .sort-desc::after { content: ' ▼'; }
+        .sort-asc::after { content: ' ▲'; color: #4caf50; }
+        .sort-desc::after { content: ' ▼'; color: #f44336; }
+        th.sortable { 
+            background: linear-gradient(135deg, #f2f2f2, #e8e8e8); 
+            transition: all 0.2s ease;
+        }
+        th.sortable:hover { 
+            background: linear-gradient(135deg, #e8e8e8, #ddd); 
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
         
-        /* Filter styles */
-        .filter-container { margin: 10px 0; }
+        /* Enhanced filter styles */
+        .filter-container { 
+            margin: 15px 0; 
+            padding: 10px; 
+            background: #f8f9fa; 
+            border-radius: 5px; 
+            border-left: 4px solid #007bff;
+        }
         .filter-input { 
-            padding: 5px; 
+            padding: 8px 12px; 
             margin: 5px; 
             border: 1px solid #ddd; 
-            border-radius: 3px; 
+            border-radius: 4px; 
             font-size: 14px;
+            width: 300px;
+            transition: border-color 0.2s ease;
+        }
+        .filter-input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
         }
         .filter-label { 
             font-weight: bold; 
-            margin-right: 5px; 
+            margin-right: 10px; 
+            color: #495057;
         }
         .clear-filters { 
-            background: #f44336; 
+            background: #dc3545; 
             color: white; 
             border: none; 
-            padding: 5px 10px; 
-            border-radius: 3px; 
+            padding: 8px 12px; 
+            border-radius: 4px; 
             cursor: pointer; 
             margin-left: 10px;
+            transition: background 0.2s ease;
         }
-        .clear-filters:hover { background: #d32f2f; }
+        .clear-filters:hover { 
+            background: #c82333; 
+            transform: translateY(-1px);
+        }
+        
+        /* Global controls styling */
+        .global-controls {
+            position: fixed; 
+            top: 10px; 
+            right: 10px; 
+            z-index: 1000; 
+            background: white; 
+            padding: 12px; 
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            font-family: Arial, sans-serif;
+        }
+        .global-controls button {
+            margin: 0 3px;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+        .global-controls button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        /* Table row highlighting */
+        tbody tr:hover {
+            background-color: #fff3cd !important;
+            transition: background-color 0.2s ease;
+        }
+        
+        /* Responsive table improvements */
+        @media (max-width: 768px) {
+            .filter-input { width: 200px; }
+            .global-controls { position: relative; top: auto; right: auto; margin: 10px 0; }
+        }
         
         /* Hide rows when filtering */
         .hidden-row { display: none !important; }
@@ -801,7 +937,17 @@ generate_stats_html() {
             
             headers.forEach((header, index) => {
                 header.addEventListener('click', () => sortTable(tableId, index));
+                header.classList.add('sortable');
                 header.style.cursor = 'pointer';
+                header.title = 'Click to sort by ' + header.textContent.trim();
+                
+                // Add visual indicator that column is sortable
+                if (!header.querySelector('.sort-indicator')) {
+                    const indicator = document.createElement('span');
+                    indicator.className = 'sort-indicator';
+                    indicator.textContent = '⇅';
+                    header.appendChild(indicator);
+                }
             });
         }
         
@@ -821,20 +967,61 @@ generate_stats_html() {
             header.dataset.sortDirection = isAscending ? 'asc' : 'desc';
             header.classList.add(isAscending ? 'sort-asc' : 'sort-desc');
             
-            // Sort rows
+            // Sort rows with enhanced type detection
             rows.sort((a, b) => {
-                const aText = a.cells[columnIndex]?.textContent.trim() || '';
-                const bText = b.cells[columnIndex]?.textContent.trim() || '';
-                
-                // Handle numeric values
-                const aNum = parseFloat(aText.replace(/[^\d.-]/g, ''));
-                const bNum = parseFloat(bText.replace(/[^\d.-]/g, ''));
+                const aCell = a.cells[columnIndex];
+                const bCell = b.cells[columnIndex];
+                const aText = aCell?.textContent.trim() || '';
+                const bText = bCell?.textContent.trim() || '';
                 
                 let comparison = 0;
-                if (!isNaN(aNum) && !isNaN(bNum)) {
-                    comparison = aNum - bNum;
+                
+                // Handle special cases - sort N/A and unknown values to bottom
+                if ((aText === 'N/A' || aText.toLowerCase() === 'unknown') && (bText === 'N/A' || bText.toLowerCase() === 'unknown')) return 0;
+                if (aText === 'N/A' || aText.toLowerCase() === 'unknown') return isAscending ? 1 : -1;
+                if (bText === 'N/A' || bText.toLowerCase() === 'unknown') return isAscending ? -1 : 1;
+                
+                // Detect column type and sort accordingly
+                const columnHeader = header.textContent.toLowerCase();
+                
+                if (columnHeader.includes('timestamp') || columnHeader.includes('last seen')) {
+                    // Date/time sorting
+                    const aDate = new Date(aText);
+                    const bDate = new Date(bText);
+                    if (!isNaN(aDate) && !isNaN(bDate)) {
+                        comparison = aDate - bDate;
+                    } else {
+                        comparison = aText.localeCompare(bText);
+                    }
+                } else if (columnHeader.includes('address')) {
+                    // Address sorting (handle device names vs addresses)
+                    const aAddr = aText.includes('!') ? aText.split('(')[1]?.replace(')', '') || aText : aText;
+                    const bAddr = bText.includes('!') ? bText.split('(')[1]?.replace(')', '') || bText : bText;
+                    comparison = aAddr.localeCompare(bAddr);
+                } else if (columnHeader.includes('rate') || columnHeader.includes('%')) {
+                    // Percentage sorting
+                    const aNum = parseFloat(aText.replace(/[%\s]/g, ''));
+                    const bNum = parseFloat(bText.replace(/[%\s]/g, ''));
+                    if (!isNaN(aNum) && !isNaN(bNum)) {
+                        comparison = aNum - bNum;
+                    } else {
+                        comparison = aText.localeCompare(bText);
+                    }
+                } else if (columnHeader.includes('uptime')) {
+                    // Uptime sorting (handle d/h/m formats)
+                    const aSeconds = parseUptimeToSeconds(aText);
+                    const bSeconds = parseUptimeToSeconds(bText);
+                    comparison = aSeconds - bSeconds;
                 } else {
-                    comparison = aText.localeCompare(bText);
+                    // Try numeric first, then text
+                    const aNum = parseFloat(aText.replace(/[^\d.-]/g, ''));
+                    const bNum = parseFloat(bText.replace(/[^\d.-]/g, ''));
+                    
+                    if (!isNaN(aNum) && !isNaN(bNum)) {
+                        comparison = aNum - bNum;
+                    } else {
+                        comparison = aText.localeCompare(bText, undefined, { numeric: true });
+                    }
                 }
                 
                 return isAscending ? comparison : -comparison;
@@ -842,6 +1029,22 @@ generate_stats_html() {
             
             // Reorder DOM
             rows.forEach(row => tbody.appendChild(row));
+        }
+        
+        // Helper function to convert uptime formats to seconds for comparison
+        function parseUptimeToSeconds(uptimeStr) {
+            if (!uptimeStr || uptimeStr === 'N/A') return 0;
+            
+            let seconds = 0;
+            const dayMatch = uptimeStr.match(/(\d+)d/);
+            const hourMatch = uptimeStr.match(/(\d+(?:\.\d+)?)h/);
+            const minMatch = uptimeStr.match(/(\d+)m/);
+            
+            if (dayMatch) seconds += parseInt(dayMatch[1]) * 24 * 3600;
+            if (hourMatch) seconds += parseFloat(hourMatch[1]) * 3600;
+            if (minMatch) seconds += parseInt(minMatch[1]) * 60;
+            
+            return seconds;
         }
         
         function addTableFilter(tableId, placeholder = 'Filter table...') {
@@ -881,6 +1084,7 @@ generate_stats_html() {
             const tbody = table.querySelector('tbody') || table;
             const rows = tbody.querySelectorAll('tr');
             const searchTerm = filterValue.toLowerCase();
+            let visibleCount = 0;
             
             rows.forEach((row, index) => {
                 if (index === 0) return; // Skip header row
@@ -888,10 +1092,81 @@ generate_stats_html() {
                 const text = row.textContent.toLowerCase();
                 if (text.includes(searchTerm)) {
                     row.classList.remove('hidden-row');
+                    visibleCount++;
+                    
+                    // Highlight matching text
+                    if (searchTerm && searchTerm.length > 1) {
+                        highlightMatches(row, searchTerm);
+                    } else {
+                        removeHighlights(row);
+                    }
                 } else {
                     row.classList.add('hidden-row');
+                    removeHighlights(row);
                 }
             });
+            
+            // Update filter info
+            updateFilterInfo(tableId, visibleCount, rows.length - 1);
+        }
+        
+        function highlightMatches(row, searchTerm) {
+            const walker = document.createTreeWalker(
+                row,
+                NodeFilter.SHOW_TEXT,
+                null,
+                false
+            );
+            
+            const textNodes = [];
+            let node;
+            while (node = walker.nextNode()) {
+                textNodes.push(node);
+            }
+            
+            textNodes.forEach(textNode => {
+                const text = textNode.textContent;
+                const lowText = text.toLowerCase();
+                const index = lowText.indexOf(searchTerm);
+                
+                if (index !== -1) {
+                    const beforeText = text.substring(0, index);
+                    const matchText = text.substring(index, index + searchTerm.length);
+                    const afterText = text.substring(index + searchTerm.length);
+                    
+                    const span = document.createElement('span');
+                    span.innerHTML = beforeText + 
+                        '<mark style="background: #ffeb3b; padding: 1px 2px; border-radius: 2px;">' + 
+                        matchText + '</mark>' + afterText;
+                    
+                    textNode.parentNode.replaceChild(span, textNode);
+                }
+            });
+        }
+        
+        function removeHighlights(row) {
+            const highlights = row.querySelectorAll('mark');
+            highlights.forEach(mark => {
+                mark.outerHTML = mark.textContent;
+            });
+        }
+        
+        function updateFilterInfo(tableId, visibleCount, totalCount) {
+            const filterContainer = document.querySelector(`#${tableId}`).previousElementSibling;
+            let infoSpan = filterContainer.querySelector('.filter-info');
+            
+            if (!infoSpan) {
+                infoSpan = document.createElement('span');
+                infoSpan.className = 'filter-info';
+                infoSpan.style.cssText = 'margin-left: 10px; font-size: 12px; color: #6c757d;';
+                filterContainer.appendChild(infoSpan);
+            }
+            
+            if (visibleCount === totalCount) {
+                infoSpan.textContent = '';
+            } else {
+                infoSpan.textContent = `(showing ${visibleCount} of ${totalCount} rows)`;
+            }
         }
         
         // Initialize sortable tables when page loads
@@ -900,21 +1175,141 @@ generate_stats_html() {
             const tables = document.querySelectorAll('table');
             tables.forEach((table, index) => {
                 if (!table.id) {
-                    table.id = 'table-' + index;
+                    // Assign meaningful IDs based on context
+                    const prevHeading = table.previousElementSibling;
+                    let id = 'table-' + index;
+                    
+                    if (prevHeading && prevHeading.tagName && prevHeading.tagName.match(/^H[1-6]$/)) {
+                        const headingText = prevHeading.textContent.toLowerCase();
+                        if (headingText.includes('summary statistics')) {
+                            id = 'summary-table';
+                        } else if (headingText.includes('recent telemetry')) {
+                            id = 'recent-table';
+                        } else if (headingText.includes('monitored addresses')) {
+                            id = 'monitored-table';
+                        } else if (headingText.includes('current nodes')) {
+                            id = 'current-nodes-table';
+                        } else if (headingText.includes('all nodes')) {
+                            id = 'all-nodes-table';
+                        } else if (headingText.includes('ml status')) {
+                            id = 'ml-status-table';
+                        } else if (headingText.includes('weather')) {
+                            id = 'weather-table';
+                        }
+                    }
+                    
+                    table.id = id;
                 }
                 makeSortable(table.id);
                 
                 // Add appropriate filter placeholder based on table content
                 let placeholder = 'Filter table...';
-                if (table.querySelector('th')?.textContent.includes('Address')) {
-                    placeholder = 'Filter by address, device name, status...';
-                } else if (table.querySelector('th')?.textContent.includes('Timestamp')) {
-                    placeholder = 'Filter by timestamp, values...';
+                const firstHeader = table.querySelector('th')?.textContent || '';
+                
+                if (firstHeader.includes('Address')) {
+                    placeholder = 'Filter by node address, device name, status...';
+                } else if (firstHeader.includes('Timestamp')) {
+                    placeholder = 'Filter by timestamp, battery, voltage...';
+                } else if (firstHeader.includes('Node ID') || firstHeader.includes('Node')) {
+                    placeholder = 'Filter by node ID, location, coordinates...';
                 }
                 
                 addTableFilter(table.id, placeholder);
             });
+            
+            // Add keyboard shortcuts for common actions
+            document.addEventListener('keydown', function(e) {
+                // Ctrl+F to focus first filter input
+                if (e.ctrlKey && e.key === 'f') {
+                    e.preventDefault();
+                    const firstFilter = document.querySelector('.filter-input');
+                    if (firstFilter) firstFilter.focus();
+                }
+                
+                // Escape to clear all filters
+                if (e.key === 'Escape') {
+                    const filterInputs = document.querySelectorAll('.filter-input');
+                    filterInputs.forEach(input => {
+                        input.value = '';
+                        filterTable(input.closest('.filter-container').nextElementSibling.id, '');
+                    });
+                }
+            });
+            
+            // Add a "Clear All Filters" button at the top
+            const body = document.body;
+            const globalControls = document.createElement('div');
+            globalControls.className = 'global-controls';
+            globalControls.innerHTML = `
+                <button onclick="clearAllFilters()" style="background: #dc3545; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; margin-right: 5px;">🗑️ Clear All Filters</button>
+                <button onclick="resetAllSorting()" style="background: #007bff; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; margin-right: 5px;">↕️ Reset Sorting</button>
+                <button onclick="exportTableData()" style="background: #28a745; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;">📊 Export Data</button>
+                <div style="font-size: 11px; margin-top: 8px; color: #6c757d; line-height: 1.3;">
+                    <strong>Shortcuts:</strong><br>
+                    Ctrl+F: Focus filter | Esc: Clear filters<br>
+                    Click headers to sort tables
+                </div>
+            `;
+            body.appendChild(globalControls);
         });
+        
+        // Export function for table data
+        function exportTableData() {
+            const tables = document.querySelectorAll('table');
+            let csvContent = '';
+            
+            tables.forEach((table, tableIndex) => {
+                const tableTitle = table.previousElementSibling?.textContent || 'Table ' + (tableIndex + 1);
+                csvContent += '\\n\\n=== ' + tableTitle + ' ===\\n';
+                
+                const rows = table.querySelectorAll('tr');
+                rows.forEach(row => {
+                    if (!row.classList.contains('hidden-row')) {
+                        const cells = Array.from(row.cells).map(cell => 
+                            '"' + cell.textContent.trim().replace(/"/g, '""') + '"'
+                        );
+                        csvContent += cells.join(',') + '\\n';
+                    }
+                });
+            });
+            
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'meshtastic-telemetry-' + new Date().toISOString().split('T')[0] + '.csv';
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+        
+        // Global control functions
+        function clearAllFilters() {
+            const filterInputs = document.querySelectorAll('.filter-input');
+            filterInputs.forEach(input => {
+                input.value = '';
+                const tableId = input.closest('.filter-container').nextElementSibling.id;
+                filterTable(tableId, '');
+            });
+        }
+        
+        function resetAllSorting() {
+            const tables = document.querySelectorAll('table');
+            tables.forEach(table => {
+                const headers = table.querySelectorAll('th');
+                headers.forEach(header => {
+                    header.classList.remove('sort-asc', 'sort-desc');
+                    header.dataset.sortDirection = '';
+                });
+                
+                // Reset row order to original (reload would be needed for true reset)
+                const tbody = table.querySelector('tbody') || table;
+                const rows = Array.from(tbody.querySelectorAll('tr')).slice(1);
+                // Sort by first column (usually timestamp or address) ascending
+                if (rows.length > 0 && table.id) {
+                    sortTable(table.id, 0);
+                }
+            });
+        }
         
         // Toggle section visibility
         function toggleSection(sectionId) {
@@ -1038,9 +1433,9 @@ EOF
                 local stats_line
                 stats_line=$(grep "^$addr|" "$stats_file")
                 if [ -n "$stats_line" ]; then
-                    IFS='|' read -r _ total_attempts success_count failure_count success_rate_num latest_timestamp _ _ _ _ _ <<< "$stats_line"
+                    IFS='|' read -r _ total_attempts success_count failure_count success_rate_num actual_last_seen _ _ _ _ _ <<< "$stats_line"
                     success_rate="${success_rate_num}%"
-                    display_timestamp=$(echo "$latest_timestamp" | sed 's/:[0-9][0-9]+[0-9:+-]*$//')
+                    display_timestamp=$(echo "$actual_last_seen" | sed 's/:[0-9][0-9]+[0-9:+-]*$//')
                 else
                     total_attempts=0
                     success_count=0
@@ -1102,7 +1497,7 @@ EOF
             echo "<td class=\"number good\">$success_count</td>"
             echo "<td class=\"number critical\">$failure_count</td>"
             echo "<td class=\"number $success_rate_class\">$success_rate</td>"
-            echo "<td class=\"timestamp\">$display_timestamp</td>"
+            echo "<td class=\"timestamp\">$(format_human_time "$display_timestamp")</td>"
             echo "</tr>"
             index=$((index + 1))
         done
@@ -1115,9 +1510,9 @@ EOF
         awk -F',' '$3=="success"' "$TELEMETRY_CSV" > /tmp/all_success.csv
         
         # Per-Node Statistics Summary
-        echo "<h2>Node Summary Statistics</h2>"
-        echo "<table>"
-        echo "<tr><th>Address</th><th>Last Seen</th><th>Success</th><th>Failures</th><th>Success Rate</th><th>Battery (%)</th><th>Voltage (V)</th><th>Channel Util (%)</th><th>Tx Util (%)</th><th>Uptime (s)</th><th>Min Battery</th><th>Max Battery</th><th>Max Channel Util</th><th>Max Tx Util</th><th>Est. Time Left (h)</th><th>Power in 6h (ML)</th><th>Power in 12h (ML)</th><th>Power in 24h (ML)</th><th>ML Accuracy</th></tr>"
+        echo "<h2 id='monitored-addresses'>Node Summary Statistics</h2>"
+        echo "<table id='summary-table'>"
+        echo "<tr><th>Address</th><th>Battery (%)</th><th>Channel Util (%)</th><th>Tx Util (%)</th><th>Uptime (h)</th><th>Last Seen</th><th>Success</th><th>Failures</th><th>Success Rate</th><th>Voltage (V)</th><th>Min Battery</th><th>Max Battery</th><th>Max Channel Util</th><th>Max Tx Util</th><th>Est. Time Left (h)</th><th>Power in 6h (ML)</th><th>Power in 12h (ML)</th><th>Power in 24h (ML)</th><th>ML Accuracy</th></tr>"
         
         cut -d',' -f2 /tmp/all_success.csv | sort | uniq | while read address; do
             if [ -z "$address" ]; then continue; fi
@@ -1141,9 +1536,15 @@ EOF
             # Get all successful records for this address sorted by timestamp
             node_data=$(grep ",$address," /tmp/all_success.csv | sort -t',' -k1,1)
             
-            # Get latest record for current values
+            # Get latest record for current values (from successful attempts)
             latest=$(echo "$node_data" | tail -1)
             IFS=',' read -r latest_timestamp latest_address latest_status latest_battery latest_voltage latest_channel_util latest_tx_util latest_uptime <<< "$latest"
+            
+            # Get actual last seen time from all attempts (success + failures)
+            actual_last_seen=$(echo "$all_attempts" | tail -1 | cut -d',' -f1)
+            if [ -n "$actual_last_seen" ]; then
+                latest_timestamp="$actual_last_seen"
+            fi
             
             # Calculate min/max battery values
             min_battery=$(echo "$node_data" | awk -F',' '{if($4 != "") print $4}' | sort -n | head -1)
@@ -1332,10 +1733,6 @@ EOF
             
             echo "<tr>"
             echo "<td class=\"address\">$address_display</td>"
-            echo "<td class=\"timestamp\">$display_timestamp</td>"
-            echo "<td class=\"number good\">$success_count</td>"
-            echo "<td class=\"number critical\">$failure_count</td>"
-            echo "<td class=\"number $success_rate_class\">$success_rate</td>"
             
             # Add trend indicators to key metrics
             battery_trend=$(calculate_trend "$address" "battery" "$latest_battery")
@@ -1343,11 +1740,24 @@ EOF
             channel_util_trend=$(calculate_trend "$address" "channel_util" "$latest_channel_util")
             tx_util_trend=$(calculate_trend "$address" "tx_util" "$latest_tx_util")
             
+            # Convert uptime to human-readable format
+            uptime_hours=$(convert_uptime_to_hours "$latest_uptime")
+            uptime_class=$(get_value_class "$latest_uptime" "uptime")
+            
+            # Priority columns first: Battery, Channel Util, Tx Util, Uptime
             echo "<td class=\"number $battery_class\">${latest_battery:-N/A}${battery_trend}</td>"
-            echo "<td class=\"number $voltage_class\">${latest_voltage:-N/A}${voltage_trend}</td>"
             echo "<td class=\"number $channel_util_class\">${latest_channel_util:-N/A}${channel_util_trend}</td>"
             echo "<td class=\"number $tx_util_class\">${latest_tx_util:-N/A}${tx_util_trend}</td>"
-            echo "<td class=\"number\">${latest_uptime:-N/A}</td>"
+            echo "<td class=\"number $uptime_class\">${uptime_hours:-N/A}</td>"
+            
+            # Then Last Seen and connection stats
+            echo "<td class=\"timestamp\">$(format_human_time "$display_timestamp")</td>"
+            echo "<td class=\"number good\">$success_count</td>"
+            echo "<td class=\"number critical\">$failure_count</td>"
+            echo "<td class=\"number $success_rate_class\">$success_rate</td>"
+            
+            # Other metrics
+            echo "<td class=\"number $voltage_class\">${latest_voltage:-N/A}${voltage_trend}</td>"
             echo "<td class=\"number $min_battery_class\">${min_battery:-N/A}</td>"
             echo "<td class=\"number $max_battery_class\">${max_battery:-N/A}</td>"
             echo "<td class=\"number $max_channel_util_class\">${max_channel_util:-N/A}</td>"
@@ -1394,8 +1804,8 @@ EOF
 
         # Recent Telemetry Data
         echo "<h2 id='latest-telemetry'>Recent Telemetry Data (Last 20 Records)</h2>"
-        echo "<table>"
-        echo "<tr><th>Timestamp</th><th>Address</th><th>Battery (%)</th><th>Voltage (V)</th><th>Channel Util (%)</th><th>Tx Util (%)</th><th>Uptime (s)</th></tr>"
+        echo "<table id='recent-table'>"
+        echo "<tr><th>Timestamp</th><th>Address</th><th>Battery (%)</th><th>Voltage (V)</th><th>Channel Util (%)</th><th>Tx Util (%)</th><th>Uptime (h)</th></tr>"
         
         awk -F',' '$3=="success"' "$TELEMETRY_CSV" | sort -t',' -k1,1r | head -20 | while IFS=',' read -r timestamp address status battery voltage channel_util tx_util uptime; do
             device_name="$(get_node_info "$address")"
@@ -1412,13 +1822,14 @@ EOF
             tx_util_class=$(get_value_class "$tx_util" "tx_util")
             
             echo "<tr>"
-            echo "<td class=\"timestamp\">$timestamp</td>"
+            echo "<td class=\"timestamp\">$(format_human_time "$timestamp")</td>"
             echo "<td class=\"address\">$address_display</td>"
             echo "<td class=\"number $battery_class\">${battery:-N/A}</td>"
             echo "<td class=\"number $voltage_class\">${voltage:-N/A}</td>"
             echo "<td class=\"number $channel_util_class\">${channel_util:-N/A}</td>"
             echo "<td class=\"number $tx_util_class\">${tx_util:-N/A}</td>"
-            echo "<td class=\"number\">${uptime:-N/A}</td>"
+            uptime_hours=$(convert_uptime_to_hours "$uptime")
+            echo "<td class=\"number\">${uptime_hours:-N/A}</td>"
             echo "</tr>"
         done
         echo "</table>"
@@ -1447,8 +1858,8 @@ EOF
                     echo "</table>"
                 fi
                 echo "<h3>$address_display</h3>"
-                echo "<table>"
-                echo "<tr><th>Timestamp</th><th>Battery (%)</th><th>Voltage (V)</th><th>Channel Util (%)</th><th>Tx Util (%)</th><th>Uptime (s)</th></tr>"
+                echo "<table id='history-table-${address//[!a-zA-Z0-9]/-}'>"
+                echo "<tr><th>Timestamp</th><th>Battery (%)</th><th>Voltage (V)</th><th>Channel Util (%)</th><th>Tx Util (%)</th><th>Uptime (h)</th></tr>"
                 last_address="$address"
                 # Reset previous values for new node
                 prev_battery=""
@@ -1502,12 +1913,13 @@ EOF
             fi
             
             echo "<tr>"
-            echo "<td class=\"timestamp\">$timestamp</td>"
+            echo "<td class=\"timestamp\">$(format_human_time "$timestamp")</td>"
             echo "<td class=\"number $battery_class\">${battery:-N/A}${battery_trend}</td>"
             echo "<td class=\"number $voltage_class\">${voltage:-N/A}${voltage_trend}</td>"
             echo "<td class=\"number $channel_util_class\">${channel_util:-N/A}${channel_util_trend}</td>"
             echo "<td class=\"number $tx_util_class\">${tx_util:-N/A}${tx_util_trend}</td>"
-            echo "<td class=\"number\">${uptime:-N/A}</td>"
+            uptime_hours=$(convert_uptime_to_hours "$uptime")
+            echo "<td class=\"number\">${uptime_hours:-N/A}</td>"
             echo "</tr>"
             
             # Store current values as previous for next iteration
@@ -1572,7 +1984,7 @@ EOF
                 echo "<td>${hardware:-N/A}</td>"
                 echo "<td class=\"number $battery_class\">${battery:-N/A}${battery_trend}</td>"
                 echo "<td class=\"number $channel_util_class\">${channel_util:-N/A}${channel_util_trend}</td>"
-                echo "<td class=\"timestamp\">${lastheard:-N/A}</td>"
+                echo "<td class=\"timestamp\">$(format_human_time "${lastheard:-N/A}")</td>"
                 echo "</tr>"
                 index=$((index + 1))
             done
@@ -1677,18 +2089,30 @@ EOF
             echo "<th>Weather Prediction</th>"
             echo "</tr>"
             
-            # Parse JSON predictions and display
+            # Parse JSON predictions and display only nodes with valid battery data
             local weather_index=1
             if command -v jq &> /dev/null; then
-                jq -r '.predictions[] | "\(.node_id)|\(.user)|\(.location.latitude),\(.location.longitude)|\(.current_battery)|\(.prediction)"' weather_predictions.json 2>/dev/null | while IFS='|' read -r node_id user location current_battery prediction; do
-                    echo "<tr>"
-                    echo "<td>$weather_index</td>"
-                    echo "<td>$(echo "$user" | sed 's/</\&lt;/g; s/>/\&gt;/g')</td>"
-                    echo "<td>$location</td>"
-                    echo "<td>$current_battery</td>"
-                    echo "<td class=\"prediction\">$prediction</td>"
-                    echo "</tr>"
-                    weather_index=$((weather_index + 1))
+                jq -r '.predictions[] | "\(.node_id)|\(.longname)|\(.coordinates.lat),\(.coordinates.lon)|\(.current_battery)|\(.predictions."6h".battery_level // "N/A")|\(.predictions."12h".battery_level // "N/A")|\(.predictions."24h".battery_level // "N/A")"' weather_predictions.json 2>/dev/null | while IFS='|' read -r node_id longname location current_battery pred_6h pred_12h pred_24h; do
+                    # Only show nodes with known battery levels (not N/A and not empty)
+                    if [ "$current_battery" != "N/A" ] && [ -n "$current_battery" ] && [[ "$current_battery" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
+                        echo "<tr>"
+                        echo "<td>$weather_index</td>"
+                        echo "<td>$(echo "$node_id" | sed 's/</\&lt;/g; s/>/\&gt;/g')</td>"
+                        echo "<td>$location</td>"
+                        echo "<td>$current_battery%</td>"
+                        
+                        # Format prediction display
+                        local prediction_display=""
+                        if [ "$pred_6h" != "N/A" ] && [ "$pred_12h" != "N/A" ] && [ "$pred_24h" != "N/A" ]; then
+                            prediction_display="6h: ${pred_6h}% | 12h: ${pred_12h}% | 24h: ${pred_24h}%"
+                        else
+                            prediction_display="Calculating..."
+                        fi
+                        
+                        echo "<td class=\"prediction\">$prediction_display</td>"
+                        echo "</tr>"
+                        weather_index=$((weather_index + 1))
+                    fi
                 done
             else
                 echo "<tr><td colspan=\"5\">Weather predictions require 'jq' tool. Install with: sudo apt install jq</td></tr>"

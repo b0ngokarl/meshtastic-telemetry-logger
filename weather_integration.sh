@@ -26,9 +26,18 @@ calculate_sunrise_sunset() {
     lat=$(echo "$lat" | sed 's/[^0-9.-]//g')
     lon=$(echo "$lon" | sed 's/[^0-9.-]//g')
     
-    # Validate coordinates
-    if [[ ! "$lat" =~ ^-?[0-9]+\.?[0-9]*$ ]] || [[ ! "$lon" =~ ^-?[0-9]+\.?[0-9]*$ ]]; then
-        echo "Invalid coordinates: lat=$lat, lon=$lon" >&2
+    # Handle empty strings after sanitization
+    if [ -z "$lat" ] || [ -z "$lon" ]; then
+        return 1
+    fi
+    
+    # Validate coordinates are proper numbers
+    if ! [[ "$lat" =~ ^-?[0-9]+(\.[0-9]+)?$ ]] || ! [[ "$lon" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
+        return 1
+    fi
+    
+    # Validate coordinate ranges
+    if (( $(echo "$lat < -90 || $lat > 90" | bc -l 2>/dev/null) )) || (( $(echo "$lon < -180 || $lon > 180" | bc -l 2>/dev/null) )); then
         return 1
     fi
     
@@ -329,13 +338,20 @@ EOF
         battery=$(echo "$battery" | sed 's/[^0-9.-]//g')
         
         # Validate coordinates and battery
-        if ! [[ "$lat" =~ ^-?[0-9]+\.?[0-9]*$ ]] || ! [[ "$lon" =~ ^-?[0-9]+\.?[0-9]*$ ]]; then
+        if [ -z "$lat" ] || [ -z "$lon" ] || [ "$lat" = "N/A" ] || [ "$lon" = "N/A" ] || ! [[ "$lat" =~ ^-?[0-9]+(\.[0-9]+)?$ ]] || ! [[ "$lon" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
             echo "Warning: Invalid coordinates for $node_id: lat=$lat, lon=$lon. Using defaults." >&2
             lat="$DEFAULT_LAT"
             lon="$DEFAULT_LON"
         fi
         
-        if ! [[ "$battery" =~ ^[0-9]+\.?[0-9]*$ ]] || [ -z "$battery" ]; then
+        # Additional coordinate range validation
+        if (( $(echo "$lat < -90 || $lat > 90 || $lon < -180 || $lon > 180" | bc -l 2>/dev/null || echo "1") )); then
+            echo "Warning: Coordinates out of range for $node_id: lat=$lat, lon=$lon. Using defaults." >&2
+            lat="$DEFAULT_LAT"
+            lon="$DEFAULT_LON"
+        fi
+        
+        if [ -z "$battery" ] || [ "$battery" = "N/A" ] || ! [[ "$battery" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
             echo "Warning: Invalid battery for $node_id: $battery. Using 50." >&2
             battery="50"
         fi
