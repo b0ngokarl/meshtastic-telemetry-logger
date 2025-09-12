@@ -8,9 +8,9 @@ WEATHER_API_KEY="${WEATHER_API_KEY:-}"
 WEATHER_CACHE_DIR="/tmp/weather_cache"
 mkdir -p "$WEATHER_CACHE_DIR"
 
-# Default coordinates (Frankfurt, Germany)
-DEFAULT_LAT=50.1109
-DEFAULT_LON=8.6821
+# Default coordinates (from environment or Frankfurt, Germany)
+DEFAULT_LAT=${DEFAULT_LATITUDE:-50.1109}
+DEFAULT_LON=${DEFAULT_LONGITUDE:-8.6821}
 
 # File for saving predictions
 PREDICTIONS_FILE="weather_predictions.json"
@@ -20,6 +20,16 @@ calculate_sunrise_sunset() {
     local lat="$1"
     local lon="$2"
     local day_of_year="${3:-$(date +%j)}"
+    
+    # Sanitize coordinates - remove any non-numeric characters except decimal point and minus sign
+    lat=$(echo "$lat" | sed 's/[^0-9.-]//g')
+    lon=$(echo "$lon" | sed 's/[^0-9.-]//g')
+    
+    # Validate coordinates
+    if [[ ! "$lat" =~ ^-?[0-9]+\.?[0-9]*$ ]] || [[ ! "$lon" =~ ^-?[0-9]+\.?[0-9]*$ ]]; then
+        echo "Invalid coordinates: lat=$lat, lon=$lon" >&2
+        return 1
+    fi
     
     # Astronomical calculations for sunrise/sunset
     # Based on solar angle calculations
@@ -143,6 +153,16 @@ calculate_solar_efficiency() {
     local hour="$3"
     local clouds="$4"
     local temp="$5"
+    
+    # Sanitize coordinates - remove any non-numeric characters except decimal point and minus sign
+    lat=$(echo "$lat" | sed 's/[^0-9.-]//g')
+    lon=$(echo "$lon" | sed 's/[^0-9.-]//g')
+    
+    # Validate coordinates
+    if [[ ! "$lat" =~ ^-?[0-9]+\.?[0-9]*$ ]] || [[ ! "$lon" =~ ^-?[0-9]+\.?[0-9]*$ ]]; then
+        echo "50"  # Default 50% efficiency for invalid coordinates
+        return
+    fi
     
     # Get sunrise and sunset times
     local sun_times=$(calculate_sunrise_sunset "$lat" "$lon")
@@ -284,6 +304,10 @@ EOF
         lon="${lon:-$DEFAULT_LON}"
         battery="${battery:-50}"
         
+        # Sanitize coordinates - remove degree symbols and other non-numeric characters
+        lat=$(echo "$lat" | sed 's/[^0-9.-]//g')
+        lon=$(echo "$lon" | sed 's/[^0-9.-]//g')
+        
         # Validate coordinates
         if ! [[ "$lat" =~ ^-?[0-9]+\.?[0-9]*$ ]] || ! [[ "$lon" =~ ^-?[0-9]+\.?[0-9]*$ ]]; then
             lat="$DEFAULT_LAT"
@@ -396,7 +420,7 @@ main() {
     fi
     
     echo "Starting weather integration for solar energy predictions..."
-    echo "Note: Set WEATHER_API_KEY for real weather data (currently using mock data)"
+    echo "Note: Set WEATHER_API_KEY for real weather data - currently using mock data"
     
     generate_weather_report "$nodes_csv" "$telemetry_csv" "$output_file"
     

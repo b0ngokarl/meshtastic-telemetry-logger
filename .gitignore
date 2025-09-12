@@ -1,10 +1,32 @@
+# Ignore sensitive configuration files
+.env
+.env.local
+.env.production
+
 # Generated log files and output files
 error.log
 nodes_log.txt
 nodes_log.csv
 stats.html
 telemetry_log.csv
+weather_predictions.json
+power_predictions.csv
+prediction_accuracy.csv
 
 # Temporary files
 /tmp/
 *.tmp
+*.temp
+*.backup
+*~
+
+# Ignore OS files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Ignore editor files
+.vscode/
+.idea/
+*.sublime-*

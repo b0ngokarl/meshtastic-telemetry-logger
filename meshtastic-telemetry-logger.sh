@@ -1,7 +1,57 @@
 #!/bin/bash
 
-# ---- CONFIGURATION ----
-DEBUG=1  # Set to 1 to enable debug output
+# ---- CONFIGURATION LOADING ----
+# Load configuration from .env file if it exists
+if [ -f ".env" ]; then
+    source .env
+    echo "Configuration loaded from .env file"
+else
+    echo "No .env file found, using default values"
+fi
+
+# Set default values if not defined in .env
+TELEMETRY_TIMEOUT=${TELEMETRY_TIMEOUT:-300}
+NODES_TIMEOUT=${NODES_TIMEOUT:-300}
+WEATHER_TIMEOUT=${WEATHER_TIMEOUT:-300}
+ML_TIMEOUT=${ML_TIMEOUT:-300}
+POLLING_INTERVAL=${POLLING_INTERVAL:-300}
+DEBUG_MODE=${DEBUG_MODE:-false}
+ML_ENABLED=${ML_ENABLED:-true}
+
+# Convert string to boolean for DEBUG
+if [ "$DEBUG_MODE" = "true" ]; then
+    DEBUG=1
+else
+    DEBUG=0
+fi
+
+# Parse monitored nodes from comma-separated string to array
+if [ -n "$MONITORED_NODES" ]; then
+    # Remove quotes and split by comma, then trim whitespace
+    IFS=',' read -ra TEMP_ADDRESSES <<< "$MONITORED_NODES"
+    ADDRESSES=()
+    for addr in "${TEMP_ADDRESSES[@]}"; do
+        # Remove leading/trailing whitespace and quotes
+        addr=$(echo "$addr" | sed 's/^[[:space:]]*"*//; s/"*[[:space:]]*$//')
+        if [ -n "$addr" ]; then
+            ADDRESSES+=("$addr")
+        fi
+    done
+else
+    # Default monitored nodes if not configured
+    ADDRESSES=('!9eed0410' '!2c9e092b' '!849c4818' '!fd17c0ed' '!a0cc8008' '!ba656304' '!2df67288' '!277db5ca')
+fi
+
+# File paths with defaults
+TELEMETRY_CSV=${TELEMETRY_CSV:-"telemetry_log.csv"}
+NODES_LOG=${NODES_LOG:-"nodes_log.txt"}
+NODES_CSV=${NODES_CSV:-"nodes_log.csv"}
+STATS_HTML=${HTML_OUTPUT:-"stats.html"}
+ERROR_LOG=${ERROR_LOG:-"error.log"}
+
+# Maintain backward compatibility for INTERVAL
+INTERVAL=$POLLING_INTERVAL
+
 # ---- FUNCTIONS ----
 
 # Debug log function (prints only if DEBUG=1)
@@ -10,13 +60,6 @@ debug_log() {
         printf '[DEBUG] %s\n' "$*" >&2
     fi
 }
-ADDRESSES=('!9eed0410' '!2c9e092b' '!849c4818' '!fd17c0ed' '!a0cc8008' '!ba656304' '!2df67288' '!277db5ca' '!75e98c18' '!b03d9844') # Add/change as needed
-INTERVAL=300                        # Polling interval in seconds
-TELEMETRY_CSV="telemetry_log.csv"
-NODES_LOG="nodes_log.txt"
-NODES_CSV="nodes_log.csv"
-STATS_HTML="stats.html"
-ERROR_LOG="error.log"
 
 # ---- INIT ----
 if [ ! -f "$TELEMETRY_CSV" ]; then
@@ -394,7 +437,7 @@ run_telemetry() {
     local out
     debug_log "Requesting telemetry for $addr at $ts"
     # Use timeout command to give telemetry request up to 5 minutes to complete
-    out=$(timeout 300 meshtastic --request-telemetry --dest "$addr" 2>&1)
+    out=$(timeout $TELEMETRY_TIMEOUT meshtastic --request-telemetry --dest "$addr" 2>&1)
     local exit_code=$?
     debug_log "Telemetry output: $out"
     local status="unknown"
@@ -430,7 +473,7 @@ update_nodes_log() {
     debug_log "Updating nodes log at $ts"
     local out
     # Use timeout command to give nodes request up to 5 minutes to complete
-    out=$(timeout 300 meshtastic --nodes 2>&1)
+    out=$(timeout $NODES_TIMEOUT meshtastic --nodes 2>&1)
     debug_log "Nodes output: $out"
     echo "===== $ts =====" >> "$NODES_LOG"
     echo "$out" >> "$NODES_LOG"
@@ -1573,13 +1616,13 @@ while true; do
     # Generate weather predictions for solar nodes
     if [[ -f "weather_integration.sh" ]]; then
         echo "Generating weather-based energy predictions..."
-        timeout 300 ./weather_integration.sh nodes_log.csv telemetry_log.csv weather_predictions.json
+        WEATHER_API_KEY="$WEATHER_API_KEY" DEFAULT_LATITUDE="$DEFAULT_LATITUDE" DEFAULT_LONGITUDE="$DEFAULT_LONGITUDE" timeout $WEATHER_TIMEOUT ./weather_integration.sh nodes_log.csv telemetry_log.csv weather_predictions.json
     fi
     
     # Run ML power predictor to learn and improve predictions
-    if [[ -f "ml_power_predictor.sh" ]]; then
+    if [[ "$ML_ENABLED" = "true" && -f "ml_power_predictor.sh" ]]; then
         echo "Running ML power prediction analysis..."
-        timeout 300 ./ml_power_predictor.sh run
+        ML_MIN_DATA_POINTS="$ML_MIN_DATA_POINTS" ML_LEARNING_RATE="$ML_LEARNING_RATE" timeout $ML_TIMEOUT ./ml_power_predictor.sh run
     fi
     
     sleep "$INTERVAL"
