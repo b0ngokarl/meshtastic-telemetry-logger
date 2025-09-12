@@ -76,7 +76,7 @@ load_node_info_cache() {
     
     # Only reload if file is newer than cache
     if [ "$file_timestamp" -gt "$NODE_INFO_CACHE_TIMESTAMP" ]; then
-        debug_log "Reloading node info cache from $NODES_CSV"
+        debug_log "Reloading node info cache from $NODES_CSV (file: $file_timestamp, cache: $NODE_INFO_CACHE_TIMESTAMP)"
         NODE_INFO_CACHE=()
         while IFS=, read -r user id _ hardware _; do
             # Remove quotes if present
@@ -91,6 +91,9 @@ load_node_info_cache() {
             fi
         done < "$NODES_CSV"
         NODE_INFO_CACHE_TIMESTAMP="$file_timestamp"
+        debug_log "Node info cache loaded with ${#NODE_INFO_CACHE[@]} entries"
+    else
+        debug_log "Node info cache is up to date (file: $file_timestamp, cache: $NODE_INFO_CACHE_TIMESTAMP)"
     fi
 }
 
@@ -98,6 +101,9 @@ load_node_info_cache() {
 if [ ! -f "$TELEMETRY_CSV" ]; then
     echo "timestamp,address,status,battery,voltage,channel_util,tx_util,uptime" > "$TELEMETRY_CSV"
 fi
+
+# Load initial node info cache
+load_node_info_cache
 
 
 # ---- FUNCTIONS ----
@@ -115,9 +121,6 @@ iso8601_date() {
 
 get_node_info() {
     local node_id="$1"
-    
-    # Load cache if needed
-    load_node_info_cache
     
     # Check cache first
     if [ -n "${NODE_INFO_CACHE[$node_id]}" ]; then
@@ -1708,12 +1711,19 @@ EOF
 
 # ---- MAIN LOOP ----
 while true; do
+    # Load/reload node info cache if nodes file has been updated
+    load_node_info_cache
+    
     # Use sequential telemetry collection (serial port limitation)
     run_telemetry_sequential
     
     # Update nodes and generate HTML
     update_nodes_log
     parse_nodes_to_csv "$NODES_LOG" "$NODES_CSV"
+    
+    # Reload cache after updating nodes data
+    load_node_info_cache
+    
     generate_stats_html
     
     # Generate weather predictions for solar nodes
