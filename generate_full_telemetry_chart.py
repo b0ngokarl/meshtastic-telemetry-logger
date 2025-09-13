@@ -6,7 +6,9 @@ Reads configuration from .env file, with optional command-line overrides
 
 Usage:
     python generate_full_telemetry_chart.py                              # Use .env configuration
-    python generate_full_telemetry_chart.py --nodes "!2df67288,!a0cc8008"  # Override nodes
+    python generate_full_telemetry_chart.py --nodes "!2df67288,!                ax5.plot(timestamps, uptime_values, 
+                        label=create_enhanced_label(node_data, 'uptime'), color=color_map[node_id], 
+                        linewidth=2, marker='*', markersize=6)c8008"  # Override nodes
     python generate_full_telemetry_chart.py --nodes "!2df67288" --names "My Node"  # Single node with custom name
 """
 
@@ -217,6 +219,182 @@ def load_telemetry_data(node_config, csv_file):
     
     return node_config
 
+def extract_short_name(full_name):
+    """Extract short name from full node name, e.g., 'TRZT' from 'DL0TRZ Trutzturm Oppenheim (TRZT)'"""
+    # Look for text in parentheses first
+    if '(' in full_name and ')' in full_name:
+        start = full_name.rfind('(') + 1
+        end = full_name.rfind(')')
+        short_name = full_name[start:end].strip()
+        if short_name and len(short_name) <= 8:
+            return short_name
+    
+    # Fallback: use first 4 characters of the last word
+    words = full_name.split()
+    if words:
+        return words[-1][:4].upper()
+    
+    return full_name[:4].upper()
+
+def calculate_recent_averages(timestamps, values, metric_name):
+    """Calculate averages for now, 3h, 12h, and 24h periods"""
+    if not timestamps or not values or len(timestamps) != len(values):
+        return ""
+    
+    from datetime import timedelta
+    import statistics
+    
+    now = datetime.now(timestamps[0].tzinfo) if timestamps[0].tzinfo else datetime.now()
+    
+    # Get current value (most recent)
+    current_value = None
+    valid_data = [(t, v) for t, v in zip(timestamps, values) if v is not None]
+    if valid_data:
+        # Sort by timestamp to get the most recent
+        valid_data.sort(key=lambda x: x[0])
+        current_value = valid_data[-1][1]
+    
+    # Filter data for each time period
+    periods = {'3h': 3, '12h': 12, '24h': 24}
+    averages = []
+    
+    # Add current value first
+    if current_value is not None:
+        if metric_name == 'battery':
+            averages.append(f"now:{current_value:.0f}%")
+        elif metric_name == 'voltage':
+            averages.append(f"now:{current_value:.1f}V")
+        elif metric_name in ['chutil', 'txutil']:
+            averages.append(f"now:{current_value:.1f}%")
+        else:
+            averages.append(f"now:{current_value:.1f}")
+    
+    # Add averages for time periods
+    for period_name, hours in periods.items():
+        cutoff_time = now - timedelta(hours=hours)
+        recent_values = [v for t, v in zip(timestamps, values) 
+                        if v is not None and t >= cutoff_time]
+        
+        if recent_values:
+            avg = statistics.mean(recent_values)
+            if metric_name == 'battery':
+                averages.append(f"{period_name}:{avg:.0f}%")
+            elif metric_name == 'voltage':
+                averages.append(f"{period_name}:{avg:.1f}V")
+            elif metric_name in ['chutil', 'txutil']:
+                averages.append(f"{period_name}:{avg:.1f}%")
+            else:
+                averages.append(f"{period_name}:{avg:.1f}")
+    
+    return " | ".join(averages) if averages else ""
+
+def create_enhanced_label(node_data, metric_name):
+    """Create enhanced label with short name and averages"""
+    short_name = extract_short_name(node_data['name'])
+    
+    # Get the appropriate data for the metric
+    if metric_name == 'battery':
+        values = node_data['battery']
+    elif metric_name == 'voltage':
+        values = node_data['voltage']
+    elif metric_name == 'chutil':
+        values = node_data['chutil']
+    elif metric_name == 'txutil':
+        values = node_data['txutil']
+    else:
+        values = node_data['uptime']
+    
+    averages = calculate_recent_averages(node_data['timestamps'], values, metric_name)
+    
+    if averages:
+        return f"{short_name} ({averages})"
+    else:
+        return short_name
+
+def calculate_total_utilization_averages(data, metric_name):
+    """Calculate total averages across all nodes for utilization metrics"""
+    if not data:
+        return [], []
+    
+    # Collect all timestamp-value pairs from all nodes
+    all_data_points = []
+    for node_data in data.values():
+        if metric_name == 'chutil':
+            values = node_data['chutil']
+        elif metric_name == 'txutil':
+            values = node_data['txutil']
+        else:
+            continue
+            
+        for timestamp, value in zip(node_data['timestamps'], values):
+            if value is not None:
+                all_data_points.append((timestamp, value))
+    
+    if not all_data_points:
+        return [], []
+    
+    # Sort by timestamp
+    all_data_points.sort(key=lambda x: x[0])
+    
+    # Group by timestamp and calculate averages
+    from collections import defaultdict
+    import statistics
+    
+    timestamp_groups = defaultdict(list)
+    for timestamp, value in all_data_points:
+        # Round timestamp to nearest minute for grouping
+        rounded_time = timestamp.replace(second=0, microsecond=0)
+        timestamp_groups[rounded_time].append(value)
+    
+    # Calculate average for each timestamp
+    avg_timestamps = []
+    avg_values = []
+    for timestamp in sorted(timestamp_groups.keys()):
+        values = timestamp_groups[timestamp]
+        avg_value = statistics.mean(values)
+        avg_timestamps.append(timestamp)
+        avg_values.append(avg_value)
+    
+    return avg_timestamps, avg_values
+    """Load telemetry data from CSV file for specified nodes"""
+    try:
+        with open(csv_file, 'r') as file:
+            reader = csv.reader(file)
+            next(reader)  # Skip header
+            
+            for row in reader:
+                if len(row) >= 8:
+                    timestamp_str, address, status, battery, voltage, channel_util, tx_util, uptime = row
+                    
+                    # Only process successful readings for our configured nodes
+                    if status == 'success' and address in node_config:
+                        try:
+                            # Parse timestamp
+                            timestamp = datetime.fromisoformat(timestamp_str.replace('Z', '+00:00'))
+                            
+                            # Parse all telemetry values
+                            battery_val = float(battery) if battery else None
+                            voltage_val = float(voltage) if voltage else None
+                            chutil = float(channel_util) if channel_util else None
+                            txutil = float(tx_util) if tx_util else None
+                            uptime_val = float(uptime) / 3600.0 if uptime else None  # Convert to hours
+                            
+                            # Store all available data
+                            node_config[address]['timestamps'].append(timestamp)
+                            node_config[address]['battery'].append(battery_val)
+                            node_config[address]['voltage'].append(voltage_val)
+                            node_config[address]['chutil'].append(chutil)
+                            node_config[address]['txutil'].append(txutil)
+                            node_config[address]['uptime'].append(uptime_val)
+                            
+                        except (ValueError, TypeError):
+                            continue
+    except FileNotFoundError:
+        print(f"Error: {csv_file} not found")
+        sys.exit(1)
+    
+    return node_config
+
 def create_chart(data, output_prefix="node_telemetry"):
     """Create and save the comprehensive telemetry chart"""
     # Generate title based on nodes
@@ -248,7 +426,7 @@ def create_chart(data, output_prefix="node_telemetry"):
             if valid_data:
                 timestamps, battery_values = zip(*valid_data)
                 ax1.plot(timestamps, battery_values, 
-                        label=node_data['name'], color=color_map[node_id], 
+                        label=create_enhanced_label(node_data, 'battery'), color=color_map[node_id], 
                         linewidth=2, marker='o', markersize=4)
     ax1.set_ylabel('Battery Level (%)', fontsize=12)
     ax1.grid(True, alpha=0.3)
@@ -265,7 +443,7 @@ def create_chart(data, output_prefix="node_telemetry"):
             if valid_data:
                 timestamps, voltage_values = zip(*valid_data)
                 ax2.plot(timestamps, voltage_values, 
-                        label=node_data['name'], color=color_map[node_id], 
+                        label=create_enhanced_label(node_data, 'voltage'), color=color_map[node_id], 
                         linewidth=2, marker='s', markersize=4)
     ax2.set_ylabel('Voltage (V)', fontsize=12)
     ax2.grid(True, alpha=0.3)
@@ -279,6 +457,8 @@ def create_chart(data, output_prefix="node_telemetry"):
     # Plot 3: Channel Utilization
     ax3 = axes[2]
     ax3.set_title('Channel Utilization (%)', fontsize=14, fontweight='bold')
+    
+    # Plot individual nodes
     for node_id, node_data in data.items():
         if node_data['timestamps'] and any(c is not None for c in node_data['chutil']):
             # Filter out None values
@@ -286,12 +466,24 @@ def create_chart(data, output_prefix="node_telemetry"):
             if valid_data:
                 timestamps, chutil_values = zip(*valid_data)
                 ax3.plot(timestamps, chutil_values, 
-                        label=node_data['name'], color=color_map[node_id], 
+                        label=create_enhanced_label(node_data, 'chutil'), color=color_map[node_id], 
                         linewidth=2, marker='^', markersize=4)
+    
+    # Add total average line
+    total_timestamps, total_chutil = calculate_total_utilization_averages(data, 'chutil')
+    if total_timestamps and total_chutil:
+        total_averages = calculate_recent_averages(total_timestamps, total_chutil, 'chutil')
+        total_label = f"TOTAL AVG ({total_averages})" if total_averages else "TOTAL AVG"
+        ax3.plot(total_timestamps, total_chutil, 
+                label=total_label, color='black', 
+                linewidth=3, linestyle='--', marker='o', markersize=3)
+    
     ax3.set_ylabel('Channel Utilization (%)', fontsize=12)
     ax3.grid(True, alpha=0.3)
     ax3.legend(fontsize=10)
     all_chutil = [c for node_data in data.values() for c in node_data['chutil'] if c is not None]
+    if total_chutil:
+        all_chutil.extend(total_chutil)
     if all_chutil:
         max_chutil = max(all_chutil)
         ax3.set_ylim(0, max_chutil * 1.1)
@@ -301,6 +493,8 @@ def create_chart(data, output_prefix="node_telemetry"):
     # Plot 4: Transmission Utilization
     ax4 = axes[3]
     ax4.set_title('Transmission Utilization (%)', fontsize=14, fontweight='bold')
+    
+    # Plot individual nodes
     for node_id, node_data in data.items():
         if node_data['timestamps'] and any(t is not None for t in node_data['txutil']):
             # Filter out None values
@@ -308,12 +502,24 @@ def create_chart(data, output_prefix="node_telemetry"):
             if valid_data:
                 timestamps, txutil_values = zip(*valid_data)
                 ax4.plot(timestamps, txutil_values, 
-                        label=node_data['name'], color=color_map[node_id], 
+                        label=create_enhanced_label(node_data, 'txutil'), color=color_map[node_id], 
                         linewidth=2, marker='d', markersize=4)
+    
+    # Add total average line
+    total_timestamps, total_txutil = calculate_total_utilization_averages(data, 'txutil')
+    if total_timestamps and total_txutil:
+        total_averages = calculate_recent_averages(total_timestamps, total_txutil, 'txutil')
+        total_label = f"TOTAL AVG ({total_averages})" if total_averages else "TOTAL AVG"
+        ax4.plot(total_timestamps, total_txutil, 
+                label=total_label, color='black', 
+                linewidth=3, linestyle='--', marker='o', markersize=3)
+    
     ax4.set_ylabel('Transmission Utilization (%)', fontsize=12)
     ax4.grid(True, alpha=0.3)
     ax4.legend(fontsize=10)
     all_txutil = [t for node_data in data.values() for t in node_data['txutil'] if t is not None]
+    if total_txutil:
+        all_txutil.extend(total_txutil)
     if all_txutil:
         max_txutil = max(all_txutil)
         ax4.set_ylim(0, max_txutil * 1.1)
@@ -330,7 +536,7 @@ def create_chart(data, output_prefix="node_telemetry"):
             if valid_data:
                 timestamps, uptime_values = zip(*valid_data)
                 ax5.plot(timestamps, uptime_values, 
-                        label=node_data['name'], color=color_map[node_id], 
+                        label=create_enhanced_label(node_data, 'uptime'), color=color_map[node_id], 
                         linewidth=2, marker='x', markersize=4)
     ax5.set_ylabel('Uptime (Hours)', fontsize=12)
     ax5.set_xlabel('Time', fontsize=12)

@@ -50,7 +50,13 @@ class MeshtasticTelemetryLogger:
             'DEFAULT_LATITUDE': 50.1109,
             'DEFAULT_LONGITUDE': 8.6821,
             'WEATHER_CACHE_DIR': 'weather_cache',
-            'WEATHER_CACHE_TTL': 3600
+            'WEATHER_CACHE_TTL': 3600,
+            # Meshtastic connection configuration
+            'MESHTASTIC_CONNECTION_TYPE': 'serial',
+            'MESHTASTIC_SERIAL_PORT': 'auto',
+            'MESHTASTIC_TCP_HOST': '192.168.1.100',
+            'MESHTASTIC_TCP_PORT': 4403,
+            'MESHTASTIC_BLE_ADDRESS': ''
         }
         
         env_file = self.script_dir / config_file
@@ -164,6 +170,32 @@ class MeshtasticTelemetryLogger:
             if not file_path.exists():
                 file_path.touch()
     
+    def build_meshtastic_command(self, *args) -> List[str]:
+        """Build meshtastic command with appropriate connection parameters"""
+        cmd = ['meshtastic']
+        
+        connection_type = self.config.get('MESHTASTIC_CONNECTION_TYPE', 'serial')
+        
+        if connection_type == 'serial':
+            serial_port = self.config.get('MESHTASTIC_SERIAL_PORT', 'auto')
+            if serial_port != 'auto':
+                cmd.extend(['--port', serial_port])
+        elif connection_type == 'tcp':
+            host = self.config.get('MESHTASTIC_TCP_HOST', '192.168.1.100')
+            port = self.config.get('MESHTASTIC_TCP_PORT', 4403)
+            cmd.extend(['--host', f'{host}:{port}'])
+        elif connection_type == 'ble':
+            ble_address = self.config.get('MESHTASTIC_BLE_ADDRESS', '')
+            if not ble_address:
+                raise ValueError("MESHTASTIC_BLE_ADDRESS not configured for BLE connection")
+            cmd.extend(['--ble', ble_address])
+        else:
+            raise ValueError(f"Invalid MESHTASTIC_CONNECTION_TYPE: {connection_type}")
+        
+        # Add additional arguments
+        cmd.extend(args)
+        return cmd
+    
     def get_telemetry(self, address: str) -> Dict:
         """Get telemetry data from a specific node"""
         self.logger.debug(f"Requesting telemetry for {address}")
@@ -193,8 +225,9 @@ class MeshtasticTelemetryLogger:
         try:
             # Ensure the address has proper quotes for the CLI
             quoted_address = f"'{address}'" if not address.startswith("'") else address
+            cmd = self.build_meshtastic_command('--request-telemetry', '--dest', quoted_address)
             success, output = self.run_command(
-                ['meshtastic', '--request-telemetry', '--dest', quoted_address],
+                cmd,
                 timeout=self.config['TELEMETRY_TIMEOUT']
             )
             
@@ -277,8 +310,9 @@ class MeshtasticTelemetryLogger:
         self.logger.debug("Updating node list")
         
         try:
+            cmd = self.build_meshtastic_command('--nodes')
             success, output = self.run_command(
-                ['meshtastic', '--nodes'],
+                cmd,
                 timeout=self.config['NODES_TIMEOUT']
             )
             

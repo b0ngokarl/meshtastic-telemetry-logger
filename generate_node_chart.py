@@ -205,6 +205,132 @@ def load_telemetry_data(node_config, csv_file):
     
     return node_config
 
+def extract_short_name(full_name):
+    """Extract short name from full node name, e.g., 'TRZT' from 'DL0TRZ Trutzturm Oppenheim (TRZT)'"""
+    # Look for text in parentheses first
+    if '(' in full_name and ')' in full_name:
+        start = full_name.rfind('(') + 1
+        end = full_name.rfind(')')
+        short_name = full_name[start:end].strip()
+        if short_name and len(short_name) <= 8:
+            return short_name
+    
+    # Fallback: use first 4 characters of the last word
+    words = full_name.split()
+    if words:
+        return words[-1][:4].upper()
+    
+    return full_name[:4].upper()
+
+def calculate_recent_averages(timestamps, values, metric_name):
+    """Calculate averages for now, 3h, 12h, and 24h periods"""
+    if not timestamps or not values or len(timestamps) != len(values):
+        return ""
+    
+    from datetime import timedelta
+    import statistics
+    
+    now = datetime.now(timestamps[0].tzinfo) if timestamps[0].tzinfo else datetime.now()
+    
+    # Get current value (most recent)
+    current_value = None
+    valid_data = [(t, v) for t, v in zip(timestamps, values) if v is not None]
+    if valid_data:
+        # Sort by timestamp to get the most recent
+        valid_data.sort(key=lambda x: x[0])
+        current_value = valid_data[-1][1]
+    
+    # Filter data for each time period
+    periods = {'3h': 3, '12h': 12, '24h': 24}
+    averages = []
+    
+    # Add current value first
+    if current_value is not None:
+        if metric_name in ['chutil', 'txutil']:
+            averages.append(f"now:{current_value:.1f}%")
+        else:
+            averages.append(f"now:{current_value:.1f}")
+    
+    # Add averages for time periods
+    for period_name, hours in periods.items():
+        cutoff_time = now - timedelta(hours=hours)
+        recent_values = [v for t, v in zip(timestamps, values) 
+                        if v is not None and t >= cutoff_time]
+        
+        if recent_values:
+            avg = statistics.mean(recent_values)
+            if metric_name in ['chutil', 'txutil']:
+                averages.append(f"{period_name}:{avg:.1f}%")
+            else:
+                averages.append(f"{period_name}:{avg:.1f}")
+    
+    return " | ".join(averages) if averages else ""
+
+def create_enhanced_label(node_data, metric_name):
+    """Create enhanced label with short name and averages"""
+    short_name = extract_short_name(node_data['name'])
+    
+    # Get the appropriate data for the metric
+    if metric_name == 'chutil':
+        values = node_data['chutil']
+    elif metric_name == 'txutil':
+        values = node_data['txutil']
+    else:
+        values = []
+    
+    averages = calculate_recent_averages(node_data['timestamps'], values, metric_name)
+    
+    if averages:
+        return f"{short_name} ({averages})"
+    else:
+        return short_name
+
+def calculate_total_utilization_averages(data, metric_name):
+    """Calculate total averages across all nodes for utilization metrics"""
+    if not data:
+        return [], []
+    
+    # Collect all timestamp-value pairs from all nodes
+    all_data_points = []
+    for node_data in data.values():
+        if metric_name == 'chutil':
+            values = node_data['chutil']
+        elif metric_name == 'txutil':
+            values = node_data['txutil']
+        else:
+            continue
+            
+        for timestamp, value in zip(node_data['timestamps'], values):
+            if value is not None:
+                all_data_points.append((timestamp, value))
+    
+    if not all_data_points:
+        return [], []
+    
+    # Sort by timestamp
+    all_data_points.sort(key=lambda x: x[0])
+    
+    # Group by timestamp and calculate averages
+    from collections import defaultdict
+    import statistics
+    
+    timestamp_groups = defaultdict(list)
+    for timestamp, value in all_data_points:
+        # Round timestamp to nearest minute for grouping
+        rounded_time = timestamp.replace(second=0, microsecond=0)
+        timestamp_groups[rounded_time].append(value)
+    
+    # Calculate average for each timestamp
+    avg_timestamps = []
+    avg_values = []
+    for timestamp in sorted(timestamp_groups.keys()):
+        values = timestamp_groups[timestamp]
+        avg_value = statistics.mean(values)
+        avg_timestamps.append(timestamp)
+        avg_values.append(avg_value)
+    
+    return avg_timestamps, avg_values
+
 def create_chart(data, output_prefix="node_utilization"):
     """Create and save the chart"""
     # Generate title based on nodes
@@ -227,31 +353,57 @@ def create_chart(data, output_prefix="node_utilization"):
     
     # Plot 1: Channel Utilization
     ax1.set_title('Channel Utilization (%)', fontsize=14, fontweight='bold')
+    
+    # Plot individual nodes
     for node_id, node_data in data.items():
         if node_data['timestamps']:
             ax1.plot(node_data['timestamps'], node_data['chutil'], 
-                    label=node_data['name'], color=color_map[node_id], 
+                    label=create_enhanced_label(node_data, 'chutil'), color=color_map[node_id], 
                     linewidth=2, marker='o', markersize=4)
+    
+    # Add total average line
+    total_timestamps, total_chutil = calculate_total_utilization_averages(data, 'chutil')
+    if total_timestamps and total_chutil:
+        total_averages = calculate_recent_averages(total_timestamps, total_chutil, 'chutil')
+        total_label = f"TOTAL AVG ({total_averages})" if total_averages else "TOTAL AVG"
+        ax1.plot(total_timestamps, total_chutil, 
+                label=total_label, color='black', 
+                linewidth=3, linestyle='--', marker='o', markersize=3)
     
     ax1.set_ylabel('Channel Utilization (%)', fontsize=12)
     ax1.grid(True, alpha=0.3)
     ax1.legend(fontsize=10)
     max_chutil = max([max(node_data['chutil']) if node_data['chutil'] else 0 for node_data in data.values()])
+    if total_chutil and total_chutil:
+        max_chutil = max(max_chutil, max(total_chutil))
     ax1.set_ylim(0, max_chutil * 1.1 if max_chutil > 0 else 100)
     
     # Plot 2: Transmission Utilization
     ax2.set_title('Transmission Utilization (%)', fontsize=14, fontweight='bold')
+    
+    # Plot individual nodes
     for node_id, node_data in data.items():
         if node_data['timestamps']:
             ax2.plot(node_data['timestamps'], node_data['txutil'], 
-                    label=node_data['name'], color=color_map[node_id], 
+                    label=create_enhanced_label(node_data, 'txutil'), color=color_map[node_id], 
                     linewidth=2, marker='s', markersize=4)
+    
+    # Add total average line
+    total_timestamps, total_txutil = calculate_total_utilization_averages(data, 'txutil')
+    if total_timestamps and total_txutil:
+        total_averages = calculate_recent_averages(total_timestamps, total_txutil, 'txutil')
+        total_label = f"TOTAL AVG ({total_averages})" if total_averages else "TOTAL AVG"
+        ax2.plot(total_timestamps, total_txutil, 
+                label=total_label, color='black', 
+                linewidth=3, linestyle='--', marker='o', markersize=3)
     
     ax2.set_ylabel('Transmission Utilization (%)', fontsize=12)
     ax2.set_xlabel('Time', fontsize=12)
     ax2.grid(True, alpha=0.3)
     ax2.legend(fontsize=10)
     max_txutil = max([max(node_data['txutil']) if node_data['txutil'] else 0 for node_data in data.values()])
+    if total_txutil and total_txutil:
+        max_txutil = max(max_txutil, max(total_txutil))
     ax2.set_ylim(0, max_txutil * 1.1 if max_txutil > 0 else 10)
     
     # Format x-axis for both plots

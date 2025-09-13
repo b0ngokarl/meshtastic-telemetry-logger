@@ -65,8 +65,8 @@ run_telemetry() {
     
     debug_log "Requesting telemetry for $addr at $ts"
     
-    # Use timeout command to prevent hanging
-    out=$(timeout "$TELEMETRY_TIMEOUT" meshtastic --request-telemetry --dest "$addr" 2>&1)
+    # Use configured connection method and timeout
+    out=$(exec_meshtastic_command "$TELEMETRY_TIMEOUT" --request-telemetry --dest "$addr")
     local exit_code=$?
     
     debug_log "Telemetry output: $out"
@@ -128,8 +128,8 @@ update_nodes_log() {
     debug_log "Updating nodes log at $ts"
     
     local out
-    # Use timeout command to give nodes request time to complete
-    out=$(timeout "$NODES_TIMEOUT" meshtastic --nodes 2>&1)
+    # Use configured connection method and timeout
+    out=$(exec_meshtastic_command "$NODES_TIMEOUT" --nodes)
     local exit_code=$?
     
     if [ $exit_code -eq 124 ]; then

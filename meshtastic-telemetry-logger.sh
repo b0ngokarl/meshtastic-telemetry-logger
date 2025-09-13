@@ -9,6 +9,10 @@ else
     echo "No .env file found, using default values"
 fi
 
+# Source common utilities
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/common_utils.sh"
+
 # Set default values if not defined in .env
 TELEMETRY_TIMEOUT=${TELEMETRY_TIMEOUT:-300}
 NODES_TIMEOUT=${NODES_TIMEOUT:-300}
@@ -17,6 +21,12 @@ ML_TIMEOUT=${ML_TIMEOUT:-300}
 POLLING_INTERVAL=${POLLING_INTERVAL:-300}
 DEBUG_MODE=${DEBUG_MODE:-false}
 ML_ENABLED=${ML_ENABLED:-true}
+
+# Meshtastic connection defaults
+MESHTASTIC_CONNECTION_TYPE=${MESHTASTIC_CONNECTION_TYPE:-serial}
+MESHTASTIC_SERIAL_PORT=${MESHTASTIC_SERIAL_PORT:-auto}
+MESHTASTIC_TCP_HOST=${MESHTASTIC_TCP_HOST:-192.168.1.100}
+MESHTASTIC_TCP_PORT=${MESHTASTIC_TCP_PORT:-4403}
 
 # Convert string to boolean for DEBUG
 if [ "$DEBUG_MODE" = "true" ]; then
@@ -590,8 +600,8 @@ run_telemetry() {
     local ts="$2"  # Accept timestamp as parameter to avoid multiple calls
     local out
     debug_log "Requesting telemetry for $addr at $ts"
-    # Use timeout command to give telemetry request up to 5 minutes to complete
-    out=$(timeout $TELEMETRY_TIMEOUT meshtastic --request-telemetry --dest "$addr" 2>&1)
+    # Use configured connection method and timeout
+    out=$(exec_meshtastic_command "$TELEMETRY_TIMEOUT" --request-telemetry --dest "$addr")
     local exit_code=$?
     debug_log "Telemetry output: $out"
     local status="unknown"
@@ -646,8 +656,8 @@ update_nodes_log() {
     ts=$(iso8601_date)
     debug_log "Updating nodes log at $ts"
     local out
-    # Use timeout command to give nodes request up to 5 minutes to complete
-    out=$(timeout $NODES_TIMEOUT meshtastic --nodes 2>&1)
+    # Use configured connection method and timeout
+    out=$(exec_meshtastic_command "$NODES_TIMEOUT" --nodes)
     debug_log "Nodes output: $out"
     echo "===== $ts =====" >> "$NODES_LOG"
     echo "$out" >> "$NODES_LOG"
@@ -2140,6 +2150,82 @@ EOF
     rm -f /tmp/all_success.csv /tmp/last_success.csv
 }
 
+# ---- WEB DEPLOYMENT FUNCTION ----
+deploy_to_web() {
+    # Check if web deployment is enabled
+    if [ "$WEB_DEPLOY_ENABLED" != "true" ]; then
+        return 0
+    fi
+    
+    # Check if target directory is configured
+    if [ -z "$WEB_DEPLOY_PATH" ]; then
+        echo "  Warning: WEB_DEPLOY_PATH not configured in .env file"
+        return 1
+    fi
+    
+    echo "  🌐 Deploying to web server: $WEB_DEPLOY_PATH"
+    
+    # Create target directory if it doesn't exist
+    if ! sudo mkdir -p "$WEB_DEPLOY_PATH" 2>/dev/null; then
+        echo "  ❌ Failed to create web deployment directory: $WEB_DEPLOY_PATH"
+        return 1
+    fi
+    
+    # Copy main HTML file as index.html
+    if [ -f "$HTML_OUTPUT" ]; then
+        if sudo cp "$HTML_OUTPUT" "$WEB_DEPLOY_PATH/index.html" 2>/dev/null; then
+            echo "    ✅ Copied $HTML_OUTPUT → $WEB_DEPLOY_PATH/index.html"
+        else
+            echo "    ❌ Failed to copy $HTML_OUTPUT"
+            return 1
+        fi
+    fi
+    
+    # Copy all PNG chart files
+    local png_count=0
+    for png_file in *.png; do
+        if [ -f "$png_file" ]; then
+            if sudo cp "$png_file" "$WEB_DEPLOY_PATH/" 2>/dev/null; then
+                echo "    📊 Copied $png_file"
+                png_count=$((png_count + 1))
+            else
+                echo "    ❌ Failed to copy $png_file"
+            fi
+        fi
+    done
+    
+    # Copy all SVG chart files
+    local svg_count=0
+    for svg_file in *.svg; do
+        if [ -f "$svg_file" ]; then
+            if sudo cp "$svg_file" "$WEB_DEPLOY_PATH/" 2>/dev/null; then
+                echo "    🖼️ Copied $svg_file"
+                svg_count=$((svg_count + 1))
+            else
+                echo "    ❌ Failed to copy $svg_file"
+            fi
+        fi
+    done
+    
+    # Set proper permissions for web server
+    if [ -n "$WEB_DEPLOY_OWNER" ]; then
+        if sudo chown -R "$WEB_DEPLOY_OWNER:$WEB_DEPLOY_OWNER" "$WEB_DEPLOY_PATH" 2>/dev/null; then
+            echo "    🔧 Set ownership to $WEB_DEPLOY_OWNER"
+        else
+            echo "    ⚠️ Warning: Failed to set ownership to $WEB_DEPLOY_OWNER"
+        fi
+    fi
+    
+    if sudo chmod -R 644 "$WEB_DEPLOY_PATH"/* 2>/dev/null; then
+        echo "    🔧 Set file permissions to 644"
+    else
+        echo "    ⚠️ Warning: Failed to set file permissions"
+    fi
+    
+    echo "  ✅ Web deployment complete: $png_count PNG, $svg_count SVG files + HTML"
+    return 0
+}
+
 # ---- MAIN LOOP ----
 while true; do
     echo "Starting telemetry collection cycle at $(date)"
@@ -2160,6 +2246,9 @@ while true; do
     load_node_info_cache
     
     generate_stats_html
+    
+    # Deploy to web server if configured
+    deploy_to_web
     
     # Generate weather predictions for solar nodes
     if [[ -f "weather_integration.sh" ]]; then
@@ -2192,11 +2281,14 @@ while true; do
     echo "  -> Updating HTML dashboard..."
     generate_stats_html
     
-    # Embed charts in HTML dashboard
-    echo "  -> Embedding charts in HTML dashboard..."
-    if [[ -f "auto_chart_embedder.py" ]]; then
-        python3 auto_chart_embedder.py 2>/dev/null || echo "  Warning: Failed to embed charts in HTML"
-    fi
+    # Note: Charts are now embedded directly by html_generator.sh
+    # echo "  -> Embedding charts in HTML dashboard..."
+    # if [[ -f "auto_chart_embedder.py" ]]; then
+    #     python3 auto_chart_embedder.py 2>/dev/null || echo "  Warning: Failed to embed charts in HTML"
+    # fi
+    
+    # Deploy to web server if configured
+    deploy_to_web
     
     echo "Auto-generation complete. Charts and HTML updated."
     

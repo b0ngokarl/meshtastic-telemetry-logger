@@ -27,12 +27,14 @@ fi
 echo ""
 echo "📄 Updating HTML dashboard..."
 
-if [[ -f "auto_chart_embedder.py" ]]; then
-    echo "  -> Embedding charts in HTML..."
-    python3 auto_chart_embedder.py && echo "     ✅ Charts embedded in HTML" || echo "     ❌ Failed to embed charts"
-else
-    echo "  ❌ auto_chart_embedder.py not found"
-fi
+# Chart embedding is now handled directly by html_generator.sh during HTML generation
+# This prevents duplication of charts in the dashboard
+# if [[ -f "auto_chart_embedder.py" ]]; then
+#     echo "  -> Embedding charts in HTML..."
+#     python3 auto_chart_embedder.py && echo "     ✅ Charts embedded in HTML" || echo "     ❌ Failed to embed charts"
+# else
+#     echo "  ❌ auto_chart_embedder.py not found"
+# fi
 
 echo ""
 echo "✅ Quick chart generation and HTML update complete!"

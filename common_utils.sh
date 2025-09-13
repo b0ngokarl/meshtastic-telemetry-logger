@@ -242,3 +242,60 @@ init_csv_file() {
         echo "$headers" > "$file"
     fi
 }
+
+# Build Meshtastic command with appropriate connection parameters
+# Usage: build_meshtastic_command [additional_args...]
+# Returns the complete meshtastic command as a string
+build_meshtastic_command() {
+    local connection_type="${MESHTASTIC_CONNECTION_TYPE:-serial}"
+    local cmd="meshtastic"
+    
+    case "$connection_type" in
+        serial)
+            if [ "${MESHTASTIC_SERIAL_PORT:-auto}" != "auto" ]; then
+                cmd="$cmd --port $MESHTASTIC_SERIAL_PORT"
+            fi
+            # If auto, let meshtastic auto-detect the serial port
+            ;;
+        tcp)
+            local host="${MESHTASTIC_TCP_HOST:-192.168.1.100}"
+            local port="${MESHTASTIC_TCP_PORT:-4403}"
+            cmd="$cmd --host $host:$port"
+            ;;
+        ble)
+            local ble_address="${MESHTASTIC_BLE_ADDRESS}"
+            if [ -z "$ble_address" ]; then
+                echo "Error: MESHTASTIC_BLE_ADDRESS not configured for BLE connection" >&2
+                return 1
+            fi
+            cmd="$cmd --ble $ble_address"
+            ;;
+        *)
+            echo "Error: Invalid MESHTASTIC_CONNECTION_TYPE: $connection_type" >&2
+            echo "Valid options: serial, tcp, ble" >&2
+            return 1
+            ;;
+    esac
+    
+    # Add any additional arguments passed to the function
+    if [ $# -gt 0 ]; then
+        cmd="$cmd $*"
+    fi
+    
+    echo "$cmd"
+}
+
+# Execute Meshtastic command with proper connection settings
+# Usage: exec_meshtastic_command [timeout] [additional_args...]
+exec_meshtastic_command() {
+    local timeout_duration="$1"
+    shift
+    
+    local cmd
+    if ! cmd=$(build_meshtastic_command "$@"); then
+        return 1
+    fi
+    
+    debug_log "Executing: timeout $timeout_duration $cmd"
+    timeout "$timeout_duration" $cmd 2>&1
+}

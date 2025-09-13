@@ -10,6 +10,20 @@ ENV_FILE="$SCRIPT_DIR/.env"
 DEFAULT_CONFIG=(
     "# Meshtastic Telemetry Logger Configuration"
     ""
+    "# Meshtastic Connection Configuration"
+    "# Choose ONE connection method by setting the appropriate variables"
+    "MESHTASTIC_CONNECTION_TYPE=serial  # Options: serial, tcp, ble"
+    ""
+    "# Serial Connection (default)"
+    "MESHTASTIC_SERIAL_PORT=auto        # auto = auto-detect, or specific port like /dev/ttyUSB0"
+    ""
+    "# TCP Connection (for WiFi/Ethernet connected devices)"
+    "MESHTASTIC_TCP_HOST=192.168.1.100  # IP address of your Meshtastic device"
+    "MESHTASTIC_TCP_PORT=4403           # Port (default: 4403)"
+    ""
+    "# Bluetooth Low Energy (BLE) Connection"
+    "MESHTASTIC_BLE_ADDRESS=12:34:56:78:9A:BC  # MAC address of your Meshtastic device"
+    ""
     "# Basic Settings"
     "POLLING_INTERVAL=300          # Time between collection cycles (seconds)"
     "DEBUG_MODE=false              # Enable debug output (true/false)"
@@ -48,9 +62,17 @@ Commands:
     init        Create initial configuration file with defaults
     edit        Open configuration file in default editor
     show        Display current configuration
-    validate    Check configuration for common issues
-    reset       Reset to default configuration
+    connection  Show current Meshtastic connection configuration
+    validate    Validate configuration file
+    reset       Reset configuration to defaults
     help        Show this help message
+
+Examples:
+    $0 init                    # Create default .env file
+    $0 edit                    # Edit configuration in your default editor
+    $0 show                    # Show current settings
+    $0 connection              # Show connection settings and test command
+    $0 validate                # Check for configuration issues
 
 Configuration file: $ENV_FILE
 EOF
@@ -97,6 +119,90 @@ edit_config() {
     
     echo "Opening configuration file with $editor..."
     "$editor" "$ENV_FILE"
+}
+
+validate_config() {
+    if [ ! -f "$ENV_FILE" ]; then
+        echo "Error: Configuration file not found at $ENV_FILE"
+        echo "Run '$0 init' to create a default configuration."
+        return 1
+    fi
+    
+    # Basic validation
+    local errors=0
+    
+    source "$ENV_FILE"
+    
+    # Check required variables
+    if [ -z "$MONITORED_NODES" ]; then
+        echo "Warning: MONITORED_NODES is not set"
+        errors=$((errors + 1))
+    fi
+    
+    if [ -z "$POLLING_INTERVAL" ]; then
+        echo "Warning: POLLING_INTERVAL is not set"
+        errors=$((errors + 1))
+    fi
+    
+    if [ $errors -eq 0 ]; then
+        echo "Configuration validation passed"
+        return 0
+    else
+        echo "Configuration has $errors warnings"
+        return 1
+    fi
+}
+
+show_connection_config() {
+    if [ ! -f "$ENV_FILE" ]; then
+        echo "Error: Configuration file not found at $ENV_FILE"
+        echo "Run '$0 init' to create a default configuration."
+        return 1
+    fi
+    
+    source "$ENV_FILE"
+    source "$SCRIPT_DIR/common_utils.sh"
+    
+    echo "=== Meshtastic Connection Configuration ==="
+    echo "Connection Type: ${MESHTASTIC_CONNECTION_TYPE:-serial}"
+    echo ""
+    
+    case "${MESHTASTIC_CONNECTION_TYPE:-serial}" in
+        serial)
+            echo "Serial Configuration:"
+            echo "  Port: ${MESHTASTIC_SERIAL_PORT:-auto}"
+            ;;
+        tcp)
+            echo "TCP Configuration:"
+            echo "  Host: ${MESHTASTIC_TCP_HOST:-192.168.1.100}"
+            echo "  Port: ${MESHTASTIC_TCP_PORT:-4403}"
+            ;;
+        ble)
+            echo "BLE Configuration:"
+            echo "  Address: ${MESHTASTIC_BLE_ADDRESS:-not set}"
+            if [ -z "$MESHTASTIC_BLE_ADDRESS" ]; then
+                echo "  Warning: BLE address not configured!"
+            fi
+            ;;
+        *)
+            echo "Error: Invalid connection type"
+            return 1
+            ;;
+    esac
+    
+    echo ""
+    echo "Example command that will be generated:"
+    local test_cmd
+    if test_cmd=$(build_meshtastic_command --nodes 2>/dev/null); then
+        echo "  $test_cmd"
+    else
+        echo "  Error: Cannot build command with current configuration"
+        return 1
+    fi
+    
+    echo ""
+    echo "To change connection method, edit $ENV_FILE"
+    echo "Valid connection types: serial, tcp, ble"
 }
 
 validate_config() {
@@ -187,6 +293,9 @@ case "${1:-help}" in
         ;;
     show)
         show_config
+        ;;
+    connection)
+        show_connection_config
         ;;
     validate)
         validate_config

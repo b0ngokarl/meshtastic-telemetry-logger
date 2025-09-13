@@ -918,13 +918,13 @@ EOF
             # Embed main telemetry chart
             if [ -f "multi_node_telemetry_chart.png" ]; then
                 echo "<h4>Multi-Node Telemetry Overview</h4>"
-                echo "<img src='data:image/png;base64,$(base64 -w 0 multi_node_telemetry_chart.png)' alt='Multi-Node Telemetry Chart' style='max-width: 100%; height: auto; border: 1px solid #ddd; border-radius: 4px; margin: 10px 0;'>"
+                echo "<img src='data:image/png;base64,$(base64 -w 0 multi_node_telemetry_chart.png)' alt='Multi-Node Telemetry Chart' style='max-width: 70%; height: auto; border: 1px solid #ddd; border-radius: 4px; margin: 10px 0; display: block; margin-left: auto; margin-right: auto;'>"
             fi
             
             # Embed utilization chart
             if [ -f "multi_node_utilization_chart.png" ]; then
                 echo "<h4>Channel & TX Utilization</h4>"
-                echo "<img src='data:image/png;base64,$(base64 -w 0 multi_node_utilization_chart.png)' alt='Multi-Node Utilization Chart' style='max-width: 100%; height: auto; border: 1px solid #ddd; border-radius: 4px; margin: 10px 0;'>"
+                echo "<img src='data:image/png;base64,$(base64 -w 0 multi_node_utilization_chart.png)' alt='Multi-Node Utilization Chart' style='max-width: 70%; height: auto; border: 1px solid #ddd; border-radius: 4px; margin: 10px 0; display: block; margin-left: auto; margin-right: auto;'>"
             fi
             
             echo "</div>"
@@ -1674,55 +1674,56 @@ EOF
             echo "</div>"
         fi
 
-        # Weather-based Energy Predictions Section
-        if [[ -f "weather_predictions.json" ]]; then
-            echo "<h2 id='weather-predictions'>☀️ Weather-Based Energy Predictions</h2>"
-            echo "<p><em>Solar energy predictions based on weather forecast and current battery levels</em></p>"
-            echo "<table>"
-            echo "<tr>"
-            echo "<th>#</th>"
-            echo "<th>Node</th>"
-            echo "<th>Location</th>"
-            echo "<th>Current Battery</th>"
-            echo "<th>Weather Prediction</th>"
-            echo "</tr>"
-            
-            # Parse JSON predictions and display only nodes with valid battery data
-            local weather_index=1
-            if command -v jq &> /dev/null; then
-                jq -r '.predictions[] | "\(.node_id)|\(.longname)|\(.coordinates.lat),\(.coordinates.lon)|\(.current_battery)|\(.predictions."6h".battery_level // "N/A")|\(.predictions."12h".battery_level // "N/A")|\(.predictions."24h".battery_level // "N/A")"' weather_predictions.json 2>/dev/null | while IFS='|' read -r node_id longname location current_battery pred_6h pred_12h pred_24h; do
-                    # Only show nodes with known battery levels (not N/A and not empty)
-                    if [ "$current_battery" != "N/A" ] && [ -n "$current_battery" ] && [[ "$current_battery" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
-                        echo "<tr>"
-                        echo "<td>$weather_index</td>"
-                        echo "<td>$(echo "$node_id" | sed 's/</\&lt;/g; s/>/\&gt;/g')</td>"
-                        echo "<td>$location</td>"
-                        echo "<td>$current_battery%</td>"
-                        
-                        # Format prediction display
-                        local prediction_display=""
-                        if [ "$pred_6h" != "N/A" ] && [ "$pred_12h" != "N/A" ] && [ "$pred_24h" != "N/A" ]; then
-                            prediction_display="6h: ${pred_6h}% | 12h: ${pred_12h}% | 24h: ${pred_24h}%"
-                        else
-                            prediction_display="Calculating..."
-                        fi
-                        
-                        echo "<td class=\"prediction\">$prediction_display</td>"
-                        echo "</tr>"
-                        weather_index=$((weather_index + 1))
-                    fi
-                done
-            else
-                echo "<tr><td colspan=\"5\">Weather predictions require 'jq' tool. Install with: sudo apt install jq</td></tr>"
-            fi
-            
-            echo "</table>"
-            echo "<p><em>Legend: ⚡ Charging | 📉 Slow drain | 🔋 Fast drain | 📊 Stable</em></p>"
-            echo "<p><em>Note: Predictions are estimates based on weather data and typical solar panel performance</em></p>"
-        else
-            echo "<h2>☀️ Weather-Based Energy Predictions</h2>"
-            echo "<p><em>Weather predictions will appear here after the next data collection cycle</em></p>"
-        fi
+        # Weather-based Energy Predictions Section - DISABLED
+        # Uncomment the section below to re-enable weather predictions
+        #if [[ -f "weather_predictions.json" ]]; then
+        #    echo "<h2 id='weather-predictions'>☀️ Weather-Based Energy Predictions</h2>"
+        #    echo "<p><em>Solar energy predictions based on weather forecast and current battery levels</em></p>"
+        #    echo "<table>"
+        #    echo "<tr>"
+        #    echo "<th>#</th>"
+        #    echo "<th>Node</th>"
+        #    echo "<th>Location</th>"
+        #    echo "<th>Current Battery</th>"
+        #    echo "<th>Weather Prediction</th>"
+        #    echo "</tr>"
+        #    
+        #    # Parse JSON predictions and display only nodes with valid battery data
+        #    local weather_index=1
+        #    if command -v jq &> /dev/null; then
+        #        jq -r '.predictions[] | "\(.node_id)|\(.longname)|\(.coordinates.lat),\(.coordinates.lon)|\(.current_battery)|\(.predictions."6h".battery_level // "N/A")|\(.predictions."12h".battery_level // "N/A")|\(.predictions."24h".battery_level // "N/A")"' weather_predictions.json 2>/dev/null | while IFS='|' read -r node_id longname location current_battery pred_6h pred_12h pred_24h; do
+        #            # Only show nodes with known battery levels (not N/A and not empty)
+        #            if [ "$current_battery" != "N/A" ] && [ -n "$current_battery" ] && [[ "$current_battery" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
+        #                echo "<tr>"
+        #                echo "<td>$weather_index</td>"
+        #                echo "<td>$(echo "$node_id" | sed 's/</\&lt;/g; s/>/\&gt;/g')</td>"
+        #                echo "<td>$location</td>"
+        #                echo "<td>$current_battery%</td>"
+        #                
+        #                # Format prediction display
+        #                local prediction_display=""
+        #                if [ "$pred_6h" != "N/A" ] && [ "$pred_12h" != "N/A" ] && [ "$pred_24h" != "N/A" ]; then
+        #                    prediction_display="6h: ${pred_6h}% | 12h: ${pred_12h}% | 24h: ${pred_24h}%"
+        #                else
+        #                    prediction_display="Calculating..."
+        #                fi
+        #                
+        #                echo "<td class=\"prediction\">$prediction_display</td>"
+        #                echo "</tr>"
+        #                weather_index=$((weather_index + 1))
+        #            fi
+        #        done
+        #    else
+        #        echo "<tr><td colspan=\"5\">Weather predictions require 'jq' tool. Install with: sudo apt install jq</td></tr>"
+        #    fi
+        #    
+        #    echo "</table>"
+        #    echo "<p><em>Legend: ⚡ Charging | 📉 Slow drain | 🔋 Fast drain | 📊 Stable</em></p>"
+        #    echo "<p><em>Note: Predictions are estimates based on weather data and typical solar panel performance</em></p>"
+        #else
+        #    echo "<h2>☀️ Weather-Based Energy Predictions</h2>"
+        #    echo "<p><em>Weather predictions will appear here after the next data collection cycle</em></p>"
+        #fi
         
         echo "</body></html>"
     } > "$STATS_HTML"

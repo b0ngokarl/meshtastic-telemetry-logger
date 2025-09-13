@@ -59,9 +59,9 @@ def embed_charts_in_html():
             print(f"  ⚠️  Chart file {chart_file} not found")
     
     if charts_html:
-        # Pattern to find charts section and replace content
-        pattern = r'(📊 Telemetry Charts.*?</h3>)(.*?)(?=<h3|$)'
-        replacement = f'\\1\n        <div class="charts-content">{charts_html}\n        </div>\n        '
+        # Pattern to find charts section and replace content - more specific to avoid duplicates
+        pattern = r'(<h3[^>]*>📊 Telemetry Charts</h3>)\s*(<div class="charts-content">.*?</div>)?'
+        replacement = f'\\1\n        <div class="charts-content">{charts_html}\n        </div>'
         
         # Replace charts section
         html_content = re.sub(pattern, replacement, html_content, flags=re.DOTALL)
