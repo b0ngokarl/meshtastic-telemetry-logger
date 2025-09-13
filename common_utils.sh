@@ -1,0 +1,244 @@
+#!/bin/bash
+
+# Meshtastic Telemetry Logger - Common Utility Functions
+# This library contains shared functions used across multiple scripts
+
+# Debug log function (prints only if DEBUG=1)
+debug_log() {
+    if [ "${DEBUG:-0}" = "1" ]; then
+        printf '[DEBUG] %s\n' "$*" >&2
+    fi
+}
+
+# Portable ISO 8601 date function (supports macOS and Linux)
+iso8601_date() {
+    if date --version >/dev/null 2>&1; then
+        # GNU date (Linux)
+        date --iso-8601=seconds
+    else
+        # BSD date (macOS)
+        date "+%Y-%m-%dT%H:%M:%S%z"
+    fi
+}
+
+# Function to format timestamps for human readability
+format_human_time() {
+    local timestamp="$1"
+    
+    if [ -z "$timestamp" ] || [ "$timestamp" = "Never" ] || [ "$timestamp" = "N/A" ]; then
+        echo "$timestamp"
+        return
+    fi
+    
+    # Try to parse the timestamp and format it nicely
+    local parsed_date
+    if parsed_date=$(date -d "$timestamp" "+%Y-%m-%d %H:%M" 2>/dev/null); then
+        echo "$parsed_date"
+    else
+        # Fallback: just remove seconds and timezone info for shorter display
+        echo "$timestamp" | sed 's/:[0-9][0-9]+[0-9:+-]*$//' | sed 's/T/ /'
+    fi
+}
+
+# Function to convert seconds to hours with appropriate formatting
+convert_uptime_to_hours() {
+    local uptime_seconds="$1"
+    
+    # Return N/A if empty or not a number
+    if [ -z "$uptime_seconds" ] || [ "$uptime_seconds" = "N/A" ] || ! [[ "$uptime_seconds" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
+        echo "N/A"
+        return
+    fi
+    
+    # Convert seconds to different units based on magnitude
+    if (( $(echo "$uptime_seconds < 60" | bc -l 2>/dev/null) )); then
+        # Less than 1 minute - show seconds
+        echo "${uptime_seconds}s"
+    elif (( $(echo "$uptime_seconds < 3600" | bc -l 2>/dev/null) )); then
+        # Less than 1 hour - show minutes
+        local minutes=$(echo "scale=0; $uptime_seconds / 60" | bc -l 2>/dev/null)
+        echo "${minutes}m"
+    elif (( $(echo "$uptime_seconds < 86400" | bc -l 2>/dev/null) )); then
+        # Less than 24 hours - show hours and minutes
+        local hours=$(echo "scale=0; $uptime_seconds / 3600" | bc -l 2>/dev/null)
+        local remaining_minutes=$(echo "scale=0; ($uptime_seconds % 3600) / 60" | bc -l 2>/dev/null)
+        if [ "$remaining_minutes" -gt 0 ]; then
+            echo "${hours}h${remaining_minutes}m"
+        else
+            echo "${hours}h"
+        fi
+    else
+        # 24 hours or more - show days and hours
+        local days=$(echo "scale=0; $uptime_seconds / 86400" | bc -l 2>/dev/null)
+        local remaining_hours=$(echo "scale=0; ($uptime_seconds % 86400) / 3600" | bc -l 2>/dev/null)
+        if [ "$remaining_hours" -gt 0 ]; then
+            echo "${days}d${remaining_hours}h"
+        else
+            echo "${days}d"
+        fi
+    fi
+}
+
+# Function to get CSS class for value-based color coding
+get_value_class() {
+    local value="$1"
+    local type="$2"
+    
+    if [ -z "$value" ] || [ "$value" = "N/A" ] || [ "$value" = "" ]; then
+        echo "unknown"
+        return
+    fi
+    
+    case "$type" in
+        "battery")
+            if (( $(echo "$value <= 10" | bc -l 2>/dev/null) )); then
+                echo "battery-critical"
+            elif (( $(echo "$value <= 25" | bc -l 2>/dev/null) )); then
+                echo "battery-low"
+            else
+                echo "battery-good"
+            fi
+            ;;
+        "voltage")
+            # Typical LoRa device voltage ranges: 3.0V+ good, 2.8-3.0V warning, <2.8V critical
+            if (( $(echo "$value < 2.8" | bc -l 2>/dev/null) )); then
+                echo "critical"
+            elif (( $(echo "$value < 3.0" | bc -l 2>/dev/null) )); then
+                echo "voltage-low"
+            else
+                echo "normal"
+            fi
+            ;;
+        "channel_util")
+            # Channel utilization: 25% starts queuing packets, higher values indicate network congestion
+            if (( $(echo "$value >= 80" | bc -l 2>/dev/null) )); then
+                echo "util-very-high"   # Very high - severe congestion
+            elif (( $(echo "$value >= 50" | bc -l 2>/dev/null) )); then
+                echo "util-high"        # High - significant congestion  
+            elif (( $(echo "$value >= 25" | bc -l 2>/dev/null) )); then
+                echo "util-medium"      # Medium - packets start queuing
+            elif (( $(echo "$value >= 15" | bc -l 2>/dev/null) )); then
+                echo "warning"          # Warning - elevated usage
+            else
+                echo "normal"           # Normal - low usage
+            fi
+            ;;
+        "tx_util")
+            # TX utilization: 10% per hour airtime limitation - node stops sending at 10%
+            if (( $(echo "$value >= 10" | bc -l 2>/dev/null) )); then
+                echo "util-critical"    # Critical - node stops transmitting
+            elif (( $(echo "$value >= 8" | bc -l 2>/dev/null) )); then
+                echo "util-very-high"   # Very high - approaching limit
+            elif (( $(echo "$value >= 5" | bc -l 2>/dev/null) )); then
+                echo "util-high"        # High - getting close to limit
+            elif (( $(echo "$value >= 2" | bc -l 2>/dev/null) )); then
+                echo "warning"          # Warning - moderate usage
+            else
+                echo "normal"           # Normal - low usage
+            fi
+            ;;
+        "time_left")
+            if [[ "$value" == "Stable/Charging" ]]; then
+                echo "good"
+            elif [[ "$value" == *"fast drain"* ]]; then
+                echo "critical"
+            elif [[ "$value" == *"?"* ]]; then
+                echo "unknown"
+            elif [[ "$value" =~ ^[0-9]+\.?[0-9]*$ ]]; then
+                # Numeric value - check hours
+                if (( $(echo "$value < 6" | bc -l 2>/dev/null) )); then
+                    echo "time-critical"
+                elif (( $(echo "$value < 24" | bc -l 2>/dev/null) )); then
+                    echo "time-warning"
+                else
+                    echo "normal"
+                fi
+            else
+                echo "normal"
+            fi
+            ;;
+        *)
+            echo "normal"
+            ;;
+    esac
+}
+
+# Validate numeric input
+is_numeric() {
+    local value="$1"
+    [[ "$value" =~ ^[0-9]+(\.[0-9]+)?$ ]]
+}
+
+# Validate node ID format
+is_valid_node_id() {
+    local node_id="$1"
+    [[ "$node_id" =~ ^![\da-f]{8}$ ]]
+}
+
+# Load configuration with defaults
+load_config() {
+    # Load from .env if exists
+    if [ -f ".env" ]; then
+        source .env
+    fi
+    
+    # Set defaults for undefined variables
+    TELEMETRY_TIMEOUT=${TELEMETRY_TIMEOUT:-300}
+    NODES_TIMEOUT=${NODES_TIMEOUT:-300}
+    WEATHER_TIMEOUT=${WEATHER_TIMEOUT:-300}
+    ML_TIMEOUT=${ML_TIMEOUT:-300}
+    POLLING_INTERVAL=${POLLING_INTERVAL:-300}
+    DEBUG_MODE=${DEBUG_MODE:-false}
+    ML_ENABLED=${ML_ENABLED:-true}
+    
+    # Convert string to boolean for DEBUG
+    if [ "$DEBUG_MODE" = "true" ]; then
+        DEBUG=1
+    else
+        DEBUG=0
+    fi
+    
+    # Set file paths with defaults
+    TELEMETRY_CSV=${TELEMETRY_CSV:-"telemetry_log.csv"}
+    NODES_LOG=${NODES_LOG:-"nodes_log.txt"}
+    NODES_CSV=${NODES_CSV:-"nodes_log.csv"}
+    STATS_HTML=${HTML_OUTPUT:-"stats.html"}
+    ERROR_LOG=${ERROR_LOG:-"error.log"}
+}
+
+# Log error to error log file
+log_error() {
+    local message="$1"
+    local timestamp=$(iso8601_date)
+    echo "$timestamp ERROR: $message" >> "${ERROR_LOG:-error.log}"
+}
+
+# Check if required tools are available
+check_dependencies() {
+    local missing_tools=()
+    
+    # Check for required commands
+    for tool in jq bc curl date; do
+        if ! command -v "$tool" &> /dev/null; then
+            missing_tools+=("$tool")
+        fi
+    done
+    
+    if [ ${#missing_tools[@]} -gt 0 ]; then
+        echo "Error: Missing required tools: ${missing_tools[*]}"
+        echo "Please install them using your package manager."
+        return 1
+    fi
+    
+    return 0
+}
+
+# Initialize CSV file with headers if it doesn't exist
+init_csv_file() {
+    local file="$1"
+    local headers="$2"
+    
+    if [ ! -f "$file" ]; then
+        echo "$headers" > "$file"
+    fi
+}
