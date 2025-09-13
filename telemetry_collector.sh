@@ -24,13 +24,17 @@ load_node_info_cache() {
     if [ "$file_timestamp" -gt "$NODE_INFO_CACHE_TIMESTAMP" ]; then
         debug_log "Reloading node info cache from $NODES_CSV"
         NODE_INFO_CACHE=()
-        while IFS=, read -r user id _ hardware _; do
+        while IFS=, read -r user id aka hardware _; do
             # Remove quotes if present
             user=$(echo "$user" | sed 's/^"//; s/"$//')
+            aka=$(echo "$aka" | sed 's/^"//; s/"$//')
             hardware=$(echo "$hardware" | sed 's/^"//; s/"$//')
             id=$(echo "$id" | sed 's/^"//; s/"$//')
             
-            if [ -n "$user" ] && [ -n "$hardware" ]; then
+            # Use AKA if available and short, otherwise use user name with hardware
+            if [ -n "$user" ] && [ -n "$aka" ] && [ ${#aka} -le 8 ]; then
+                NODE_INFO_CACHE["$id"]="$user ($aka)"
+            elif [ -n "$user" ] && [ -n "$hardware" ]; then
                 NODE_INFO_CACHE["$id"]="$user $hardware"
             elif [ -n "$user" ]; then
                 NODE_INFO_CACHE["$id"]="$user"

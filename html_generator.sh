@@ -13,6 +13,9 @@ if ! type load_node_info_cache >/dev/null 2>&1; then
     source "$SCRIPT_DIR/telemetry_collector.sh"
 fi
 
+# Load node info cache to resolve node names
+load_node_info_cache
+
 # Efficient CSV statistics computation
 compute_telemetry_stats() {
     if [ ! -f "$TELEMETRY_CSV" ]; then
@@ -906,6 +909,26 @@ EOF
         
         echo "<h1>Meshtastic Telemetry Statistics</h1>"
         echo "<p><em>Last updated: $(date)</em></p>"
+        
+        # Embed telemetry charts if they exist
+        if [ -f "multi_node_telemetry_chart.png" ] || [ -f "multi_node_utilization_chart.png" ]; then
+            echo "<div style='background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #28a745;'>"
+            echo "<h3 style='margin-top: 0; color: #28a745;'>📊 Telemetry Charts</h3>"
+            
+            # Embed main telemetry chart
+            if [ -f "multi_node_telemetry_chart.png" ]; then
+                echo "<h4>Multi-Node Telemetry Overview</h4>"
+                echo "<img src='data:image/png;base64,$(base64 -w 0 multi_node_telemetry_chart.png)' alt='Multi-Node Telemetry Chart' style='max-width: 100%; height: auto; border: 1px solid #ddd; border-radius: 4px; margin: 10px 0;'>"
+            fi
+            
+            # Embed utilization chart
+            if [ -f "multi_node_utilization_chart.png" ]; then
+                echo "<h4>Channel & TX Utilization</h4>"
+                echo "<img src='data:image/png;base64,$(base64 -w 0 multi_node_utilization_chart.png)' alt='Multi-Node Utilization Chart' style='max-width: 100%; height: auto; border: 1px solid #ddd; border-radius: 4px; margin: 10px 0;'>"
+            fi
+            
+            echo "</div>"
+        fi
         
         # Navigation Index
         echo "<div style='background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #007bff;'>"

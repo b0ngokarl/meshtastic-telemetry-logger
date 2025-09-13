@@ -2135,17 +2135,21 @@ EOF
 
 # ---- MAIN LOOP ----
 while true; do
-    # Load/reload node info cache if nodes file has been updated
+    echo "Starting telemetry collection cycle at $(date)"
+    
+    # Load/reload node info cache if nodes file has been updated (auto re-resolves names)
     load_node_info_cache
     
     # Use sequential telemetry collection (serial port limitation)
     run_telemetry_sequential
     
     # Update nodes and generate HTML
+    echo "Updating node list and re-resolving node names..."
     update_nodes_log
     parse_nodes_to_csv "$NODES_LOG" "$NODES_CSV"
     
-    # Reload cache after updating nodes data
+    # Reload cache after updating nodes data (ensures fresh node names)
+    echo "Refreshing node name cache..."
     load_node_info_cache
     
     generate_stats_html
@@ -2161,6 +2165,33 @@ while true; do
         echo "Running ML power prediction analysis..."
         ML_MIN_DATA_POINTS="$ML_MIN_DATA_POINTS" ML_LEARNING_RATE="$ML_LEARNING_RATE" timeout $ML_TIMEOUT ./ml_power_predictor.sh run
     fi
+    
+    # AUTO-GENERATE CHARTS AND HTML AFTER EACH TELEMETRY COLLECTION
+    echo "Auto-generating telemetry charts..."
+    
+    # Generate comprehensive telemetry chart (PNG)
+    if [[ -f "generate_full_telemetry_chart.py" ]]; then
+        echo "  -> Generating multi-node telemetry chart..."
+        python3 generate_full_telemetry_chart.py 2>/dev/null || echo "  Warning: Failed to generate telemetry chart"
+    fi
+    
+    # Generate utilization chart (PNG)
+    if [[ -f "generate_node_chart.py" ]]; then
+        echo "  -> Generating multi-node utilization chart..."
+        python3 generate_node_chart.py 2>/dev/null || echo "  Warning: Failed to generate utilization chart"
+    fi
+    
+    # Re-generate HTML dashboard with latest data
+    echo "  -> Updating HTML dashboard..."
+    generate_stats_html
+    
+    # Embed charts in HTML dashboard
+    echo "  -> Embedding charts in HTML dashboard..."
+    if [[ -f "auto_chart_embedder.py" ]]; then
+        python3 auto_chart_embedder.py 2>/dev/null || echo "  Warning: Failed to embed charts in HTML"
+    fi
+    
+    echo "Auto-generation complete. Charts and HTML updated."
     
     sleep "$INTERVAL"
 done
