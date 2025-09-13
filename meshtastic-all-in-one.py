@@ -63,6 +63,10 @@ class MeshtasticTelemetryLogger:
                         key = key.strip()
                         value = value.strip().strip('"\'')
                         
+                        # Remove inline comments
+                        if '#' in value:
+                            value = value.split('#')[0].strip()
+                        
                         # Type conversion
                         if value.lower() in ('true', 'false'):
                             config[key] = value.lower() == 'true'
