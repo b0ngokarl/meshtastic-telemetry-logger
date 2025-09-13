@@ -85,7 +85,33 @@ chmod +x meshtastic-telemetry-logger.sh weather_integration.sh
 
 # Run weather predictions independently
 ./weather_integration.sh
+
+# Generate telemetry charts (with auto-detected node names)
+python generate_node_chart.py              # Utilization charts (2-panel)
+python generate_full_telemetry_chart.py    # Comprehensive charts (5-panel)
 ```
+
+## 📈 Chart Generation (New!)
+
+### Automatic Node Name Detection
+- **No manual configuration needed** - node names automatically pulled from `nodes_log.csv`
+- **Smart naming**: Combines full name + short alias (e.g., "TRUTZTURM Solar (TRZS)")
+- **Works with both chart types**: utilization-focused and comprehensive telemetry
+
+### Chart Types
+1. **Utilization Charts** (`generate_node_chart.py`)
+   - Channel utilization trends
+   - Transmission utilization patterns
+   - Perfect for network performance analysis
+
+2. **Comprehensive Telemetry** (`generate_full_telemetry_chart.py`)
+   - Battery levels over time
+   - Voltage monitoring
+   - Channel & transmission utilization
+   - Node uptime tracking
+   - Ideal for complete health monitoring
+
+See `TELEMETRY_CHARTS.md` for detailed chart generation documentation.
 
 ## 📊 Dashboard Features
 
@@ -182,6 +208,15 @@ TIMEOUT=25        # Request timeout
 ### Weather Cache Settings
 ```bash
 WEATHER_CACHE_DURATION=3600  # Cache duration (seconds)
+```
+
+### Chart Generation (via .env file)
+```bash
+# Nodes to include in charts (auto-updates names from nodes_log.csv)
+CHART_NODES="!9eed0410,!2c9e092b,!849c4818"
+
+# Optional: Override auto-detected names
+CHART_NODE_NAMES="Custom Name 1,Custom Name 2,Custom Name 3"
 ```
 
 ## 📈 Development History
