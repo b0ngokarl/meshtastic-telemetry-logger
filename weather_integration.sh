@@ -26,9 +26,18 @@ calculate_sunrise_sunset() {
     lat=$(echo "$lat" | sed 's/[^0-9.-]//g')
     lon=$(echo "$lon" | sed 's/[^0-9.-]//g')
     
-    # Validate coordinates
-    if [[ ! "$lat" =~ ^-?[0-9]+\.?[0-9]*$ ]] || [[ ! "$lon" =~ ^-?[0-9]+\.?[0-9]*$ ]]; then
-        echo "Invalid coordinates: lat=$lat, lon=$lon" >&2
+    # Handle empty strings after sanitization
+    if [ -z "$lat" ] || [ -z "$lon" ]; then
+        return 1
+    fi
+    
+    # Validate coordinates are proper numbers
+    if ! [[ "$lat" =~ ^-?[0-9]+(\.[0-9]+)?$ ]] || ! [[ "$lon" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
+        return 1
+    fi
+    
+    # Validate coordinate ranges
+    if (( $(echo "$lat < -90 || $lat > 90" | bc -l 2>/dev/null) )) || (( $(echo "$lon < -180 || $lon > 180" | bc -l 2>/dev/null) )); then
         return 1
     fi
     
@@ -159,79 +168,82 @@ calculate_solar_efficiency() {
     lat=$(echo "$lat" | sed 's/[^0-9.-]//g')
     lon=$(echo "$lon" | sed 's/[^0-9.-]//g')
     
-    # Validate coordinates
+    # Validate inputs
     if [[ ! "$lat" =~ ^-?[0-9]+\.?[0-9]*$ ]] || [[ ! "$lon" =~ ^-?[0-9]+\.?[0-9]*$ ]]; then
-        echo "50"  # Default 50% efficiency for invalid coordinates
+        echo "0"  # Return 0% efficiency for invalid coordinates
         return
     fi
     
-    # Get sunrise and sunset times
-    local sun_times=$(calculate_sunrise_sunset "$lat" "$lon")
-    local sunrise_hour=$(echo "$sun_times" | cut -d: -f1)
-    local sunrise_min=$(echo "$sun_times" | cut -d: -f2)
-    local sunset_hour=$(echo "$sun_times" | cut -d: -f3)
-    local sunset_min=$(echo "$sun_times" | cut -d: -f4)
+    if [[ ! "$hour" =~ ^[0-9]+\.?[0-9]*$ ]] || [[ ! "$clouds" =~ ^[0-9]+\.?[0-9]*$ ]] || [[ ! "$temp" =~ ^-?[0-9]+\.?[0-9]*$ ]]; then
+        echo "0"  # Return 0% efficiency for invalid inputs
+        return
+    fi
     
-    # Convert to decimal hours
-    local sunrise_decimal=$(echo "scale=2; $sunrise_hour + $sunrise_min/60" | bc -l)
-    local sunset_decimal=$(echo "scale=2; $sunset_hour + $sunset_min/60" | bc -l)
+    # Simple sunrise/sunset calculation (approximation)
+    # For most locations, assume sunrise around 6:00 and sunset around 18:00 with seasonal variation
+    local day_of_year=$(date +%j)
+    local sunrise_hour=6
+    local sunset_hour=18
+    
+    # Adjust for seasonal variation (rough approximation)
+    local seasonal_adjustment=$(echo "scale=2; 2 * s((${day_of_year} - 81) * 3.14159 / 182.5)" | bc -l 2>/dev/null || echo "0")
+    sunrise_hour=$(echo "scale=2; $sunrise_hour - $seasonal_adjustment" | bc -l 2>/dev/null || echo "6")
+    sunset_hour=$(echo "scale=2; $sunset_hour + $seasonal_adjustment" | bc -l 2>/dev/null || echo "18")
     
     # Check if it's daylight
-    if (( $(echo "$hour < $sunrise_decimal || $hour > $sunset_decimal" | bc -l) )); then
+    if (( $(echo "$hour < $sunrise_hour || $hour > $sunset_hour" | bc -l 2>/dev/null || echo "1") )); then
         echo "0"
         return
     fi
     
-    # Calculate sun elevation angle
+    # Calculate sun elevation angle (simplified)
     local solar_noon=12
-    local hour_angle=$(echo "scale=6; ($hour - $solar_noon) * 15" | bc -l)
-    local day_of_year=$(date +%j)
+    local hour_angle=$(echo "scale=6; ($hour - $solar_noon) * 15" | bc -l 2>/dev/null || echo "0")
     
-    # Solar declination angle
-    local declination=$(echo "scale=6; 23.45 * s((284 + $day_of_year) * 3.14159/180 * 365.25/365)" | bc -l)
-    
-    # Sun elevation calculation
-    local lat_rad=$(echo "scale=6; $lat * 3.14159/180" | bc -l)
-    local decl_rad=$(echo "scale=6; $declination * 3.14159/180" | bc -l)
-    local hour_angle_rad=$(echo "scale=6; $hour_angle * 3.14159/180" | bc -l)
-    
-    local sin_elevation=$(echo "scale=6; s($lat_rad) * s($decl_rad) + c($lat_rad) * c($decl_rad) * c($hour_angle_rad)" | bc -l)
-    local elevation_deg=$(echo "scale=6; a($sin_elevation / sqrt(1 - $sin_elevation^2)) * 180/3.14159" | bc -l)
-    
-    # Ensure elevation is positive
-    if (( $(echo "$elevation_deg < 0" | bc -l) )); then
-        echo "0"
-        return
+    # Simple elevation calculation based on hour angle
+    local elevation_factor
+    if (( $(echo "$hour_angle < -90 || $hour_angle > 90" | bc -l 2>/dev/null || echo "0") )); then
+        elevation_factor=0
+    else
+        # Use cosine of hour angle as approximation for sun elevation
+        elevation_factor=$(echo "scale=6; c($hour_angle * 3.14159 / 180)" | bc -l 2>/dev/null || echo "0")
+        if (( $(echo "$elevation_factor < 0" | bc -l 2>/dev/null || echo "0") )); then
+            elevation_factor=0
+        fi
     fi
     
     # Base efficiency from sun angle (0-100%)
-    local sun_efficiency=$(echo "scale=2; $elevation_deg / 90 * 100" | bc -l)
-    if (( $(echo "$sun_efficiency > 100" | bc -l) )); then
-        sun_efficiency=100
-    fi
+    local sun_efficiency=$(echo "scale=2; $elevation_factor * 80" | bc -l 2>/dev/null || echo "0")
     
     # Cloud factor (0-100% clouds reduces efficiency)
-    local cloud_factor=$(echo "scale=2; 100 - $clouds" | bc -l)
+    local cloud_factor=$(echo "scale=2; (100 - $clouds) / 100" | bc -l 2>/dev/null || echo "0.5")
     
-    # Temperature factor (optimal around 25C)
-    local temp_factor=100
-    if (( $(echo "$temp > 25" | bc -l) )); then
-        temp_factor=$(echo "scale=2; 100 - ($temp - 25) * 0.5" | bc -l)
-    elif (( $(echo "$temp < 0" | bc -l) )); then
-        temp_factor=$(echo "scale=2; 100 + $temp * 0.5" | bc -l)
+    # Temperature factor (optimal around 25C, efficiency decreases in extreme heat)
+    local temp_factor=1
+    if (( $(echo "$temp > 25" | bc -l 2>/dev/null || echo "0") )); then
+        temp_factor=$(echo "scale=2; 1 - ($temp - 25) * 0.004" | bc -l 2>/dev/null || echo "1") # 0.4% loss per degree above 25C
+    elif (( $(echo "$temp < 0" | bc -l 2>/dev/null || echo "0") )); then
+        temp_factor=$(echo "scale=2; 1 + $temp * 0.002" | bc -l 2>/dev/null || echo "1") # slight gain in cold (up to a point)
     fi
     
     # Ensure factors are within reasonable bounds
-    cloud_factor=$(echo "$cloud_factor" | awk '{printf "%.2f", ($1 < 0) ? 0 : ($1 > 100) ? 100 : $1}')
-    temp_factor=$(echo "$temp_factor" | awk '{printf "%.2f", ($1 < 50) ? 50 : ($1 > 100) ? 100 : $1}')
+    if (( $(echo "$temp_factor < 0.5" | bc -l 2>/dev/null || echo "0") )); then
+        temp_factor=0.5
+    elif (( $(echo "$temp_factor > 1.2" | bc -l 2>/dev/null || echo "0") )); then
+        temp_factor=1.2
+    fi
     
     # Calculate final efficiency
-    local efficiency=$(echo "scale=2; $sun_efficiency * $cloud_factor/100 * $temp_factor/100" | bc -l)
+    local efficiency=$(echo "scale=2; $sun_efficiency * $cloud_factor * $temp_factor" | bc -l 2>/dev/null || echo "0")
     
     # Ensure result is within bounds
-    efficiency=$(echo "$efficiency" | awk '{printf "%.2f", ($1 < 0) ? 0 : ($1 > 100) ? 100 : $1}')
+    if (( $(echo "$efficiency < 0" | bc -l 2>/dev/null || echo "0") )); then
+        efficiency=0
+    elif (( $(echo "$efficiency > 100" | bc -l 2>/dev/null || echo "0") )); then
+        efficiency=100
+    fi
     
-    echo "$efficiency"
+    printf "%.1f" "$efficiency"
 }
 
 # Predict battery level based on current state and weather
@@ -242,29 +254,35 @@ predict_battery_level() {
     local lat="${4:-$DEFAULT_LAT}"
     local lon="${5:-$DEFAULT_LON}"
     
+    # Validate inputs
+    if ! [[ "$current_battery" =~ ^[0-9]+\.?[0-9]*$ ]] || ! [[ "$solar_efficiency" =~ ^[0-9]+\.?[0-9]*$ ]] || ! [[ "$hours" =~ ^[0-9]+\.?[0-9]*$ ]]; then
+        echo "50.0"  # Default value for invalid inputs
+        return
+    fi
+    
     # Cap battery at 100% if it's over 100%
-    if (( $(echo "$current_battery > 100" | bc -l) )); then
+    if (( $(echo "$current_battery > 100" | bc -l 2>/dev/null || echo "0") )); then
         current_battery=100
     fi
     
-    # Base power consumption per hour (assuming 2% per hour average)
+    # Base power consumption per hour (assuming 2% per hour average for a typical Meshtastic device)
     local base_consumption=2
     
     # Solar generation factor (efficiency affects how much power is generated)
     # Assume optimal solar panels can generate 5% battery per hour in full sun
     local max_solar_generation=5
-    local actual_generation=$(echo "scale=2; $max_solar_generation * $solar_efficiency / 100" | bc -l)
+    local actual_generation=$(echo "scale=2; $max_solar_generation * $solar_efficiency / 100" | bc -l 2>/dev/null || echo "0")
     
     # Net change per hour
-    local net_change=$(echo "scale=2; $actual_generation - $base_consumption" | bc -l)
+    local net_change=$(echo "scale=2; $actual_generation - $base_consumption" | bc -l 2>/dev/null || echo "-2")
     
     # Calculate predicted battery level
-    local predicted=$(echo "scale=2; $current_battery + ($net_change * $hours)" | bc -l)
+    local predicted=$(echo "scale=2; $current_battery + ($net_change * $hours)" | bc -l 2>/dev/null || echo "$current_battery")
     
     # Ensure battery level stays within 0-100% bounds
-    if (( $(echo "$predicted < 0" | bc -l) )); then
+    if (( $(echo "$predicted < 0" | bc -l 2>/dev/null || echo "0") )); then
         predicted=0
-    elif (( $(echo "$predicted > 100" | bc -l) )); then
+    elif (( $(echo "$predicted > 100" | bc -l 2>/dev/null || echo "0") )); then
         predicted=100
     fi
     
@@ -280,7 +298,7 @@ generate_weather_report() {
     echo "Generating enhanced weather-based predictions..."
     
     # Initialize JSON output
-    cat > "$output_file" << 'EOF'
+    cat > "$output_file" << EOF
 {
     "timestamp": "$(date -Iseconds)",
     "predictions": [
@@ -291,7 +309,7 @@ EOF
     # Process each node from the CSV
     while IFS=',' read -r node_id longname lat lon altitude last_seen battery voltage snr rssi hop_start channel tx_power || [[ -n "$node_id" ]]; do
         # Skip header line
-        if [[ "$node_id" == "node_id" ]]; then
+        if [[ "$node_id" == "node_id" ]] || [[ "$node_id" == "User" ]]; then
             continue
         fi
         
@@ -300,19 +318,42 @@ EOF
             continue
         fi
         
-        # Use default coordinates if not provided
+        # Remove quotes from all fields
+        node_id=$(echo "$node_id" | sed 's/^"//; s/"$//')
+        longname=$(echo "$longname" | sed 's/^"//; s/"$//')
+        lat=$(echo "$lat" | sed 's/^"//; s/"$//')
+        lon=$(echo "$lon" | sed 's/^"//; s/"$//')
+        battery=$(echo "$battery" | sed 's/^"//; s/"$//')
+        
+        # Use default coordinates if not provided or invalid
         lat="${lat:-$DEFAULT_LAT}"
         lon="${lon:-$DEFAULT_LON}"
         battery="${battery:-50}"
         
-        # Sanitize coordinates - remove degree symbols and other non-numeric characters
+        # Sanitize coordinates - remove degree symbols and other non-numeric characters except decimal point and minus
         lat=$(echo "$lat" | sed 's/[^0-9.-]//g')
         lon=$(echo "$lon" | sed 's/[^0-9.-]//g')
         
-        # Validate coordinates
-        if ! [[ "$lat" =~ ^-?[0-9]+\.?[0-9]*$ ]] || ! [[ "$lon" =~ ^-?[0-9]+\.?[0-9]*$ ]]; then
+        # Sanitize battery value
+        battery=$(echo "$battery" | sed 's/[^0-9.-]//g')
+        
+        # Validate coordinates and battery
+        if [ -z "$lat" ] || [ -z "$lon" ] || [ "$lat" = "N/A" ] || [ "$lon" = "N/A" ] || ! [[ "$lat" =~ ^-?[0-9]+(\.[0-9]+)?$ ]] || ! [[ "$lon" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "Warning: Invalid coordinates for $node_id: lat=$lat, lon=$lon. Using defaults." >&2
             lat="$DEFAULT_LAT"
             lon="$DEFAULT_LON"
+        fi
+        
+        # Additional coordinate range validation
+        if (( $(echo "$lat < -90 || $lat > 90 || $lon < -180 || $lon > 180" | bc -l 2>/dev/null || echo "1") )); then
+            echo "Warning: Coordinates out of range for $node_id: lat=$lat, lon=$lon. Using defaults." >&2
+            lat="$DEFAULT_LAT"
+            lon="$DEFAULT_LON"
+        fi
+        
+        if [ -z "$battery" ] || [ "$battery" = "N/A" ] || ! [[ "$battery" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "Warning: Invalid battery for $node_id: $battery. Using 50." >&2
+            battery="50"
         fi
         
         echo "Processing node: $node_id at coordinates ($lat, $lon)..."
@@ -330,9 +371,15 @@ EOF
         
         # Calculate solar efficiency for different times
         local current_hour=$(date +%H)
-        local efficiency_6h=$(calculate_solar_efficiency "$lat" "$lon" "$((current_hour + 6))" "$clouds_6h" "$temp_6h")
-        local efficiency_12h=$(calculate_solar_efficiency "$lat" "$lon" "$((current_hour + 12))" "$clouds_12h" "$temp_12h")
-        local efficiency_24h=$(calculate_solar_efficiency "$lat" "$lon" "$current_hour" "$clouds_24h" "$temp_24h")
+        
+        # Calculate future hours with 24-hour wrap-around
+        local hour_6h=$(( (current_hour + 6) % 24 ))
+        local hour_12h=$(( (current_hour + 12) % 24 ))
+        local hour_24h=$(( current_hour ))  # Same time tomorrow
+        
+        local efficiency_6h=$(calculate_solar_efficiency "$lat" "$lon" "$hour_6h" "$clouds_6h" "$temp_6h")
+        local efficiency_12h=$(calculate_solar_efficiency "$lat" "$lon" "$hour_12h" "$clouds_12h" "$temp_12h")
+        local efficiency_24h=$(calculate_solar_efficiency "$lat" "$lon" "$hour_24h" "$clouds_24h" "$temp_24h")
         
         # Get sunrise/sunset times
         local sun_times=$(calculate_sunrise_sunset "$lat" "$lon")
@@ -350,11 +397,15 @@ EOF
         fi
         first_entry=false
         
+        # Escape JSON special characters in strings
+        node_id_escaped=$(echo "$node_id" | sed 's/\\/\\\\/g; s/"/\\"/g')
+        longname_escaped=$(echo "$longname" | sed 's/\\/\\\\/g; s/"/\\"/g')
+        
         # Write prediction to JSON
         cat >> "$output_file" << EOF
         {
-            "node_id": "$node_id",
-            "longname": "$longname",
+            "node_id": "$node_id_escaped",
+            "longname": "$longname_escaped",
             "coordinates": {
                 "lat": $lat,
                 "lon": $lon
