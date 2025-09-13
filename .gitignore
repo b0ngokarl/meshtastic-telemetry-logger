@@ -45,3 +45,4 @@ Thumbs.db
 __pycache__/
 *.pyc
 *.pyo
+weather_predictions.json
