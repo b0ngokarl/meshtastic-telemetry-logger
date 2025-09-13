@@ -1337,7 +1337,8 @@ EOF
         echo "<h3 style='margin-top: 0; color: #007bff;'>📍 Quick Navigation</h3>"
         echo "<div style='display: flex; flex-wrap: wrap; gap: 15px;'>"
         echo "<a href='#ml-status' class='nav-link' style='text-decoration: none; padding: 8px 12px; background: #e3f2fd; border-radius: 4px; color: #1976d2;'>🤖 ML Status</a>"
-        echo "<a href='#monitored-addresses' class='nav-link' style='text-decoration: none; padding: 8px 12px; background: #e8f5e9; border-radius: 4px; color: #388e3c;'>📊 Monitored Addresses</a>"
+        echo "<a href='#telemetry-charts' class='nav-link' style='text-decoration: none; padding: 8px 12px; background: #f3e5f5; border-radius: 4px; color: #7b1fa2;'>📊 Telemetry Charts</a>"
+        echo "<a href='#monitored-addresses' class='nav-link' style='text-decoration: none; padding: 8px 12px; background: #e8f5e9; border-radius: 4px; color: #388e3c;'>� Monitored Addresses</a>"
         echo "<a href='#latest-telemetry' class='nav-link' style='text-decoration: none; padding: 8px 12px; background: #fff3e0; border-radius: 4px; color: #f57c00;'>📈 Latest Telemetry</a>"
         echo "<a href='#telemetry-history' class='nav-link' style='text-decoration: none; padding: 8px 12px; background: #fce4ec; border-radius: 4px; color: #c2185b;'>📋 Telemetry History</a>"
         echo "<a href='#current-nodes' class='nav-link' style='text-decoration: none; padding: 8px 12px; background: #f3e5f5; border-radius: 4px; color: #7b1fa2;'>🌐 Current Nodes</a>"
@@ -1409,6 +1410,12 @@ EOF
             echo "<p>Machine learning power predictor is collecting initial data. Improved predictions will be available after sufficient data is gathered.</p>"
             echo "</div>"
         fi
+        
+        # Charts section for auto-embedding telemetry charts
+        echo "<h3 id='telemetry-charts'>📊 Telemetry Charts</h3>"
+        echo "<div class='charts-content'>"
+        echo "    <p>Charts will be embedded here automatically after telemetry collection.</p>"
+        echo "</div>"
         
         # Display monitored addresses with resolved names and success/failure rates
         echo "<h3 id='monitored-addresses'>Monitored Addresses</h3>"
