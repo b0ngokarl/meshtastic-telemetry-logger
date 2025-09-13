@@ -13,6 +13,16 @@ weather_predictions.json
 power_predictions.csv
 prediction_accuracy.csv
 
+# Generated chart files
+*_chart.png
+*_chart.svg
+*.png
+*.svg
+
+# Test files and temporary HTML
+test_*.html
+*_test_*
+
 # Temporary files
 /tmp/
 *.tmp
@@ -30,3 +40,8 @@ Thumbs.db
 .vscode/
 .idea/
 *.sublime-*
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
