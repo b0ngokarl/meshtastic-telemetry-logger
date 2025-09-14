@@ -163,8 +163,10 @@ def parse_chart_config(config):
     # Create mapping
     node_config = {}
     for i, node in enumerate(chart_nodes):
+        # Use the mapped name if available, otherwise fall back to node ID
+        display_name = chart_names[i] if i < len(chart_names) else node
         node_config[node] = {
-            'name': chart_names[i] if i < len(chart_names) else f"Node {node}",
+            'name': display_name,  # Use the mapped name (like TRZT) as the display name
             'timestamps': [],
             'chutil': [],
             'txutil': []
@@ -349,8 +351,31 @@ def calculate_total_utilization_averages(data, metric_name):
     
     return avg_timestamps, avg_values
 
+def sort_nodes_by_metrics(data, primary_metric='chutil'):
+    """Sort nodes by average values first, then by highest values for better chart organization"""
+    import statistics
+    
+    def get_node_metrics(node_id, node_data):
+        if not node_data[primary_metric]:
+            return (0, 0)  # No data gets lowest priority
+        
+        values = node_data[primary_metric]
+        avg_value = statistics.mean(values)
+        max_value = max(values)
+        return (avg_value, max_value)
+    
+    # Sort by average first (descending), then by max (descending)
+    sorted_items = sorted(data.items(),
+                         key=lambda x: get_node_metrics(x[0], x[1]),
+                         reverse=True)
+    
+    return dict(sorted_items)
+
 def create_chart(data, config, output_prefix="node_utilization"):
     """Create and save the chart"""
+    # Sort nodes by metrics for better chart organization (average first, then max)
+    data = sort_nodes_by_metrics(data, 'chutil')
+    
     # Generate title based on nodes
     node_names = [node_data['name'] for node_data in data.values() if node_data['timestamps']]
     if len(node_names) == 1:
@@ -366,8 +391,14 @@ def create_chart(data, config, output_prefix="node_utilization"):
     ))
     fig.suptitle(title, fontsize=16, fontweight='bold')
     
-    # Generate colors for each node
-    colors = ['#2E8B57', '#4682B4', '#DC143C', '#FF8C00', '#9932CC', '#008B8B', '#B22222', '#228B22']
+    # Generate colors for each node - Use configurable colors from .env
+    colors_str = config.get('CHART_COLORS_UTIL', '#2E86AB,#A23B72,#F18F01,#C73E1D,#4CAF50,#9C27B0,#FF9800,#607D8B')
+    colors = [color.strip() for color in colors_str.split(',') if color.strip()]
+    
+    # Fallback to default colors if parsing failed
+    if not colors:
+        colors = ['#2E86AB', '#A23B72', '#F18F01', '#C73E1D', '#4CAF50', '#9C27B0', '#FF9800', '#607D8B']
+    
     color_map = {}
     for i, node_id in enumerate(data.keys()):
         color_map[node_id] = colors[i % len(colors)]
@@ -393,7 +424,7 @@ def create_chart(data, config, output_prefix="node_utilization"):
     
     ax1.set_ylabel('Channel Utilization (%)', fontsize=12)
     ax1.grid(True, alpha=0.3)
-    ax1.legend(fontsize=10)
+    ax1.legend(fontsize=10, bbox_to_anchor=(-0.1, 1), loc='upper right')
     max_chutil = max([max(node_data['chutil']) if node_data['chutil'] else 0 for node_data in data.values()])
     if total_chutil and total_chutil:
         max_chutil = max(max_chutil, max(total_chutil))
@@ -421,7 +452,7 @@ def create_chart(data, config, output_prefix="node_utilization"):
     ax2.set_ylabel('Transmission Utilization (%)', fontsize=12)
     ax2.set_xlabel('Time', fontsize=12)
     ax2.grid(True, alpha=0.3)
-    ax2.legend(fontsize=10)
+    ax2.legend(fontsize=10, bbox_to_anchor=(-0.1, 1), loc='upper right')
     max_txutil = max([max(node_data['txutil']) if node_data['txutil'] else 0 for node_data in data.values()])
     if total_txutil and total_txutil:
         max_txutil = max(max_txutil, max(total_txutil))
@@ -433,7 +464,14 @@ def create_chart(data, config, output_prefix="node_utilization"):
         ax.xaxis.set_major_locator(mdates.HourLocator(interval=6))
         plt.setp(ax.xaxis.get_majorticklabels(), rotation=45)
     
-    plt.tight_layout()
+    # Use manual spacing to accommodate left-side legends
+    plt.subplots_adjust(
+        left=0.25,      # Increased left margin for legends
+        bottom=0.1,     # Bottom margin
+        right=0.95,     # Right margin
+        top=0.93,       # Top margin (leave space for title)
+        hspace=0.3      # Vertical spacing between subplots
+    )
     
     # Save the chart
     output_file = f'{output_prefix}_chart.png'

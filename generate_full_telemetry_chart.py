@@ -48,9 +48,9 @@ def load_env_file():
 
 
 def auto_update_node_names():
-    """Automatically update CHART_NODE_NAMES from nodes_log.csv"""
-    def get_node_names_from_csv(chart_nodes, csv_file='nodes_log.csv'):
-        """Extract node names from nodes_log.csv for the given node IDs"""
+    """Automatically update node names from nodes_log.csv for all monitored nodes"""
+    def get_node_names_from_csv(csv_file='nodes_log.csv'):
+        """Extract node names from nodes_log.csv for all available node IDs"""
         node_names = {}
         
         if not os.path.exists(csv_file):
@@ -64,7 +64,7 @@ def auto_update_node_names():
                     node_name = row.get('User', '').strip()
                     node_aka = row.get('AKA', '').strip()
                     
-                    if node_id in chart_nodes:
+                    if node_id:  # Process all nodes, not just chart nodes
                         # Use AKA if available and short, otherwise use User name
                         if node_aka and len(node_aka) <= 8:
                             display_name = f"{node_name} ({node_aka})"
@@ -140,35 +140,37 @@ def auto_update_node_names():
     if chart_nodes_str:
         chart_nodes = [node.strip() for node in chart_nodes_str.split(',') if node.strip()]
         if chart_nodes:
-            node_names = get_node_names_from_csv(chart_nodes)
+            node_names = get_node_names_from_csv()
             if node_names:
-                update_env_file(chart_nodes, node_names)
+                # Filter to only the chart nodes for .env file update
+                chart_node_names = {node: name for node, name in node_names.items() if node in chart_nodes}
+                update_env_file(chart_nodes, chart_node_names)
                 print("✅ Auto-updated chart node names from nodes_log.csv")
+    
+    # Return all node names for chart generation
+    return get_node_names_from_csv()
 
 
 def parse_chart_config(config):
-    """Parse chart configuration from .env file"""
-    chart_nodes = config.get('CHART_NODES', '').split(',')
-    chart_names = config.get('CHART_NODE_NAMES', '').split(',')
+    """Parse chart configuration from .env file - use MONITORED_NODES for full telemetry charts"""
+    # Always use MONITORED_NODES for comprehensive telemetry charts
+    monitored_nodes = config.get('MONITORED_NODES', '').split(',')
+    chart_nodes = [node.strip() for node in monitored_nodes if node.strip()]
     
-    # Clean up the lists
-    chart_nodes = [node.strip() for node in chart_nodes if node.strip()]
-    chart_names = [name.strip() for name in chart_names if name.strip()]
+    # Auto-update node names from CSV file for all monitored nodes
+    auto_names = auto_update_node_names()
     
-    # If no specific chart nodes defined, fall back to monitored nodes
-    if not chart_nodes:
-        monitored_nodes = config.get('MONITORED_NODES', '').split(',')
-        chart_nodes = [node.strip() for node in monitored_nodes if node.strip()]
-    
-    # If names don't match nodes count, generate default names
-    if len(chart_names) != len(chart_nodes):
-        chart_names = [f"Node {node}" for node in chart_nodes]
+    # Get chart colors from .env configuration
+    colors_str = config.get('CHART_COLORS_TELEMETRY', '#1f77b4,#ff7f0e,#2ca02c,#d62728,#9467bd,#8c564b,#e377c2,#7f7f7f,#bcbd22,#17becf,#aec7e8,#ffbb78')
+    colors = [color.strip() for color in colors_str.split(',') if color.strip()]
     
     # Create mapping with all telemetry fields
     node_config = {}
     for i, node in enumerate(chart_nodes):
+        # Use the auto-updated name if available, otherwise use a default
+        display_name = auto_names.get(node, f"Node {node}")
         node_config[node] = {
-            'name': chart_names[i] if i < len(chart_names) else f"Node {node}",
+            'name': display_name,
             'timestamps': [],
             'battery': [],
             'voltage': [],
@@ -413,11 +415,57 @@ def calculate_total_utilization_averages(data, metric_name):
     
     return node_config
 
+def sort_nodes_by_metrics(data, primary_metric='chutil'):
+    """Sort nodes by average values first, then by highest values for better chart organization"""
+    import statistics
+    
+    def get_node_metrics(node_id, node_data):
+        if not node_data[primary_metric]:
+            return (0, 0)  # No data gets lowest priority
+        
+        values = node_data[primary_metric]
+        avg_value = statistics.mean(values)
+        max_value = max(values)
+        return (avg_value, max_value)
+    
+    # Sort by average first (descending), then by max (descending)
+    sorted_items = sorted(data.items(),
+                         key=lambda x: get_node_metrics(x[0], x[1]),
+                         reverse=True)
+    
+    return dict(sorted_items)
+
+def get_subplot_sorted_nodes(data, metric):
+    """Get nodes sorted specifically for a subplot based on its metric"""
+    import statistics
+    
+    def get_node_metrics(node_id, node_data):
+        if not node_data[metric] or all(v is None for v in node_data[metric]):
+            return (0, 0)  # No data gets lowest priority
+        
+        values = [v for v in node_data[metric] if v is not None]
+        if not values:
+            return (0, 0)
+        
+        avg_value = statistics.mean(values)
+        max_value = max(values)
+        return (avg_value, max_value)
+    
+    # Sort by average first (descending), then by max (descending)
+    sorted_items = sorted(data.items(),
+                         key=lambda x: get_node_metrics(x[0], x[1]),
+                         reverse=True)
+    
+    return [item[0] for item in sorted_items]  # Return just the node IDs in sorted order
+
 def create_chart(data, output_prefix="node_telemetry", config=None):
     """Create and save the comprehensive telemetry chart"""
     if config is None:
         config = {}
         
+    # Sort nodes by metrics for better chart organization (average first, then max)
+    data = sort_nodes_by_metrics(data, 'chutil')
+    
     # Generate title based on nodes
     node_names = [node_data['name'] for node_data in data.values() if node_data['timestamps']]
     if len(node_names) == 1:
@@ -427,9 +475,9 @@ def create_chart(data, output_prefix="node_telemetry", config=None):
     else:
         title = f"Multiple Nodes - Full Telemetry"
     
-    # Get chart configuration from environment
+    # Get chart configuration from environment - use larger height for better readability
     chart_width = float(config.get('CHART_FIGSIZE_WIDTH', 16))
-    chart_height = float(config.get('CHART_FIGSIZE_HEIGHT', 20))
+    chart_height = float(config.get('CHART_FIGSIZE_HEIGHT', 24))  # Increased from 20 to 24 for better spacing
     size_multiplier = float(config.get('CHART_SIZE_MULTIPLIER', 1.0))
     
     # Apply size multiplier
@@ -439,16 +487,23 @@ def create_chart(data, output_prefix="node_telemetry", config=None):
     fig, axes = plt.subplots(5, 1, figsize=figsize)
     fig.suptitle(title, fontsize=18, fontweight='bold')
     
-    # Generate colors for each node
-    colors = ['#2E8B57', '#4682B4', '#DC143C', '#FF8C00', '#9932CC', '#008B8B', '#B22222', '#228B22']
+    # Generate colors for each node - Use configurable colors from .env
+    colors = config.get('colors', ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf', '#aec7e8', '#ffbb78'])
+    
+    # Fallback to default colors if parsing failed
+    if not colors:
+        colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
+    
     color_map = {}
     for i, node_id in enumerate(data.keys()):
         color_map[node_id] = colors[i % len(colors)]
     
-    # Plot 1: Battery Level
+    # Plot 1: Battery Level - sorted by battery metrics
     ax1 = axes[0]
     ax1.set_title('Battery Level (%)', fontsize=14, fontweight='bold')
-    for node_id, node_data in data.items():
+    battery_sorted_nodes = get_subplot_sorted_nodes(data, 'battery')
+    for node_id in battery_sorted_nodes:
+        node_data = data[node_id]
         if node_data['timestamps'] and any(b is not None for b in node_data['battery']):
             # Filter out None values
             valid_data = [(t, b) for t, b in zip(node_data['timestamps'], node_data['battery']) if b is not None]
@@ -459,13 +514,15 @@ def create_chart(data, output_prefix="node_telemetry", config=None):
                         linewidth=2, marker='o', markersize=4)
     ax1.set_ylabel('Battery Level (%)', fontsize=12)
     ax1.grid(True, alpha=0.3)
-    ax1.legend(fontsize=10)
+    ax1.legend(fontsize=10, bbox_to_anchor=(-0.1, 1), loc='upper right')
     ax1.set_ylim(0, 100)
     
-    # Plot 2: Voltage
+    # Plot 2: Voltage - sorted by voltage metrics
     ax2 = axes[1]
     ax2.set_title('Voltage (V)', fontsize=14, fontweight='bold')
-    for node_id, node_data in data.items():
+    voltage_sorted_nodes = get_subplot_sorted_nodes(data, 'voltage')
+    for node_id in voltage_sorted_nodes:
+        node_data = data[node_id]
         if node_data['timestamps'] and any(v is not None for v in node_data['voltage']):
             # Filter out None values
             valid_data = [(t, v) for t, v in zip(node_data['timestamps'], node_data['voltage']) if v is not None]
@@ -476,19 +533,21 @@ def create_chart(data, output_prefix="node_telemetry", config=None):
                         linewidth=2, marker='s', markersize=4)
     ax2.set_ylabel('Voltage (V)', fontsize=12)
     ax2.grid(True, alpha=0.3)
-    ax2.legend(fontsize=10)
+    ax2.legend(fontsize=10, bbox_to_anchor=(-0.1, 1), loc='upper right')
     # Dynamic voltage range based on data
     all_voltages = [v for node_data in data.values() for v in node_data['voltage'] if v is not None]
     if all_voltages:
         min_v, max_v = min(all_voltages), max(all_voltages)
         ax2.set_ylim(min_v * 0.95, max_v * 1.05)
     
-    # Plot 3: Channel Utilization
+    # Plot 3: Channel Utilization - sorted by channel utilization metrics
     ax3 = axes[2]
     ax3.set_title('Channel Utilization (%)', fontsize=14, fontweight='bold')
+    chutil_sorted_nodes = get_subplot_sorted_nodes(data, 'chutil')
     
-    # Plot individual nodes
-    for node_id, node_data in data.items():
+    # Plot individual nodes in sorted order
+    for node_id in chutil_sorted_nodes:
+        node_data = data[node_id]
         if node_data['timestamps'] and any(c is not None for c in node_data['chutil']):
             # Filter out None values
             valid_data = [(t, c) for t, c in zip(node_data['timestamps'], node_data['chutil']) if c is not None]
@@ -509,7 +568,7 @@ def create_chart(data, output_prefix="node_telemetry", config=None):
     
     ax3.set_ylabel('Channel Utilization (%)', fontsize=12)
     ax3.grid(True, alpha=0.3)
-    ax3.legend(fontsize=10)
+    ax3.legend(fontsize=10, bbox_to_anchor=(-0.1, 1), loc='upper right')
     all_chutil = [c for node_data in data.values() for c in node_data['chutil'] if c is not None]
     if total_chutil:
         all_chutil.extend(total_chutil)
@@ -519,12 +578,14 @@ def create_chart(data, output_prefix="node_telemetry", config=None):
     else:
         ax3.set_ylim(0, 100)
     
-    # Plot 4: Transmission Utilization
+    # Plot 4: Transmission Utilization - sorted by TX utilization metrics
     ax4 = axes[3]
     ax4.set_title('Transmission Utilization (%)', fontsize=14, fontweight='bold')
+    txutil_sorted_nodes = get_subplot_sorted_nodes(data, 'txutil')
     
-    # Plot individual nodes
-    for node_id, node_data in data.items():
+    # Plot individual nodes in sorted order
+    for node_id in txutil_sorted_nodes:
+        node_data = data[node_id]
         if node_data['timestamps'] and any(t is not None for t in node_data['txutil']):
             # Filter out None values
             valid_data = [(t, tx) for t, tx in zip(node_data['timestamps'], node_data['txutil']) if tx is not None]
@@ -545,7 +606,7 @@ def create_chart(data, output_prefix="node_telemetry", config=None):
     
     ax4.set_ylabel('Transmission Utilization (%)', fontsize=12)
     ax4.grid(True, alpha=0.3)
-    ax4.legend(fontsize=10)
+    ax4.legend(fontsize=10, bbox_to_anchor=(-0.1, 1), loc='upper right')
     all_txutil = [t for node_data in data.values() for t in node_data['txutil'] if t is not None]
     if total_txutil:
         all_txutil.extend(total_txutil)
@@ -555,10 +616,12 @@ def create_chart(data, output_prefix="node_telemetry", config=None):
     else:
         ax4.set_ylim(0, 10)
     
-    # Plot 5: Uptime
+    # Plot 5: Uptime - sorted by uptime metrics
     ax5 = axes[4]
     ax5.set_title('Uptime (Hours)', fontsize=14, fontweight='bold')
-    for node_id, node_data in data.items():
+    uptime_sorted_nodes = get_subplot_sorted_nodes(data, 'uptime')
+    for node_id in uptime_sorted_nodes:
+        node_data = data[node_id]
         if node_data['timestamps'] and any(u is not None for u in node_data['uptime']):
             # Filter out None values
             valid_data = [(t, u) for t, u in zip(node_data['timestamps'], node_data['uptime']) if u is not None]
@@ -570,7 +633,7 @@ def create_chart(data, output_prefix="node_telemetry", config=None):
     ax5.set_ylabel('Uptime (Hours)', fontsize=12)
     ax5.set_xlabel('Time', fontsize=12)
     ax5.grid(True, alpha=0.3)
-    ax5.legend(fontsize=10)
+    ax5.legend(fontsize=10, bbox_to_anchor=(-0.1, 1), loc='upper right')
     all_uptime = [u for node_data in data.values() for u in node_data['uptime'] if u is not None]
     if all_uptime:
         max_uptime = max(all_uptime)
@@ -582,7 +645,15 @@ def create_chart(data, output_prefix="node_telemetry", config=None):
         ax.xaxis.set_major_locator(mdates.HourLocator(interval=6))
         plt.setp(ax.xaxis.get_majorticklabels(), rotation=45)
     
-    plt.tight_layout()
+    # Use manual spacing instead of tight_layout for better readability
+    # Increase vertical spacing between subplots to reduce cramping
+    plt.subplots_adjust(
+        left=0.25,      # Increased left margin for legends
+        bottom=0.08,    # Bottom margin
+        right=0.95,     # Right margin
+        top=0.93,       # Top margin (leave space for title)
+        hspace=0.4      # Increase vertical spacing between subplots (default ~0.2)
+    )
     
     # Get DPI configuration
     chart_dpi = int(config.get('CHART_DPI', 300))
@@ -643,9 +714,13 @@ def main():
     
     if not node_config:
         print("No nodes configured for chart generation")
-        print("Please set CHART_NODES in your .env file or use --nodes argument")
-        print("Example: python generate_full_telemetry_chart.py --nodes '!2df67288,!a0cc8008'")
+        print("Please set MONITORED_NODES in your .env file")
+        print("Example: MONITORED_NODES=\"!2df67288,!a0cc8008\"")
         sys.exit(1)
+    
+    # Add colors to config for chart generation
+    colors_str = config.get('CHART_COLORS_TELEMETRY', '#1f77b4,#ff7f0e,#2ca02c,#d62728,#9467bd,#8c564b,#e377c2,#7f7f7f,#bcbd22,#17becf,#aec7e8,#ffbb78')
+    config['colors'] = [color.strip() for color in colors_str.split(',') if color.strip()]
     
     print(f"Configured nodes for charting: {list(node_config.keys())}")
     
