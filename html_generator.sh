@@ -7,11 +7,188 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/common_utils.sh"
 
-# We need some functions from telemetry collector for the HTML generation
-# Load them if not already available
-if ! type load_node_info_cache >/dev/null 2>&1; then
-    source "$SCRIPT_DIR/telemetry_collector.sh"
-fi
+# Generate Network Topology section for HTML dashboard
+generate_network_topology_section() {
+    local traceroute_csv="${TRACEROUTE_CSV:-traceroute_log.csv}"
+    local topology_stats="network_topology_stats.json"
+    local topology_image="network_topology.png"
+    local topology_base64="network_topology_base64.txt"
+    
+    if [ ! -f "$traceroute_csv" ]; then
+        cat << 'EOF'
+            <div class="info-card">
+                <h4><i class="fas fa-info-circle"></i> No Traceroute Data</h4>
+                <p>Traceroute data collection has not been run yet. Network topology will appear here once traceroute data is available.</p>
+                <p><em>Traceroute is automatically collected every hour for monitored nodes.</em></p>
+            </div>
+EOF
+        return
+    fi
+    
+    # Check if we have any actual traceroute data
+    local traceroute_count=0
+    if [ -f "$traceroute_csv" ]; then
+        traceroute_count=$(tail -n +2 "$traceroute_csv" | wc -l)
+    fi
+    
+    if [ "$traceroute_count" -eq 0 ]; then
+        cat << 'EOF'
+            <div class="info-card">
+                <h4><i class="fas fa-hourglass-half"></i> Collecting Network Data</h4>
+                <p>Traceroute collection is enabled but no data has been collected yet.</p>
+                <p><em>Network topology visualization will appear after the first traceroute cycle completes.</em></p>
+            </div>
+EOF
+        return
+    fi
+    
+    # Display basic traceroute statistics
+    echo '<div class="topology-stats">'
+    echo '<h4><i class="fas fa-chart-line"></i> Route Statistics</h4>'
+    
+    # Calculate basic stats from traceroute CSV
+    if [ -f "$traceroute_csv" ]; then
+        local total_attempts=$(tail -n +2 "$traceroute_csv" | wc -l)
+        local successful_routes=$(tail -n +2 "$traceroute_csv" | awk -F',' '$3=="true"' | wc -l)
+        local failed_routes=$(tail -n +2 "$traceroute_csv" | awk -F',' '$3!="true"' | wc -l)
+        local success_rate=0
+        
+        if [ "$total_attempts" -gt 0 ]; then
+            success_rate=$(echo "scale=1; $successful_routes * 100 / $total_attempts" | bc 2>/dev/null || echo "0")
+        fi
+        
+        echo '<div class="stats-grid">'
+        echo "  <div class=\"stat-item\">"
+        echo "    <span class=\"stat-label\">Total Routes Traced:</span>"
+        echo "    <span class=\"stat-value\">$total_attempts</span>"
+        echo "  </div>"
+        echo "  <div class=\"stat-item\">"
+        echo "    <span class=\"stat-label\">Successful Routes:</span>"
+        echo "    <span class=\"stat-value\">$successful_routes</span>"
+        echo "  </div>"
+        echo "  <div class=\"stat-item\">"
+        echo "    <span class=\"stat-label\">Route Success Rate:</span>"
+        echo "    <span class=\"stat-value\">${success_rate}%</span>"
+        echo "  </div>"
+        echo '</div>'
+    fi
+    
+    echo '</div>'
+    
+    # Display network topology image if available
+    if [ -f "$topology_base64" ]; then
+        echo '<div class="topology-visualization">'
+        echo '<h4><i class="fas fa-project-diagram"></i> Network Topology Map</h4>'
+        echo '<div class="chart-container">'
+        echo '<img src="data:image/png;base64,'$(cat "$topology_base64")'" alt="Network Topology" class="topology-chart" />'
+        echo '</div>'
+        echo '</div>'
+    elif [ -f "network_topology.svg" ]; then
+        echo '<div class="topology-visualization">'
+        echo '<h4><i class="fas fa-project-diagram"></i> Network Topology Map</h4>'
+        echo '<div class="chart-container">'
+        cat "network_topology.svg"
+        echo '</div>'
+        echo '</div>'
+    elif [ -f "$topology_image" ]; then
+        echo '<div class="topology-visualization">'
+        echo '<h4><i class="fas fa-project-diagram"></i> Network Topology Map</h4>'
+        echo '<div class="chart-container">'
+        echo "<img src=\"$topology_image\" alt=\"Network Topology\" class=\"topology-chart\" />"
+        echo '</div>'
+        echo '</div>'
+    fi
+    
+    # Display recent traceroute results
+    echo '<div class="recent-traceroutes">'
+    echo '<h4><i class="fas fa-route"></i> Recent Traceroute Results</h4>'
+    echo '<div class="table-container">'
+    echo '<table class="modern-table">'
+    echo '<thead>'
+    echo '<tr><th>Timestamp</th><th>Target</th><th>Status</th><th>Hops</th><th>Route Path</th></tr>'
+    echo '</thead>'
+    echo '<tbody>'
+    
+    # Show last 10 traceroute results
+    if [ -f "$traceroute_csv" ]; then
+        tail -10 "$traceroute_csv" | tac | while IFS=',' read -r timestamp target success total_hops hops; do
+            if [ -n "$timestamp" ]; then
+                # Format timestamp
+                formatted_time=$(echo "$timestamp" | sed 's/T/ /' | sed 's/\+.*$//')
+                
+                # Determine status styling
+                case "$success" in
+                    "true")
+                        status_class="success"
+                        status_text="✅ Success"
+                        ;;
+                    "timeout")
+                        status_class="warning"
+                        status_text="⏱️ Timeout"
+                        ;;
+                    {
+                        # HTML Header with basic styling
+                        cat << 'EOF'
+                        ;;
+                    *)
+                        status_class="secondary"
+                        status_text="❓ $success"
+                        ;;
+                esac
+                
+                # Format route path for display
+                if [ "$hops" = "NO_ROUTE" ] || [ "$hops" = "TIMEOUT" ] || [ "$hops" = "ERROR" ]; then
+                    route_display="<em>$hops</em>"
+                else
+                    # Show route with arrows
+                    route_display=$(echo "$hops" | sed 's/,/ → /g')
+                fi
+                
+                echo "<tr>"
+                echo "<td class=\"timestamp\">$formatted_time</td>"
+                echo "<td class=\"node-id\">$target</td>"
+                echo "<td class=\"$status_class\">$status_text</td>"
+                echo "<td class=\"number\">$total_hops</td>"
+                echo "<td class=\"route-path\">$route_display</td>"
+                echo "</tr>"
+                        # Add traceroute stats section to stats.html
+                        generate_network_topology_section
+                        # ...existing code...
+            fi
+        done
+    fi
+    
+    echo '</tbody>'
+    echo '</table>'
+    echo '</div>'
+    echo '</div>'
+    
+    # Display additional topology analysis if stats file is available
+    if [ -f "$topology_stats" ]; then
+        echo '<div class="topology-analysis">'
+        echo '<h4><i class="fas fa-analytics"></i> Network Analysis</h4>'
+        
+        # Extract key metrics from the JSON stats file using basic text processing
+        # (avoiding jq dependency for now)
+        if grep -q "total_nodes" "$topology_stats"; then
+            local total_nodes=$(grep "total_nodes" "$topology_stats" | sed 's/.*: *//' | sed 's/,.*$//')
+            local total_routes=$(grep "total_routes" "$topology_stats" | sed 's/.*: *//' | sed 's/,.*$//')
+            
+            echo '<div class="analysis-grid">'
+            echo "  <div class=\"analysis-item\">"
+            echo "    <span class=\"analysis-label\">Network Nodes:</span>"
+            echo "    <span class=\"analysis-value\">$total_nodes</span>"
+            echo "  </div>"
+            echo "  <div class=\"analysis-item\">"
+            echo "    <span class=\"analysis-label\">Active Routes:</span>"
+            echo "    <span class=\"analysis-value\">$total_routes</span>"
+            echo "  </div>"
+            echo '</div>'
+        fi
+        
+        echo '</div>'
+    fi
+}
 
 # Load node info cache to resolve node names
 load_node_info_cache
@@ -723,11 +900,162 @@ generate_stats_html_modern() {
             border-left: 4px solid var(--secondary-color);
         }
 
+        /* Network Topology Styles */
+        .network-topology {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow);
+            animation: fadeInUp 1s ease-out;
+        }
+
+        .topology-stats {
+            margin-bottom: 25px;
+        }
+
+        .topology-stats h4 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+
+        .stat-item {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .stat-label {
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .stat-value {
+            font-weight: 700;
+            color: var(--primary-color);
+            font-size: 1.1rem;
+        }
+
+        .topology-visualization {
+            margin: 25px 0;
+        }
+
+        .topology-visualization h4 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .topology-chart {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .recent-traceroutes {
+            margin-top: 25px;
+        }
+
+        .recent-traceroutes h4 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .route-path {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            background: #f8f9fa;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .node-id {
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            background: #e9ecef;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .topology-analysis {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .topology-analysis h4 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .analysis-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .analysis-item {
+            background: linear-gradient(135deg, #fff, #f8f9fa);
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid var(--secondary-color);
+        }
+
+        .analysis-label {
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .analysis-value {
+            font-weight: 700;
+            color: var(--secondary-color);
+            font-size: 1.1rem;
+        }
+
+        .info-card {
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            border: 1px solid #90caf9;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            text-align: center;
+        }
+
+        .info-card h4 {
+            color: #1976d2;
+            margin-bottom: 10px;
+        }
+
+        .info-card p {
+            color: #424242;
+            margin: 8px 0;
+        }
+
         @media (max-width: 768px) {
             .header h1 { font-size: 2.5rem; }
             .dashboard-grid { grid-template-columns: 1fr; }
             .news-summary { flex-direction: column; gap: 15px; }
             .container { padding: 15px; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .analysis-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -855,6 +1183,18 @@ EOF
             done | head -6  # Limit to 6 most recent
         fi
         echo "            </div>"
+
+        cat << 'EOF'
+        </div>
+
+        <!-- Network Topology Section -->
+        <h2 class="section-title">🌐 Network Topology</h2>
+        <div class="network-topology">
+            <h3 style="margin-bottom: 20px;"><i class="fas fa-project-diagram"></i> Route Analysis & Network Map</h3>
+EOF
+
+        # Include network topology visualization if available
+        generate_network_topology_section
 
         cat << 'EOF'
         </div>
@@ -1090,68 +1430,70 @@ generate_stats_html_original() {
             margin-left: 10px;
             transition: background 0.2s ease;
         }
-        .clear-filters:hover { 
-            background: #c82333; 
-            transform: translateY(-1px);
-        }
-        
-        /* Global controls styling */
-        .global-controls {
-            position: fixed; 
-            top: 10px; 
-            right: 10px; 
-            z-index: 1000; 
-            background: white; 
-            padding: 12px; 
-            border: 1px solid #ddd; 
-            border-radius: 8px; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            font-family: Arial, sans-serif;
-        }
-        .global-controls button {
-            margin: 0 3px;
-            font-size: 12px;
-            transition: all 0.2s ease;
-        }
-        .global-controls button:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-        
-        /* Table row highlighting */
-        tbody tr:hover {
-            background-color: #fff3cd !important;
-            transition: background-color 0.2s ease;
-        }
-        
-        /* Responsive table improvements */
-        @media (max-width: 768px) {
-            .filter-input { width: 200px; }
-            .global-controls { position: relative; top: auto; right: auto; margin: 10px 0; }
-        }
-        
-        /* Hide rows when filtering */
-        .hidden-row { display: none !important; }
-        
-        /* GPS link styling */
-        a { color: #1976d2; text-decoration: none; }
-        a:hover { color: #0d47a1; text-decoration: underline; }
-        a[title]:hover { cursor: help; }
-        
-        /* Smooth scrolling for navigation */
-        html { scroll-behavior: smooth; }
-        
-        /* Navigation link hover effects */
-        .nav-link { transition: transform 0.2s, box-shadow 0.2s; }
-        .nav-link:hover { 
-            transform: translateY(-2px); 
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1); 
-            text-decoration: none !important; 
-        }
-        
-        /* Trend indicator styles */
-        .trend-indicator {
-            font-size: 0.9em;
+        {
+            # HTML Header with basic styling
+            cat << 'EOF'
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Meshtastic Telemetry Stats</title>
+        <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            h1 { color: #333; }
+            h2 { color: #666; margin-top: 30px; }
+            h3 { color: #888; margin-top: 20px; }
+            table { border-collapse: collapse; width: 100%; margin: 10px 0; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #f2f2f2; font-weight: bold; position: relative; cursor: pointer; }
+            th:hover { background-color: #e8e8e8; }
+            tr:nth-child(even) { background-color: #f9f9f9; }
+            .timestamp { font-family: monospace; }
+            .number { text-align: right; }
+            .address { font-weight: bold; }
+            .good { color: #27ae60; }
+            .warning { color: #f39c12; }
+            .critical { color: #e74c3c; }
+            .unknown { color: #888; }
+            .success { color: #27ae60; font-weight: bold; }
+            .secondary { color: #888; }
+            .route-path { font-family: monospace; font-size: 0.95em; }
+            .topology-stats { background: #f8f9fa; border-radius: 8px; padding: 15px; margin: 20px 0; border-left: 4px solid #3498db; }
+            .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin: 10px 0; }
+            .stat-item { background: #fff; padding: 10px; border-radius: 6px; border-left: 4px solid #3498db; margin-bottom: 5px; }
+            .stat-label { font-weight: 500; color: #333; }
+            .stat-value { font-weight: 700; color: #3498db; font-size: 1.1rem; }
+            .recent-traceroutes { background: #fff3e0; border-radius: 8px; padding: 15px; margin: 20px 0; border-left: 4px solid #f39c12; }
+            .table-container { overflow-x: auto; }
+            .modern-table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+            .modern-table th, .modern-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            .modern-table th { background-color: #ffe0b2; font-weight: bold; }
+            .modern-table tr:nth-child(even) { background-color: #fff8e1; }
+            .analysis-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+            .analysis-item { background: linear-gradient(135deg, #fff, #f8f9fa); padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #3498db; }
+            .analysis-label { font-weight: 500; color: #333; }
+            .analysis-value { font-weight: 700; color: #3498db; font-size: 1.1rem; }
+            .info-card { background: linear-gradient(135deg, #e3f2fd, #bbdefb); border: 1px solid #90caf9; border-radius: 8px; padding: 20px; margin: 15px 0; text-align: center; }
+            .info-card h4 { color: #1976d2; margin-bottom: 10px; }
+            .info-card p { color: #424242; margin: 8px 0; }
+        </style>
+    </head>
+    <body>
+    EOF
+            echo "<h1>Meshtastic Telemetry Statistics</h1>"
+            echo "<p><em>Last updated: $(date)</em></p>"
+            # Embed comprehensive telemetry chart for all monitored nodes
+            if [ -f "multi_node_telemetry_chart.png" ]; then
+                echo "<div style='background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #28a745;'>"
+                echo "<h3 style='margin-top: 0; color: #28a745;'>📊 Comprehensive Telemetry Chart</h3>"
+                echo "<h4>Multi-Node Telemetry Overview (All Monitored Nodes)</h4>"
+                echo "<img src='data:image/png;base64,$(base64 -w 0 multi_node_telemetry_chart.png)' alt='Multi-Node Telemetry Chart' style='max-width: 70%; height: auto; border: 1px solid #ddd; border-radius: 4px; margin: 10px 0; display: block; margin-left: auto; margin-right: auto;'>"
+                echo "</div>"
+            fi
+            # Always include traceroute stats section after main chart
+            generate_network_topology_section
+            # ...existing code...
             margin-left: 5px;
             display: inline-block;
             vertical-align: middle;

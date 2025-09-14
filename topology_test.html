@@ -1,0 +1,163 @@
+<div class="topology-stats">
+<h4><i class="fas fa-chart-line"></i> Route Statistics</h4>
+<div class="stats-grid">
+  <div class="stat-item">
+    <span class="stat-label">Total Routes Traced:</span>
+    <span class="stat-value">9</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-label">Successful Routes:</span>
+    <span class="stat-value">8</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-label">Route Success Rate:</span>
+    <span class="stat-value">88.8%</span>
+  </div>
+</div>
+</div>
+<div class="topology-visualization">
+<h4><i class="fas fa-project-diagram"></i> Network Topology Map</h4>
+<div class="chart-container">
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="600" height="600" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .node { fill: #4ECDC4; stroke: #2c3e50; stroke-width: 2; }
+      .hub-node { fill: #FF6B6B; }
+      .edge { stroke: #666; stroke-width: 2; opacity: 0.7; }
+      .node-label { font-family: Arial, sans-serif; font-size: 10px; text-anchor: middle; }
+    </style>
+  </defs>
+  
+  <title>Meshtastic Network Topology</title>
+  
+  <!-- Background -->
+  <rect width="600" height="600" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="300" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="bold">
+    Meshtastic Network Topology
+  </text>
+  
+  <!-- Edges -->
+  <line x1="199.99999999999991" y1="126.79491924311233" x2="500.0" y2="300.0" class="edge"/>
+  <line x1="199.99999999999991" y1="126.79491924311233" x2="400.0" y2="126.79491924311228" class="edge"/>
+  <line x1="199.99999999999991" y1="126.79491924311233" x2="400.0" y2="473.2050807568877" class="edge"/>
+  <line x1="500.0" y1="300.0" x2="100.0" y2="300.0" class="edge"/>
+  <line x1="500.0" y1="300.0" x2="400.0" y2="473.2050807568877" class="edge"/>
+  <line x1="100.0" y1="300.0" x2="200.00000000000006" y2="473.20508075688775" class="edge"/>
+
+  <!-- Nodes -->
+  <circle cx="500.0" cy="300.0" r="15" class="hub-node"/>
+  <text x="500.0" y="325.0" class="node-label">Repeater Central (RPTC)</text>
+  <circle cx="400.0" cy="473.2050807568877" r="10" class="node"/>
+  <text x="400.0" y="498.2050807568877" class="node-label">TRUTZTURM Solar (TRZS)</text>
+  <circle cx="200.00000000000006" cy="473.20508075688775" r="10" class="node"/>
+  <text x="200.00000000000006" y="498.20508075688775" class="node-label">Mobile Station (MOBL)</text>
+  <circle cx="100.0" cy="300.0" r="10" class="node"/>
+  <text x="100.0" y="325.0" class="node-label">DL0TRZ Trutzturm (TRZT)</text>
+  <circle cx="199.99999999999991" cy="126.79491924311233" r="15" class="hub-node"/>
+  <text x="199.99999999999991" y="151.79491924311233" class="node-label">Relay Node 1 (RLY1)</text>
+  <circle cx="400.0" cy="126.79491924311228" r="10" class="node"/>
+  <text x="400.0" y="151.79491924311228" class="node-label">4818</text>
+
+  <!-- Legend -->
+  <rect x="20" y="500" width="150" height="80" fill="white" stroke="#ccc" stroke-width="1"/>
+  <text x="25" y="515" font-family="Arial, sans-serif" font-size="12" font-weight="bold">Legend:</text>
+  <circle cx="35" cy="530" r="8" class="hub-node"/>
+  <text x="50" y="535" font-family="Arial, sans-serif" font-size="10">Hub Nodes</text>
+  <circle cx="35" cy="550" r="6" class="node"/>
+  <text x="50" y="555" font-family="Arial, sans-serif" font-size="10">Regular Nodes</text>
+  <line x1="25" y1="570" x2="45" y2="570" class="edge"/>
+  <text x="50" y="575" font-family="Arial, sans-serif" font-size="10">Connections</text>
+  
+</svg></div>
+</div>
+<div class="recent-traceroutes">
+<h4><i class="fas fa-route"></i> Recent Traceroute Results</h4>
+<div class="table-container">
+<table class="modern-table">
+<thead>
+<tr><th>Timestamp</th><th>Target</th><th>Status</th><th>Hops</th><th>Route Path</th></tr>
+</thead>
+<tbody>
+<tr>
+<td class="timestamp">2025-09-14 18:44:30</td>
+<td class="node-id">!277db5ca</td>
+<td class="success">✅ Success</td>
+<td class="number">4</td>
+<td class="route-path">"!9eed0410 → !fd17c0ed → !a0cc8008 → !277db5ca"2025-09-14T18:44:00 → !ba656304 → true → 1 → !ba656304</td>
+</tr>
+<tr>
+<td class="timestamp">2025-09-14 18:43:30</td>
+<td class="node-id">!a0cc8008</td>
+<td class="success">✅ Success</td>
+<td class="number">2</td>
+<td class="route-path">"!fd17c0ed → !a0cc8008"</td>
+</tr>
+<tr>
+<td class="timestamp">2025-09-14 18:43:00</td>
+<td class="node-id">!2df67288</td>
+<td class="success">✅ Success</td>
+<td class="number">3</td>
+<td class="route-path">"!9eed0410 → !fd17c0ed → !2df67288"</td>
+</tr>
+<tr>
+<td class="timestamp">2025-09-14 18:42:30</td>
+<td class="node-id">!2c9e092b</td>
+<td class="danger">❌ No Route</td>
+<td class="number">0</td>
+<td class="route-path"><em>NO_ROUTE</em></td>
+</tr>
+<tr>
+<td class="timestamp">2025-09-14 18:42:00</td>
+<td class="node-id">!849c4818</td>
+<td class="success">✅ Success</td>
+<td class="number">2</td>
+<td class="route-path">"!9eed0410 → !849c4818"</td>
+</tr>
+<tr>
+<td class="timestamp">2025-09-14 18:41:30</td>
+<td class="node-id">!277db5ca</td>
+<td class="warning">⏱️ Timeout</td>
+<td class="number">0</td>
+<td class="route-path"><em>TIMEOUT</em></td>
+</tr>
+<tr>
+<td class="timestamp">2025-09-14 18:41:00</td>
+<td class="node-id">!ba656304</td>
+<td class="success">✅ Success</td>
+<td class="number">1</td>
+<td class="route-path">!ba656304</td>
+</tr>
+<tr>
+<td class="timestamp">2025-09-14 18:40:30</td>
+<td class="node-id">!a0cc8008</td>
+<td class="success">✅ Success</td>
+<td class="number">3</td>
+<td class="route-path">"!9eed0410 → !fd17c0ed → !a0cc8008"</td>
+</tr>
+<tr>
+<td class="timestamp">2025-09-14 18:40:00</td>
+<td class="node-id">!2df67288</td>
+<td class="success">✅ Success</td>
+<td class="number">2</td>
+<td class="route-path">"!9eed0410 → !2df67288"</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="topology-analysis">
+<h4><i class="fas fa-analytics"></i> Network Analysis</h4>
+<div class="analysis-grid">
+  <div class="analysis-item">
+    <span class="analysis-label">Network Nodes:</span>
+    <span class="analysis-value">6</span>
+  </div>
+  <div class="analysis-item">
+    <span class="analysis-label">Active Routes:</span>
+    <span class="analysis-value">6</span>
+  </div>
+</div>
+</div>

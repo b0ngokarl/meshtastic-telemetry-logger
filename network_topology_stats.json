@@ -1,0 +1,76 @@
+{
+  "timestamp": "2025-09-14T18:45:37.208956",
+  "network_stats": {
+    "total_nodes": 6,
+    "total_routes": 6,
+    "analyzed_routes": 8,
+    "avg_connections": 2.0
+  },
+  "node_stats": {
+    "!fd17c0ed": {
+      "display_name": "Repeater Central (RPTC)",
+      "outgoing_connections": 2,
+      "incoming_connections": 1,
+      "total_connections": 3,
+      "is_hub": true,
+      "is_endpoint": false
+    },
+    "!2df67288": {
+      "display_name": "TRUTZTURM Solar (TRZS)",
+      "outgoing_connections": 0,
+      "incoming_connections": 2,
+      "total_connections": 2,
+      "is_hub": false,
+      "is_endpoint": false
+    },
+    "!277db5ca": {
+      "display_name": "Mobile Station (MOBL)",
+      "outgoing_connections": 0,
+      "incoming_connections": 1,
+      "total_connections": 1,
+      "is_hub": false,
+      "is_endpoint": true
+    },
+    "!a0cc8008": {
+      "display_name": "DL0TRZ Trutzturm (TRZT)",
+      "outgoing_connections": 1,
+      "incoming_connections": 1,
+      "total_connections": 2,
+      "is_hub": false,
+      "is_endpoint": false
+    },
+    "!9eed0410": {
+      "display_name": "Relay Node 1 (RLY1)",
+      "outgoing_connections": 3,
+      "incoming_connections": 0,
+      "total_connections": 3,
+      "is_hub": true,
+      "is_endpoint": false
+    },
+    "!849c4818": {
+      "display_name": "4818",
+      "outgoing_connections": 0,
+      "incoming_connections": 1,
+      "total_connections": 1,
+      "is_hub": false,
+      "is_endpoint": true
+    }
+  },
+  "route_usage": {
+    "!9eed0410->!2df67288": 1,
+    "!9eed0410->!fd17c0ed": 3,
+    "!fd17c0ed->!a0cc8008": 3,
+    "!9eed0410->!849c4818": 1,
+    "!fd17c0ed->!2df67288": 1,
+    "!a0cc8008->!277db5ca": 1
+  },
+  "topology_analysis": {
+    "hub_nodes": [
+      "!fd17c0ed",
+      "!9eed0410"
+    ],
+    "most_connected": "!fd17c0ed",
+    "max_connections": 3,
+    "network_depth": 3
+  }
+}
