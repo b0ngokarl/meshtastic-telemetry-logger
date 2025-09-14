@@ -299,3 +299,78 @@ exec_meshtastic_command() {
     debug_log "Executing: timeout $timeout_duration $cmd"
     timeout "$timeout_duration" $cmd 2>&1
 }
+
+# Execute traceroute to a specific node
+# Usage: exec_traceroute_command [timeout] [node_id]
+exec_traceroute_command() {
+    local timeout_duration="$1"
+    local node_id="$2"
+    
+    if [ -z "$node_id" ]; then
+        echo "Error: Node ID required for traceroute" >&2
+        return 1
+    fi
+    
+    local cmd
+    if ! cmd=$(build_meshtastic_command --traceroute "$node_id"); then
+        return 1
+    fi
+    
+    debug_log "Executing traceroute: timeout $timeout_duration $cmd"
+    timeout "$timeout_duration" $cmd 2>&1
+}
+
+# Parse traceroute output and extract hop information
+# Usage: parse_traceroute_output [traceroute_output]
+parse_traceroute_output() {
+    local output="$1"
+    local timestamp="$2"
+    local target_node="$3"
+    
+    if [ -z "$output" ]; then
+        return 1
+    fi
+    
+    # Initialize variables
+    local hops=""
+    local total_hops=0
+    local success="false"
+    
+    # Parse the traceroute output
+    # Expected format: "Route traced to !target via !hop1 -> !hop2 -> !target"
+    if echo "$output" | grep -q "Route traced to"; then
+        success="true"
+        # Extract the route path
+        local route_line=$(echo "$output" | grep "Route traced to" | head -1)
+        
+        # Extract hops from the route (everything after "via ")
+        if echo "$route_line" | grep -q " via "; then
+            hops=$(echo "$route_line" | sed 's/.*via //' | sed 's/ -> /,/g')
+            total_hops=$(echo "$hops" | tr ',' '\n' | wc -l)
+        else
+            # Direct connection (no intermediate hops)
+            hops="$target_node"
+            total_hops=1
+        fi
+    elif echo "$output" | grep -q "No route"; then
+        success="false"
+        hops="NO_ROUTE"
+        total_hops=0
+    elif echo "$output" | grep -q "timeout\|timed out"; then
+        success="timeout"
+        hops="TIMEOUT"
+        total_hops=0
+    else
+        success="error"
+        hops="ERROR"
+        total_hops=0
+    fi
+    
+    # Escape CSV field if it contains commas (proper CSV format)
+    if echo "$hops" | grep -q ","; then
+        hops="\"$hops\""
+    fi
+    
+    # Return CSV format: timestamp,target,success,total_hops,hops
+    echo "$timestamp,$target_node,$success,$total_hops,$hops"
+}

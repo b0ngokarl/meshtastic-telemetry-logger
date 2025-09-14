@@ -113,6 +113,12 @@ if [ ! -f "$TELEMETRY_CSV" ]; then
     echo "timestamp,address,status,battery,voltage,channel_util,tx_util,uptime" > "$TELEMETRY_CSV"
 fi
 
+# Initialize traceroute CSV if it doesn't exist
+TRACEROUTE_CSV=${TRACEROUTE_CSV:-"traceroute_log.csv"}
+if [ ! -f "$TRACEROUTE_CSV" ]; then
+    echo "timestamp,target,success,total_hops,hops" > "$TRACEROUTE_CSV"
+fi
+
 # Load initial node info cache
 load_node_info_cache
 
@@ -652,6 +658,50 @@ run_telemetry_sequential() {
     debug_log "Sequential telemetry collection completed"
 }
 
+# Run traceroute to monitored nodes
+run_traceroute_collection() {
+    local ts
+    ts=$(iso8601_date)
+    
+    # Check if traceroute is enabled
+    if [ "${TRACEROUTE_ENABLED:-true}" != "true" ]; then
+        debug_log "Traceroute collection disabled"
+        return
+    fi
+    
+    debug_log "Starting traceroute collection for ${#ADDRESSES[@]} nodes at $ts"
+    
+    # Get traceroute timeout from config
+    local traceroute_timeout="${TRACEROUTE_TIMEOUT:-120}"
+    
+    # Process each monitored address
+    for addr in "${ADDRESSES[@]}"; do
+        debug_log "Running traceroute to $addr"
+        
+        # Execute traceroute command
+        local output
+        output=$(exec_traceroute_command "$traceroute_timeout" "$addr" 2>&1)
+        local exit_code=$?
+        
+        debug_log "Traceroute output for $addr: $output"
+        
+        # Parse the output and get CSV format
+        local result
+        result=$(parse_traceroute_output "$output" "$ts" "$addr")
+        
+        if [ -n "$result" ]; then
+            echo "$result" >> "$TRACEROUTE_CSV"
+            debug_log "Traceroute result saved: $result"
+        else
+            # Fallback for unparseable output
+            echo "$ts,$addr,error,0,PARSE_ERROR" >> "$TRACEROUTE_CSV"
+            debug_log "Failed to parse traceroute output for $addr"
+        fi
+    done
+    
+    debug_log "Traceroute collection completed"
+}
+
 update_nodes_log() {
     local ts
     ts=$(iso8601_date)
@@ -845,6 +895,9 @@ deploy_to_web() {
 }
 
 # ---- MAIN LOOP ----
+# Track when traceroute was last run
+LAST_TRACEROUTE_TIME=0
+
 while true; do
     echo "Starting telemetry collection cycle at $(date)"
     
@@ -853,6 +906,19 @@ while true; do
     
     # Use sequential telemetry collection (serial port limitation)
     run_telemetry_sequential
+    
+    # Check if it's time to run traceroute collection
+    current_time=$(date +%s)
+    traceroute_interval=${TRACEROUTE_INTERVAL:-3600}  # Default: 1 hour
+    time_since_traceroute=$((current_time - LAST_TRACEROUTE_TIME))
+    
+    if [ "$time_since_traceroute" -ge "$traceroute_interval" ]; then
+        echo "Running traceroute collection (last run: ${time_since_traceroute}s ago)"
+        run_traceroute_collection
+        LAST_TRACEROUTE_TIME=$current_time
+    else
+        echo "Skipping traceroute collection (next run in $((traceroute_interval - time_since_traceroute))s)"
+    fi
     
     # Update nodes and generate HTML
     echo "Updating node list and re-resolving node names..."
@@ -893,6 +959,12 @@ while true; do
     if [[ -f "generate_node_chart.py" ]]; then
         echo "  -> Generating multi-node utilization chart..."
         python3 generate_node_chart.py 2>/dev/null || echo "  Warning: Failed to generate utilization chart"
+    fi
+    
+    # Generate network topology visualization (SVG and stats)
+    if [[ "$TRACEROUTE_VISUALIZATION" = "true" && -f "generate_simple_traceroute_analysis.py" ]]; then
+        echo "  -> Generating network topology visualization..."
+        python3 generate_simple_traceroute_analysis.py --stats --output network_topology 2>/dev/null || echo "  Warning: Failed to generate network topology"
     fi
     
     # Re-generate HTML dashboard with latest data

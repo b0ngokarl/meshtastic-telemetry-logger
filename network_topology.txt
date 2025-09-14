@@ -1,0 +1,42 @@
+MESHTASTIC NETWORK TOPOLOGY
+==================================================
+Generated: 2025-09-14 18:45:37
+
+NETWORK STATISTICS:
+  Total Nodes: 6
+  Total Connections: 6
+  Routes Analyzed: 8
+
+NODE ANALYSIS:
+------------------------------
+  Repeater Central (RPTC) (!fd17c0ed) - HUB
+    Connections: 3 (Out: 2, In: 1)
+    Routes to: DL0TRZ Trutzturm (TRZT), TRUTZTURM Solar (TRZS)
+
+  Relay Node 1 (RLY1)  (!9eed0410) - HUB
+    Connections: 3 (Out: 3, In: 0)
+    Routes to: Repeater Central (RPTC), 4818, TRUTZTURM Solar (TRZS)
+
+  TRUTZTURM Solar (TRZS) (!2df67288) - RELAY
+    Connections: 2 (Out: 0, In: 2)
+
+  DL0TRZ Trutzturm (TRZT) (!a0cc8008) - RELAY
+    Connections: 2 (Out: 1, In: 1)
+    Routes to: Mobile Station (MOBL)
+
+  Mobile Station (MOBL) (!277db5ca) - END
+    Connections: 1 (Out: 0, In: 1)
+
+  4818                 (!849c4818) - END
+    Connections: 1 (Out: 0, In: 1)
+
+ROUTE USAGE ANALYSIS:
+------------------------------
+  Relay Node 1 (RLY1) → Repeater Central (RPTC): 3 times
+  Repeater Central (RPTC) → DL0TRZ Trutzturm (TRZT): 3 times
+  Relay Node 1 (RLY1) → TRUTZTURM Solar (TRZS): 1 times
+  Relay Node 1 (RLY1) → 4818: 1 times
+  Repeater Central (RPTC) → TRUTZTURM Solar (TRZS): 1 times
+  DL0TRZ Trutzturm (TRZT) → Mobile Station (MOBL): 1 times
+
+Topology saved to: network_topology.txt
