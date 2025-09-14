@@ -92,9 +92,70 @@ show_config() {
         return 1
     fi
     
-    echo "Current configuration:"
-    echo "====================="
-    cat "$ENV_FILE"
+    source "$ENV_FILE"
+    
+    echo "Current Configuration Summary"
+    echo "============================="
+    echo
+    
+    echo "📡 CONNECTION SETTINGS:"
+    echo "  Device Port: ${DEVICE_PORT:-/dev/ttyUSB0}"
+    echo "  Monitored Nodes: ${MONITORED_NODES:-all}"
+    echo "  Connection Timeout: ${CONNECTION_TIMEOUT:-30}s"
+    echo "  Max Retries: ${MAX_RETRIES:-3}"
+    echo "  Polling Interval: ${POLLING_INTERVAL:-60}s"
+    echo
+    
+    echo "📊 CHART SETTINGS:"
+    echo "  Chart Width: ${CHART_FIGSIZE_WIDTH:-16}"
+    echo "  Chart Height: ${CHART_FIGSIZE_HEIGHT:-12}"
+    echo "  Chart DPI: ${CHART_DPI:-300}"
+    echo "  Size Multiplier: ${CHART_SIZE_MULTIPLIER:-1.0}"
+    echo
+    
+    echo "🤖 MACHINE LEARNING:"
+    echo "  ML Timeout: ${ML_TIMEOUT:-120}s"
+    echo "  Historical Window: ${ML_HISTORICAL_WINDOW:-50} records"
+    echo "  Minimum Data Points: ${ML_MIN_DATA_POINTS:-10}"
+    echo "  Learning Rate: ${ML_LEARNING_RATE:-0.01}"
+    echo
+    
+    echo "🌤️ WEATHER INTEGRATION:"
+    echo "  OpenWeather API Key: ${OPENWEATHER_API_KEY:+[Set]}${OPENWEATHER_API_KEY:-[Not Set]}"
+    echo "  Cache TTL: ${WEATHER_CACHE_TTL:-3600}s"
+    echo
+    
+    echo "📰 NETWORK NEWS:"
+    echo "  News Enabled: ${NEWS_ENABLED:-true}"
+    echo "  Time Window: ${NEWS_TIME_WINDOW:-24} hours"
+    echo "  Max Hops: ${NEWS_MAX_HOPS:-2} (0=direct, 1=1 hop, 2=2 hops, etc.)"
+    echo
+    
+    echo "📝 LOGGING & DATA:"
+    echo "  Log Level: ${LOG_LEVEL:-INFO}"
+    echo "  Log Telemetry Requests: ${LOG_TELEMETRY_REQUESTS:-false}"
+    echo "  Log to File: ${LOG_TO_FILE:-true}"
+    echo "  Error Log: ${ERROR_LOG:-error.log}"
+    echo "  Max Telemetry Days: ${MAX_TELEMETRY_DAYS:-30}"
+    echo "  Max Log Size: ${MAX_LOG_SIZE_MB:-100}MB"
+    echo "  Backup Old Data: ${BACKUP_OLD_DATA:-true}"
+    echo
+    
+    echo "📁 FILE PATHS:"
+    echo "  Telemetry Log: ${TELEMETRY_LOG:-telemetry_log.csv}"
+    echo "  Nodes Log: ${NODES_LOG:-nodes_log.csv}"
+    echo "  Stats HTML: ${STATS_HTML:-stats.html}"
+    echo "  Weather Cache: ${WEATHER_CACHE_DIR:-weather_cache}"
+    echo
+    
+    echo "🔧 ADVANCED SETTINGS:"
+    echo "  Debug Mode: ${DEBUG:-false}"
+    echo "  Quiet Mode: ${QUIET:-false}"
+    echo "  Auto Backup: ${AUTO_BACKUP:-true}"
+    echo "  Backup Retention: ${BACKUP_RETENTION_DAYS:-7} days"
+    echo
+    echo "To edit configuration: $0 edit"
+    echo "To see raw .env file: cat $ENV_FILE"
 }
 
 edit_config() {

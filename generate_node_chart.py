@@ -331,7 +331,7 @@ def calculate_total_utilization_averages(data, metric_name):
     
     return avg_timestamps, avg_values
 
-def create_chart(data, output_prefix="node_utilization"):
+def create_chart(data, config, output_prefix="node_utilization"):
     """Create and save the chart"""
     # Generate title based on nodes
     node_names = [node_data['name'] for node_data in data.values() if node_data['timestamps']]
@@ -342,7 +342,10 @@ def create_chart(data, output_prefix="node_utilization"):
     else:
         title = f"Multiple Nodes - Channel & Transmission Utilization"
     
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 10))
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(
+        float(config.get('CHART_FIGSIZE_WIDTH', 14)), 
+        float(config.get('CHART_FIGSIZE_HEIGHT', 10))
+    ))
     fig.suptitle(title, fontsize=16, fontweight='bold')
     
     # Generate colors for each node
@@ -497,7 +500,7 @@ def main():
         output_prefix = "multi_node_utilization"
     
     # Create chart
-    output_file = create_chart(data, output_prefix)
+    output_file = create_chart(data, config, output_prefix)
     
     print(f"\nChart generation complete! Output: {output_file}")
     if args.nodes or args.names or args.csv:

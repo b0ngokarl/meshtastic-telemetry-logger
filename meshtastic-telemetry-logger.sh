@@ -2281,11 +2281,20 @@ while true; do
     echo "  -> Updating HTML dashboard..."
     generate_stats_html
     
-    # Note: Charts are now embedded directly by html_generator.sh
-    # echo "  -> Embedding charts in HTML dashboard..."
-    # if [[ -f "auto_chart_embedder.py" ]]; then
-    #     python3 auto_chart_embedder.py 2>/dev/null || echo "  Warning: Failed to embed charts in HTML"
-    # fi
+    # Embed charts in HTML dashboard
+    echo "  -> Embedding charts in HTML dashboard..."
+    if [[ -f "auto_chart_embedder.py" ]]; then
+        python3 auto_chart_embedder.py 2>/dev/null || echo "  Warning: Failed to embed charts in HTML"
+    fi
+    
+    # Generate and embed network news
+    echo "  -> Generating network activity news..."
+    if [[ -f "network_news_analyzer.py" ]]; then
+        python3 network_news_analyzer.py 2>/dev/null || echo "  Warning: Failed to generate network news"
+        if [[ -f "network_news_embedder.py" && -f "network_news.html" ]]; then
+            python3 network_news_embedder.py 2>/dev/null || echo "  Warning: Failed to embed network news"
+        fi
+    fi
     
     # Deploy to web server if configured
     deploy_to_web

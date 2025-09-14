@@ -392,7 +392,7 @@ class MeshtasticTelemetryLogger:
         if self.config['WEATHER_API_KEY']:
             try:
                 url = f"https://api.openweathermap.org/data/2.5/forecast?lat={lat}&lon={lon}&appid={self.config['WEATHER_API_KEY']}&units=metric"
-                with urllib.request.urlopen(url, timeout=10) as response:
+                with urllib.request.urlopen(url, timeout=int(self.config.get('WEATHER_TIMEOUT', 30))) as response:
                     data = json.load(response)
                     
                 # Cache the data
@@ -711,8 +711,9 @@ class MeshtasticTelemetryLogger:
                     next_time = datetime.now() + timedelta(seconds=self.config['POLLING_INTERVAL'])
                     self.logger.info(f"😴 Sleeping until {next_time.strftime('%H:%M:%S')}")
                 else:
-                    self.logger.warning("⚠️ Collection cycle failed, retrying in 60 seconds")
-                    time.sleep(60)
+                    retry_interval = int(self.config.get('RETRY_INTERVAL', 60))
+                    self.logger.warning(f"⚠️ Collection cycle failed, retrying in {retry_interval} seconds")
+                    time.sleep(retry_interval)
                     continue
                 
                 time.sleep(self.config['POLLING_INTERVAL'])

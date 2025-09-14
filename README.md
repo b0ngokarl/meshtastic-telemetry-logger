@@ -17,12 +17,21 @@ A comprehensive telemetry monitoring system for Meshtastic mesh networks with ad
 - **Battery trend analysis** with estimated time remaining
 - **Channel utilization tracking** for network optimization
 
-### Weather Integration (🆕)
+### Weather Integration
 - **Weather-based solar energy predictions** for solar-powered nodes
 - **6h/12h/24h battery forecasting** based on weather conditions
 - **OpenWeatherMap API integration** with mock data fallback
 - **Solar panel efficiency calculations** accounting for cloud coverage
 - **Visual battery trend indicators** (⚡ Charging, 🔋 Stable, 📉 Draining)
+
+### Network Activity News (🆕)
+- **Real-time network change tracking** with configurable time windows
+- **New node discovery** notifications
+- **Lost node detection** when nodes go offline
+- **Name change monitoring** (AKA updates)
+- **Role change tracking** (CLIENT ↔ ROUTER mode switches)
+- **Hardware change detection** and public key updates
+- **Hop-distance filtering** to focus on relevant network segments
 
 ### Interactive Dashboard Features
 - **GPS integration** - clickable node names open OpenStreetMap locations

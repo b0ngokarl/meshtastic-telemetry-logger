@@ -395,8 +395,11 @@ def calculate_total_utilization_averages(data, metric_name):
     
     return node_config
 
-def create_chart(data, output_prefix="node_telemetry"):
+def create_chart(data, output_prefix="node_telemetry", config=None):
     """Create and save the comprehensive telemetry chart"""
+    if config is None:
+        config = {}
+        
     # Generate title based on nodes
     node_names = [node_data['name'] for node_data in data.values() if node_data['timestamps']]
     if len(node_names) == 1:
@@ -406,8 +409,16 @@ def create_chart(data, output_prefix="node_telemetry"):
     else:
         title = f"Multiple Nodes - Full Telemetry"
     
+    # Get chart configuration from environment
+    chart_width = float(config.get('CHART_FIGSIZE_WIDTH', 16))
+    chart_height = float(config.get('CHART_FIGSIZE_HEIGHT', 20))
+    size_multiplier = float(config.get('CHART_SIZE_MULTIPLIER', 1.0))
+    
+    # Apply size multiplier
+    figsize = (chart_width * size_multiplier, chart_height * size_multiplier)
+    
     # Create figure with 5 subplots (battery, voltage, channel util, tx util, uptime)
-    fig, axes = plt.subplots(5, 1, figsize=(16, 20))
+    fig, axes = plt.subplots(5, 1, figsize=figsize)
     fig.suptitle(title, fontsize=18, fontweight='bold')
     
     # Generate colors for each node
@@ -555,9 +566,12 @@ def create_chart(data, output_prefix="node_telemetry"):
     
     plt.tight_layout()
     
+    # Get DPI configuration
+    chart_dpi = int(config.get('CHART_DPI', 300))
+    
     # Save the chart
     output_file = f'{output_prefix}_chart.png'
-    plt.savefig(output_file, dpi=300, bbox_inches='tight')
+    plt.savefig(output_file, dpi=chart_dpi, bbox_inches='tight')
     print(f"Comprehensive telemetry chart saved as: {output_file}")
     
     # Also save as SVG for scalability
@@ -640,7 +654,7 @@ def main():
         output_prefix = "multi_node_telemetry"
     
     # Create chart
-    create_chart(data, output_prefix)
+    create_chart(data, output_prefix, config)
     
     print(f"\nComprehensive telemetry chart generation complete!")
     if args.nodes or args.names or args.csv:
