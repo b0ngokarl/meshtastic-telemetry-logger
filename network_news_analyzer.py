@@ -206,18 +206,21 @@ def analyze_network_changes(current_nodes: List[Dict], previous_state: Dict, tim
     
     news['stats']['new_count'] = len(news['new_nodes'])
     
-    # Find lost nodes (in previous but not in current)
+    # Find lost nodes (in previous but not in current, filtering by max_hops)
     lost_ids = previous_ids - current_ids
     for node_id in lost_ids:
         if node_id in previous_state:
             prev_node = previous_state[node_id]
-            news['lost_nodes'].append({
-                'id': node_id,
-                'user': prev_node.get('user', ''),
-                'aka': prev_node.get('aka', ''),
-                'hardware': prev_node.get('hardware', ''),
-                'hops': prev_node.get('hops', 0)
-            })
+            # Only include lost nodes that were within the hop limit when last seen
+            if prev_node.get('hops', 0) <= max_hops:
+                news['lost_nodes'].append({
+                    'id': node_id,
+                    'user': prev_node.get('user', ''),
+                    'aka': prev_node.get('aka', ''),
+                    'hardware': prev_node.get('hardware', ''),
+                    'hops': prev_node.get('hops', 0),
+                    'last_seen': prev_node.get('timestamp', 'Unknown')
+                })
     
     news['stats']['lost_count'] = len(news['lost_nodes'])
     
@@ -236,7 +239,8 @@ def analyze_network_changes(current_nodes: List[Dict], previous_state: Dict, tim
                 'id': node['id'],
                 'old_name': prev_node.get('aka', '') or prev_node.get('user', ''),
                 'new_name': node['aka'] or node['user'],
-                'hops': node['hops']
+                'hops': node['hops'],
+                'timestamp': node['timestamp'].strftime('%Y-%m-%d %H:%M') if node['timestamp'] else 'Unknown'
             })
             changes.append('name')
         
@@ -247,7 +251,8 @@ def analyze_network_changes(current_nodes: List[Dict], previous_state: Dict, tim
                 'name': node['aka'] or node['user'],
                 'old_pubkey': prev_node.get('pubkey', '')[:16] + '...' if prev_node.get('pubkey', '') else 'None',
                 'new_pubkey': node['pubkey'][:16] + '...' if len(node['pubkey']) > 16 else node['pubkey'],
-                'hops': node['hops']
+                'hops': node['hops'],
+                'timestamp': node['timestamp'].strftime('%Y-%m-%d %H:%M') if node['timestamp'] else 'Unknown'
             })
             changes.append('pubkey')
         
@@ -258,7 +263,8 @@ def analyze_network_changes(current_nodes: List[Dict], previous_state: Dict, tim
                 'name': node['aka'] or node['user'],
                 'old_role': prev_node.get('role', 'Unknown'),
                 'new_role': node['role'],
-                'hops': node['hops']
+                'hops': node['hops'],
+                'timestamp': node['timestamp'].strftime('%Y-%m-%d %H:%M') if node['timestamp'] else 'Unknown'
             })
             changes.append('role')
         
@@ -269,7 +275,8 @@ def analyze_network_changes(current_nodes: List[Dict], previous_state: Dict, tim
                 'name': node['aka'] or node['user'],
                 'old_hardware': prev_node.get('hardware', 'Unknown'),
                 'new_hardware': node['hardware'],
-                'hops': node['hops']
+                'hops': node['hops'],
+                'timestamp': node['timestamp'].strftime('%Y-%m-%d %H:%M') if node['timestamp'] else 'Unknown'
             })
             changes.append('hardware')
         
@@ -323,7 +330,22 @@ def format_news_html(news: Dict, time_window_hours: int, max_hops: int) -> str:
             html.append("<ul>")
             for node in news['lost_nodes']:
                 name = node['aka'] or node['user'] or 'Unknown'
-                html.append(f"<li><strong>{node['id']}</strong> ({name}) - {node['hardware']} - was {node['hops']} hops</li>")
+                last_seen = node['last_seen']
+                
+                # Simple timestamp formatting
+                if isinstance(last_seen, str) and 'T' in last_seen:
+                    # Parse ISO format and make it more readable
+                    try:
+                        dt = datetime.fromisoformat(last_seen.replace('Z', '+00:00'))
+                        last_seen_str = dt.strftime('%m/%d %H:%M')
+                    except:
+                        last_seen_str = last_seen
+                elif hasattr(last_seen, 'strftime'):
+                    last_seen_str = last_seen.strftime('%m/%d %H:%M')
+                else:
+                    last_seen_str = str(last_seen) if last_seen else 'Unknown'
+                
+                html.append(f"<li><strong>{node['id']}</strong> ({name}) - {node['hardware']} - was {node['hops']} hops - <em>last seen: {last_seen_str}</em></li>")
             html.append("</ul>")
         
         # Name changes
@@ -331,7 +353,7 @@ def format_news_html(news: Dict, time_window_hours: int, max_hops: int) -> str:
             html.append("<h4 style='color: #007bff; margin-top: 20px;'>🏷️ Name Changes</h4>")
             html.append("<ul>")
             for change in news['name_changes']:
-                html.append(f"<li><strong>{change['id']}</strong> renamed from '{change['old_name']}' to '{change['new_name']}' ({change['hops']} hops)</li>")
+                html.append(f"<li><strong>{change['id']}</strong> renamed from '{change['old_name']}' to '{change['new_name']}' ({change['hops']} hops) - <em>{change['timestamp']}</em></li>")
             html.append("</ul>")
         
         # Role changes
@@ -339,7 +361,7 @@ def format_news_html(news: Dict, time_window_hours: int, max_hops: int) -> str:
             html.append("<h4 style='color: #fd7e14; margin-top: 20px;'>⚙️ Role Changes</h4>")
             html.append("<ul>")
             for change in news['role_changes']:
-                html.append(f"<li><strong>{change['name']}</strong> ({change['id']}) changed from {change['old_role']} to {change['new_role']} ({change['hops']} hops)</li>")
+                html.append(f"<li><strong>{change['name']}</strong> ({change['id']}) changed from {change['old_role']} to {change['new_role']} ({change['hops']} hops) - <em>{change['timestamp']}</em></li>")
             html.append("</ul>")
         
         # Hardware changes
@@ -347,7 +369,7 @@ def format_news_html(news: Dict, time_window_hours: int, max_hops: int) -> str:
             html.append("<h4 style='color: #6f42c1; margin-top: 20px;'>🔧 Hardware Changes</h4>")
             html.append("<ul>")
             for change in news['hardware_changes']:
-                html.append(f"<li><strong>{change['name']}</strong> ({change['id']}) changed from {change['old_hardware']} to {change['new_hardware']} ({change['hops']} hops)</li>")
+                html.append(f"<li><strong>{change['name']}</strong> ({change['id']}) changed from {change['old_hardware']} to {change['new_hardware']} ({change['hops']} hops) - <em>{change['timestamp']}</em></li>")
             html.append("</ul>")
         
         # Public key changes
@@ -355,7 +377,7 @@ def format_news_html(news: Dict, time_window_hours: int, max_hops: int) -> str:
             html.append("<h4 style='color: #e83e8c; margin-top: 20px;'>🔐 Public Key Changes</h4>")
             html.append("<ul>")
             for change in news['pubkey_changes']:
-                html.append(f"<li><strong>{change['name']}</strong> ({change['id']}) updated public key ({change['hops']} hops)</li>")
+                html.append(f"<li><strong>{change['name']}</strong> ({change['id']}) updated public key ({change['hops']} hops) - <em>{change['timestamp']}</em></li>")
             html.append("</ul>")
     
     html.append("</div>")

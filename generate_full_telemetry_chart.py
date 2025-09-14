@@ -37,8 +37,8 @@ def load_env_file():
                 line = line.strip()
                 if line and not line.startswith('#') and '=' in line:
                     key, value = line.split('=', 1)
-                    # Remove quotes if present
-                    value = value.strip().strip('"').strip("'")
+                    # Remove inline comments and quotes
+                    value = value.split('#')[0].strip().strip('"').strip("'")
                     config[key.strip()] = value
     except Exception as e:
         print(f"Error reading .env file: {e}")
@@ -248,26 +248,39 @@ def calculate_recent_averages(timestamps, values, metric_name):
     
     # Get current value (most recent)
     current_value = None
+    current_timestamp = None
     valid_data = [(t, v) for t, v in zip(timestamps, values) if v is not None]
     if valid_data:
         # Sort by timestamp to get the most recent
         valid_data.sort(key=lambda x: x[0])
         current_value = valid_data[-1][1]
+        current_timestamp = valid_data[-1][0]
     
     # Filter data for each time period
     periods = {'3h': 3, '12h': 12, '24h': 24}
     averages = []
     
     # Add current value first
-    if current_value is not None:
-        if metric_name == 'battery':
-            averages.append(f"now:{current_value:.0f}%")
-        elif metric_name == 'voltage':
-            averages.append(f"now:{current_value:.1f}V")
-        elif metric_name in ['chutil', 'txutil']:
-            averages.append(f"now:{current_value:.1f}%")
+    if current_value is not None and current_timestamp is not None:
+        # Calculate age of the data
+        age_delta = now - current_timestamp
+        age_minutes = int(age_delta.total_seconds() / 60)
+        
+        if age_minutes == 0:
+            age_str = "now"
+        elif age_minutes == 1:
+            age_str = "1m ago"
         else:
-            averages.append(f"now:{current_value:.1f}")
+            age_str = f"{age_minutes}m ago"
+        
+        if metric_name == 'battery':
+            averages.append(f"{age_str}:{current_value:.0f}%")
+        elif metric_name == 'voltage':
+            averages.append(f"{age_str}:{current_value:.1f}V")
+        elif metric_name in ['chutil', 'txutil']:
+            averages.append(f"{age_str}:{current_value:.1f}%")
+        else:
+            averages.append(f"{age_str}:{current_value:.1f}")
     
     # Add averages for time periods
     for period_name, hours in periods.items():
