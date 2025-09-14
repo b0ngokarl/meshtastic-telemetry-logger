@@ -148,6 +148,12 @@ show_config() {
     echo "  Weather Cache: ${WEATHER_CACHE_DIR:-weather_cache}"
     echo
     
+    echo "🌐 HTML DASHBOARD:"
+    echo "  Dashboard Mode: ${HTML_DASHBOARD_MODE:-both} (old/modern/both)"
+    echo "  Web Deploy: ${WEB_DEPLOY_ENABLED:-false}"
+    echo "  Deploy Path: ${WEB_DEPLOY_PATH:-/var/www/html}"
+    echo
+    
     echo "🔧 ADVANCED SETTINGS:"
     echo "  Debug Mode: ${DEBUG:-false}"
     echo "  Quiet Mode: ${QUIET:-false}"

@@ -266,12 +266,17 @@ def calculate_recent_averages(timestamps, values, metric_name):
         age_delta = now - current_timestamp
         age_minutes = int(age_delta.total_seconds() / 60)
         
-        if age_minutes == 0:
-            age_str = "now"
-        elif age_minutes == 1:
+        # Always show actual age, never "now"
+        if age_minutes == 1:
             age_str = "1m ago"
-        else:
+        elif age_minutes < 60:
             age_str = f"{age_minutes}m ago"
+        elif age_minutes < 1440:  # Less than 24 hours
+            hours = int(age_minutes / 60)
+            age_str = f"{hours}h ago"
+        else:  # 24 hours or more
+            days = int(age_minutes / 1440)
+            age_str = f"{days}d ago"
         
         if metric_name == 'battery':
             averages.append(f"{age_str}:{current_value:.0f}%")

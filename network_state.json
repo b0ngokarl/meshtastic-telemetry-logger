@@ -6,7 +6,7 @@
     "pubkey": "N/A",
     "role": "N/A",
     "hops": 0,
-    "timestamp": "2025-09-14T11:26:35.580473",
+    "timestamp": "2025-09-14T11:32:13.028649",
     "battery": "N/A",
     "channel": 0
   },
@@ -17,7 +17,7 @@
     "pubkey": "BBR5ZaJJX5nX6J8GDho51dPFjzdg5OY77b4hhHBLh3s=",
     "role": "N/A",
     "hops": 0,
-    "timestamp": "2025-09-14T11:26:35.580487",
+    "timestamp": "2025-09-14T11:32:13.028662",
     "battery": "N/A",
     "channel": 0
   },
@@ -28,7 +28,7 @@
     "pubkey": "N/A",
     "role": "N/A",
     "hops": 0,
-    "timestamp": "2025-09-14T11:26:35.580494",
+    "timestamp": "2025-09-14T11:32:13.028667",
     "battery": "N/A",
     "channel": 0
   },
@@ -39,7 +39,7 @@
     "pubkey": "N/A",
     "role": "N/A",
     "hops": 0,
-    "timestamp": "2025-09-14T11:26:35.580499",
+    "timestamp": "2025-09-14T11:32:13.028671",
     "battery": "N/A",
     "channel": 0
   },
@@ -50,7 +50,7 @@
     "pubkey": "obT1jQ/vwOpEDgTphF3bz0r8pKs8NLzrEcyW1rcduHc=",
     "role": "N/A",
     "hops": 0,
-    "timestamp": "2025-09-14T11:26:35.580503",
+    "timestamp": "2025-09-14T11:32:13.028675",
     "battery": "N/A",
     "channel": 0
   },
@@ -61,7 +61,7 @@
     "pubkey": "N/A",
     "role": "N/A",
     "hops": 0,
-    "timestamp": "2025-09-14T11:26:35.580506",
+    "timestamp": "2025-09-14T11:32:13.028679",
     "battery": "N/A",
     "channel": 0
   },
@@ -72,7 +72,7 @@
     "pubkey": "N/A",
     "role": "N/A",
     "hops": 0,
-    "timestamp": "2025-09-14T11:26:35.580509",
+    "timestamp": "2025-09-14T11:32:13.028682",
     "battery": "N/A",
     "channel": 0
   },
@@ -83,7 +83,7 @@
     "pubkey": "VGCgZ6IBXY/s0Pz0CIlraW80ieiQaZ87IlHMsc6ZDBw=",
     "role": "CLIENT_MUTE",
     "hops": 0,
-    "timestamp": "2025-09-14T11:26:35.580512",
+    "timestamp": "2025-09-14T11:32:13.028685",
     "battery": "N/A",
     "channel": 0
   },
@@ -94,7 +94,18 @@
     "pubkey": "jJfz+dHYsHCSk/e9//0yp8WmCnKMmVMnsINN0OZUxDU=",
     "role": "N/A",
     "hops": 0,
-    "timestamp": "2025-09-14T11:16:55",
+    "timestamp": "2025-09-14T11:30:04",
+    "battery": "Powered",
+    "channel": 0
+  },
+  "!0d581ba5": {
+    "user": "Sbkn@mobil",
+    "aka": "DoT",
+    "hardware": "TRACKER_T1000_E",
+    "pubkey": "eoNBGH9CcKs5/H69ehvszHts8q+130s5xmU0CokhPxE=",
+    "role": "N/A",
+    "hops": 3,
+    "timestamp": "2025-09-14T11:29:54",
     "battery": "Powered",
     "channel": 0
   },
@@ -104,8 +115,305 @@
     "hardware": "HELTEC_MESH_NODE_T114",
     "pubkey": "NtsBTtLLARC0fJ6UfiC0Xh04TJfEtNR/gZEcjlEbSTk=",
     "role": "CLIENT_MUTE",
+    "hops": 4,
+    "timestamp": "2025-09-14T11:29:49",
+    "battery": "Powered",
+    "channel": 0
+  },
+  "!98dccfd8": {
+    "user": "DB0KT",
+    "aka": "5FF",
+    "hardware": "TLORA_V2_1_1P6",
+    "pubkey": "9lriCwnmaxg73fkOh3IaZxwCpnSpjCvWwdMACEiRaS8=",
+    "role": "N/A",
+    "hops": 3,
+    "timestamp": "2025-09-14T11:29:31",
+    "battery": "96%",
+    "channel": 0
+  },
+  "!0eeb4fdf": {
+    "user": "Orschel_Solar",
+    "aka": "OSSO",
+    "hardware": "RAK4631",
+    "pubkey": "1qEwgd3nPmJsLc2tqizlSUzjGKSKWYzFRnYtZeEPODo=",
+    "role": "N/A",
+    "hops": 3,
+    "timestamp": "2025-09-14T11:29:14",
+    "battery": "55%",
+    "channel": 0
+  },
+  "!433e23c8": {
+    "user": "PSH_R",
+    "aka": "PSHR",
+    "hardware": "HELTEC_V3",
+    "pubkey": "XVq+iYs35ODa8fiftHBnqOd4k3jQc1jCx27MDM/f1DI=",
+    "role": "N/A",
+    "hops": 4,
+    "timestamp": "2025-09-14T11:28:52",
+    "battery": "Powered",
+    "channel": 0
+  },
+  "!da5a1530": {
+    "user": "DB9UQ-Router JN49BO",
+    "aka": "UQ-R",
+    "hardware": "TLORA_T3_S3",
+    "pubkey": "K/kAW9Scto6w6QCWJ3BNpxNXDXFmTW40F+z8vyO/fmM=",
+    "role": "ROUTER",
+    "hops": 4,
+    "timestamp": "2025-09-14T11:28:46",
+    "battery": "Powered",
+    "channel": 0
+  },
+  "!ba656304": {
+    "user": "EinmachglasV2",
+    "aka": "EMG2",
+    "hardware": "HELTEC_WIRELESS_TRACKER",
+    "pubkey": "rkIPzsm1yHxaR22SlZ7foTz/xZx5Dk34Mz5Vo0dnyzI=",
+    "role": "N/A",
+    "hops": 1,
+    "timestamp": "2025-09-14T11:28:38",
+    "battery": "43%",
+    "channel": 0
+  },
+  "!433ce28c": {
+    "user": "Meshtastic e28c",
+    "aka": "e28c",
+    "hardware": "HELTEC_V3",
+    "pubkey": "Zw45sa0xu+p+72zq7g3q+MxkGCdZXGsvRmILkg5FamU=",
+    "role": "CLIENT_MUTE",
     "hops": 5,
-    "timestamp": "2025-09-14T11:16:24",
+    "timestamp": "2025-09-14T11:28:26",
+    "battery": "Powered",
+    "channel": 0
+  },
+  "!a0cc8008": {
+    "user": "DL0TRZ Trutzturm Oppenheim",
+    "aka": "TRZT",
+    "hardware": "HELTEC_V3",
+    "pubkey": "BHZu42FFSmTapxuNFSHAd3MU+diThwrslmMdxpk+LAU=",
+    "role": "ROUTER_LATE",
+    "hops": 0,
+    "timestamp": "2025-09-14T11:28:11",
+    "battery": "Powered",
+    "channel": 0
+  },
+  "!849c4818": {
+    "user": "Ondas_fix_Nierstein_RLP",
+    "aka": "Ond1",
+    "hardware": "HELTEC_V3",
+    "pubkey": "0Q5D6qwymNgG7PuxiB6vdOzjIWdJws5pM/grf/JaiFE=",
+    "role": "N/A",
+    "hops": 1,
+    "timestamp": "2025-09-14T11:27:55",
+    "battery": "99%",
+    "channel": 0
+  },
+  "!2c9e092b": {
+    "user": "Meshtastic 092b mobile node",
+    "aka": "092b",
+    "hardware": "HELTEC_MESH_NODE_T114",
+    "pubkey": "yu3jGDmhsFDuFWXHAUrSqF0tX8e/i0YR8o5iS8X1bBc=",
+    "role": "CLIENT_MUTE",
+    "hops": 0,
+    "timestamp": "2025-09-14T11:27:19",
+    "battery": "100%",
+    "channel": 0
+  },
+  "!9eed0410": {
+    "user": "Schwabsburg Funklochfueller 0410 solar",
+    "aka": "BURG",
+    "hardware": "HELTEC_V3",
+    "pubkey": "TAWrwtVJGEIxxLJolTFZRVvgPFZLSr5R2tSivq79Wjw=",
+    "role": "N/A",
+    "hops": 0,
+    "timestamp": "2025-09-14T11:27:07",
+    "battery": "Powered",
+    "channel": 0
+  },
+  "!f9b49208": {
+    "user": "OO-Okriftel",
+    "aka": "OOOK",
+    "hardware": "TLORA_V2_1_1P6",
+    "pubkey": "oC57xcOnsU4aVu49G1p0W5xC7APXfvwWCG/L6IMouFc=",
+    "role": "N/A",
+    "hops": 3,
+    "timestamp": "2025-09-14T11:25:29",
+    "battery": "N/A",
+    "channel": 0
+  },
+  "!519765d2": {
+    "user": "KD Mobile Tracker",
+    "aka": "KDMT",
+    "hardware": "TRACKER_T1000_E",
+    "pubkey": "v/vta37OgKpOpAZ4PlOFT4AHS5mNumF97EWARP7TnHQ=",
+    "role": "TRACKER",
+    "hops": 7,
+    "timestamp": "2025-09-14T11:24:44",
+    "battery": "21%",
+    "channel": 0
+  },
+  "!c0c319a0": {
+    "user": "DF4WP",
+    "aka": "4WPH",
+    "hardware": "TBEAM",
+    "pubkey": "klmP+50H9rHRrGpG7lcqt+5nIKTsRaFN1J7azoAfgUw=",
+    "role": "N/A",
+    "hops": 2,
+    "timestamp": "2025-09-14T11:24:36",
+    "battery": "100%",
+    "channel": 0
+  },
+  "!da5aef18": {
+    "user": "LZ T1 T3S3 QTH: RLP-LU JN49EM",
+    "aka": "LZT1",
+    "hardware": "TLORA_T3_S3",
+    "pubkey": "oqC/G7lNEnUv8lAPewA2Sm3mwUqnqIf24qLD93l7SEQ=",
+    "role": "N/A",
+    "hops": 5,
+    "timestamp": "2025-09-14T11:23:41",
+    "battery": "N/A",
+    "channel": 0
+  },
+  "!b3a343bf": {
+    "user": "Commonwealth_1",
+    "aka": "RAK1",
+    "hardware": "RAK4631",
+    "pubkey": "KwVJhNSCPMNIiRzK67KjcoDYTCAOTQgWiLTJyvr55jE=",
+    "role": "N/A",
+    "hops": 3,
+    "timestamp": "2025-09-14T11:22:32",
+    "battery": "91%",
+    "channel": 0
+  },
+  "!433e0680": {
+    "user": "Rodau02",
+    "aka": "0680",
+    "hardware": "HELTEC_V3",
+    "pubkey": "xIrK1ZMpxhXchrJJy6MFvQAkXbDd2HgmROWKIbCIhSk=",
+    "role": "N/A",
+    "hops": 2,
+    "timestamp": "2025-09-14T11:21:40",
+    "battery": "Powered",
+    "channel": 0
+  },
+  "!f6707bef": {
+    "user": "MN_Bergstrasse_9",
+    "aka": "MNB9",
+    "hardware": "RAK4631",
+    "pubkey": "ufzG/Qk5+fU/55iHMz2oa/dAwXd+h++vcGI/NAqnXRM=",
+    "role": "N/A",
+    "hops": 2,
+    "timestamp": "2025-09-14T11:21:32",
+    "battery": "N/A",
+    "channel": 0
+  },
+  "!087a6cc4": {
+    "user": "RiedLee01",
+    "aka": "RL01",
+    "hardware": "RAK11200",
+    "pubkey": "k/N/qdY0KKeZ7+GqJjl1ciiZMv58wbd6uaKhRyU0sHk=",
+    "role": "N/A",
+    "hops": 3,
+    "timestamp": "2025-09-14T11:20:33",
+    "battery": "Powered",
+    "channel": 0
+  },
+  "!d20e1284": {
+    "user": "Idstein01",
+    "aka": "ID01",
+    "hardware": "RAK4631",
+    "pubkey": "KAmPbFqqZcjsEzwi6zZ7MRxNZUx2EHLNQTVMHZuluCM=",
+    "role": "N/A",
+    "hops": 4,
+    "timestamp": "2025-09-14T11:19:58",
+    "battery": "Powered",
+    "channel": 0
+  },
+  "!fbd24e7a": {
+    "user": "Mesh Babenhausen | meshhessen.de",
+    "aka": "MB",
+    "hardware": "RAK4631",
+    "pubkey": "oVv2oUFjH1x74LKRtiFs1DlRlYvvFX1hq9dgEEwBB2M=",
+    "role": "N/A",
+    "hops": 6,
+    "timestamp": "2025-09-14T11:19:49",
+    "battery": "15%",
+    "channel": 0
+  },
+  "!db2fad18": {
+    "user": "Meshtastic ad18",
+    "aka": "ad18",
+    "hardware": "HELTEC_WSL_V3",
+    "pubkey": "Ux2J1D6F/f0/WVR4W8NN2dpRWXTl+OJPMqHm4CTavVs=",
+    "role": "N/A",
+    "hops": 3,
+    "timestamp": "2025-09-14T11:19:10",
+    "battery": "Powered",
+    "channel": 0
+  },
+  "!1c507e08": {
+    "user": "FD1 Pfungstadt-Hahn",
+    "aka": "FD1H",
+    "hardware": "TBEAM",
+    "pubkey": "+o7/l2W+rObPqhOQratvIrldc9/l4vwZbPVvVU9+fz0=",
+    "role": "N/A",
+    "hops": 3,
+    "timestamp": "2025-09-14T11:18:56",
+    "battery": "100%",
+    "channel": 0
+  },
+  "!db2f64f0": {
+    "user": "CSC1 Ffm Seckbach (Dach)",
+    "aka": "CSC1",
+    "hardware": "HELTEC_WSL_V3",
+    "pubkey": "pvVIbI5LWhOlYPcCyTKDsEvNha/RDuI/pP1ZLEQ5/SE=",
+    "role": "N/A",
+    "hops": 5,
+    "timestamp": "2025-09-14T11:18:37",
+    "battery": "Powered",
+    "channel": 0
+  },
+  "!20fa65a5": {
+    "user": "Markus (Heltec T114)",
+    "aka": "PrHT",
+    "hardware": "HELTEC_MESH_NODE_T114",
+    "pubkey": "evXuXn1u1Nppgr63CkXyEGuqKb9u8LMvVtEK3O2btkU=",
+    "role": "CLIENT_MUTE",
+    "hops": 1,
+    "timestamp": "2025-09-14T11:18:22",
+    "battery": "92%",
+    "channel": 0
+  },
+  "!b03d89c8": {
+    "user": "Amateur Radio Club Worms DL0WJ Jn49ep",
+    "aka": "ARCW",
+    "hardware": "HELTEC_V3",
+    "pubkey": "Ejr1KdwiesSMNGzxRCWTRo/HDy3w5LcAuhjEORfkPVI=",
+    "role": "N/A",
+    "hops": 2,
+    "timestamp": "2025-09-14T11:18:18",
+    "battery": "Powered",
+    "channel": 0
+  },
+  "!cacac522": {
+    "user": "Hohes Rod Gie\u00dfen  Meshhessen.de",
+    "aka": "HRGM",
+    "hardware": "RAK4631",
+    "pubkey": "IV153M8sedE3rXU2O9Vw9LcdraAWn2V1eLsxiSQvMiY=",
+    "role": "N/A",
+    "hops": 2,
+    "timestamp": "2025-09-14T11:17:41",
+    "battery": "N/A",
+    "channel": 0
+  },
+  "!6c746d18": {
+    "user": "Dibborsch Mesh 01",
+    "aka": "DX01",
+    "hardware": "TBEAM",
+    "pubkey": "GzbMHjtpAnfGuXXFL/hL8vsjO9UXeqNQiGfGmKTIdRs=",
+    "role": "N/A",
+    "hops": 4,
+    "timestamp": "2025-09-14T11:17:29",
     "battery": "Powered",
     "channel": 0
   },
@@ -142,28 +450,6 @@
     "battery": "Powered",
     "channel": 0
   },
-  "!ba656304": {
-    "user": "EinmachglasV2",
-    "aka": "EMG2",
-    "hardware": "HELTEC_WIRELESS_TRACKER",
-    "pubkey": "rkIPzsm1yHxaR22SlZ7foTz/xZx5Dk34Mz5Vo0dnyzI=",
-    "role": "N/A",
-    "hops": 3,
-    "timestamp": "2025-09-14T11:15:38",
-    "battery": "62%",
-    "channel": 0
-  },
-  "!da5a1530": {
-    "user": "DB9UQ-Router JN49BO",
-    "aka": "UQ-R",
-    "hardware": "TLORA_T3_S3",
-    "pubkey": "K/kAW9Scto6w6QCWJ3BNpxNXDXFmTW40F+z8vyO/fmM=",
-    "role": "ROUTER",
-    "hops": 6,
-    "timestamp": "2025-09-14T11:15:23",
-    "battery": "Powered",
-    "channel": 0
-  },
   "!97003f48": {
     "user": "Holger Weinsheim Portabel",
     "aka": "HSTD",
@@ -175,28 +461,6 @@
     "battery": "Powered",
     "channel": 0
   },
-  "!849c4818": {
-    "user": "Ondas_fix_Nierstein_RLP",
-    "aka": "Ond1",
-    "hardware": "HELTEC_V3",
-    "pubkey": "0Q5D6qwymNgG7PuxiB6vdOzjIWdJws5pM/grf/JaiFE=",
-    "role": "N/A",
-    "hops": 1,
-    "timestamp": "2025-09-14T11:14:34",
-    "battery": "99%",
-    "channel": 0
-  },
-  "!2c9e092b": {
-    "user": "Meshtastic 092b mobile node",
-    "aka": "092b",
-    "hardware": "HELTEC_MESH_NODE_T114",
-    "pubkey": "yu3jGDmhsFDuFWXHAUrSqF0tX8e/i0YR8o5iS8X1bBc=",
-    "role": "CLIENT_MUTE",
-    "hops": 0,
-    "timestamp": "2025-09-14T11:14:05",
-    "battery": "95%",
-    "channel": 0
-  },
   "!9e3b2760": {
     "user": "BoxedBrain",
     "aka": "BxdB",
@@ -206,17 +470,6 @@
     "hops": 7,
     "timestamp": "2025-09-14T11:13:56",
     "battery": "92%",
-    "channel": 0
-  },
-  "!9eed0410": {
-    "user": "Schwabsburg Funklochfueller 0410 solar",
-    "aka": "BURG",
-    "hardware": "HELTEC_V3",
-    "pubkey": "TAWrwtVJGEIxxLJolTFZRVvgPFZLSr5R2tSivq79Wjw=",
-    "role": "N/A",
-    "hops": 0,
-    "timestamp": "2025-09-14T11:13:55",
-    "battery": "Powered",
     "channel": 0
   },
   "!0b161383": {
@@ -316,17 +569,6 @@
     "hops": 4,
     "timestamp": "2025-09-14T11:10:48",
     "battery": "N/A",
-    "channel": 0
-  },
-  "!db2f64f0": {
-    "user": "CSC1 Ffm Seckbach (Dach)",
-    "aka": "CSC1",
-    "hardware": "HELTEC_WSL_V3",
-    "pubkey": "pvVIbI5LWhOlYPcCyTKDsEvNha/RDuI/pP1ZLEQ5/SE=",
-    "role": "N/A",
-    "hops": 5,
-    "timestamp": "2025-09-14T11:10:30",
-    "battery": "Powered",
     "channel": 0
   },
   "!433cfd5c": {
@@ -439,17 +681,6 @@
     "battery": "Powered",
     "channel": 0
   },
-  "!a0cc8008": {
-    "user": "DL0TRZ Trutzturm Oppenheim",
-    "aka": "TRZT",
-    "hardware": "HELTEC_V3",
-    "pubkey": "BHZu42FFSmTapxuNFSHAd3MU+diThwrslmMdxpk+LAU=",
-    "role": "ROUTER_LATE",
-    "hops": 0,
-    "timestamp": "2025-09-14T11:05:06",
-    "battery": "Powered",
-    "channel": 0
-  },
   "!4f262446": {
     "user": "FFMKalbach Solar",
     "aka": "FFMK",
@@ -503,17 +734,6 @@
     "hops": 5,
     "timestamp": "2025-09-14T11:02:53",
     "battery": "Powered",
-    "channel": 0
-  },
-  "!1c507e08": {
-    "user": "FD1 Pfungstadt-Hahn",
-    "aka": "FD1H",
-    "hardware": "TBEAM",
-    "pubkey": "+o7/l2W+rObPqhOQratvIrldc9/l4vwZbPVvVU9+fz0=",
-    "role": "N/A",
-    "hops": 4,
-    "timestamp": "2025-09-14T11:02:47",
-    "battery": "100%",
     "channel": 0
   },
   "!fa62441e": {
@@ -580,17 +800,6 @@
     "hops": 6,
     "timestamp": "2025-09-14T10:59:29",
     "battery": "91%",
-    "channel": 0
-  },
-  "!0eeb4fdf": {
-    "user": "Orschel_Solar",
-    "aka": "OSSO",
-    "hardware": "RAK4631",
-    "pubkey": "1qEwgd3nPmJsLc2tqizlSUzjGKSKWYzFRnYtZeEPODo=",
-    "role": "N/A",
-    "hops": 2,
-    "timestamp": "2025-09-14T10:58:58",
-    "battery": "55%",
     "channel": 0
   },
   "!33686414": {
@@ -692,17 +901,6 @@
     "battery": "N/A",
     "channel": 0
   },
-  "!98dccfd8": {
-    "user": "DB0KT",
-    "aka": "5FF",
-    "hardware": "TLORA_V2_1_1P6",
-    "pubkey": "9lriCwnmaxg73fkOh3IaZxwCpnSpjCvWwdMACEiRaS8=",
-    "role": "N/A",
-    "hops": 2,
-    "timestamp": "2025-09-14T10:50:56",
-    "battery": "96%",
-    "channel": 0
-  },
   "!55b6688c": {
     "user": "ABird01",
     "aka": "AB01",
@@ -723,17 +921,6 @@
     "hops": 3,
     "timestamp": "2025-09-14T10:50:17",
     "battery": "96%",
-    "channel": 0
-  },
-  "!6c746d18": {
-    "user": "Dibborsch Mesh 01",
-    "aka": "DX01",
-    "hardware": "TBEAM",
-    "pubkey": "GzbMHjtpAnfGuXXFL/hL8vsjO9UXeqNQiGfGmKTIdRs=",
-    "role": "N/A",
-    "hops": 2,
-    "timestamp": "2025-09-14T10:49:12",
-    "battery": "Powered",
     "channel": 0
   },
   "!435a86f4": {
@@ -780,17 +967,6 @@
     "battery": "N/A",
     "channel": 0
   },
-  "!433e23c8": {
-    "user": "PSH_R",
-    "aka": "PSHR",
-    "hardware": "HELTEC_V3",
-    "pubkey": "XVq+iYs35ODa8fiftHBnqOd4k3jQc1jCx27MDM/f1DI=",
-    "role": "N/A",
-    "hops": 3,
-    "timestamp": "2025-09-14T10:47:35",
-    "battery": "Powered",
-    "channel": 0
-  },
   "!f96a92d4": {
     "user": "AFG 92d4",
     "aka": "92d4",
@@ -811,17 +987,6 @@
     "hops": 7,
     "timestamp": "2025-09-14T10:46:25",
     "battery": "N/A",
-    "channel": 0
-  },
-  "!433ce28c": {
-    "user": "Meshtastic e28c",
-    "aka": "e28c",
-    "hardware": "HELTEC_V3",
-    "pubkey": "Zw45sa0xu+p+72zq7g3q+MxkGCdZXGsvRmILkg5FamU=",
-    "role": "CLIENT_MUTE",
-    "hops": 3,
-    "timestamp": "2025-09-14T10:46:11",
-    "battery": "Powered",
     "channel": 0
   },
   "!9af694c9": {
@@ -857,17 +1022,6 @@
     "battery": "98%",
     "channel": 0
   },
-  "!c0c319a0": {
-    "user": "DF4WP",
-    "aka": "4WPH",
-    "hardware": "TBEAM",
-    "pubkey": "klmP+50H9rHRrGpG7lcqt+5nIKTsRaFN1J7azoAfgUw=",
-    "role": "N/A",
-    "hops": 4,
-    "timestamp": "2025-09-14T10:40:32",
-    "battery": "100%",
-    "channel": 0
-  },
   "!c8a0acfa": {
     "user": "Morpheus | meshhessen.de",
     "aka": "MpMh",
@@ -898,17 +1052,6 @@
     "role": "N/A",
     "hops": 4,
     "timestamp": "2025-09-14T10:38:11",
-    "battery": "Powered",
-    "channel": 0
-  },
-  "!db2fad18": {
-    "user": "Meshtastic ad18",
-    "aka": "ad18",
-    "hardware": "HELTEC_WSL_V3",
-    "pubkey": "Ux2J1D6F/f0/WVR4W8NN2dpRWXTl+OJPMqHm4CTavVs=",
-    "role": "N/A",
-    "hops": 3,
-    "timestamp": "2025-09-14T10:37:09",
     "battery": "Powered",
     "channel": 0
   },
@@ -1099,17 +1242,6 @@
     "battery": "61%",
     "channel": 0
   },
-  "!0d581ba5": {
-    "user": "Sbkn@mobil",
-    "aka": "DoT",
-    "hardware": "TRACKER_T1000_E",
-    "pubkey": "eoNBGH9CcKs5/H69ehvszHts8q+130s5xmU0CokhPxE=",
-    "role": "N/A",
-    "hops": 3,
-    "timestamp": "2025-09-14T10:15:58",
-    "battery": "58%",
-    "channel": 0
-  },
   "!433cc9dc": {
     "user": "Meshtastic c9dc",
     "aka": "c9dc",
@@ -1154,17 +1286,6 @@
     "battery": "65%",
     "channel": 0
   },
-  "!b3a343bf": {
-    "user": "Commonwealth_1",
-    "aka": "RAK1",
-    "hardware": "RAK4631",
-    "pubkey": "KwVJhNSCPMNIiRzK67KjcoDYTCAOTQgWiLTJyvr55jE=",
-    "role": "N/A",
-    "hops": 3,
-    "timestamp": "2025-09-14T10:10:13",
-    "battery": "91%",
-    "channel": 0
-  },
   "!c5679928": {
     "user": "JHM1",
     "aka": "JHM1",
@@ -1174,17 +1295,6 @@
     "hops": 3,
     "timestamp": "2025-09-14T10:07:20",
     "battery": "93%",
-    "channel": 0
-  },
-  "!f6707bef": {
-    "user": "MN_Bergstrasse_9",
-    "aka": "MNB9",
-    "hardware": "RAK4631",
-    "pubkey": "ufzG/Qk5+fU/55iHMz2oa/dAwXd+h++vcGI/NAqnXRM=",
-    "role": "N/A",
-    "hops": 3,
-    "timestamp": "2025-09-14T10:04:40",
-    "battery": "N/A",
     "channel": 0
   },
   "!ea8ee0f4": {
@@ -1229,17 +1339,6 @@
     "hops": 7,
     "timestamp": "2025-09-14T09:59:07",
     "battery": "Powered",
-    "channel": 0
-  },
-  "!20fa65a5": {
-    "user": "Markus (Heltec T114)",
-    "aka": "PrHT",
-    "hardware": "HELTEC_MESH_NODE_T114",
-    "pubkey": "evXuXn1u1Nppgr63CkXyEGuqKb9u8LMvVtEK3O2btkU=",
-    "role": "CLIENT_MUTE",
-    "hops": 1,
-    "timestamp": "2025-09-14T09:58:22",
-    "battery": "92%",
     "channel": 0
   },
   "!bba83084": {
@@ -1328,17 +1427,6 @@
     "hops": 3,
     "timestamp": "2025-09-14T09:42:03",
     "battery": "91%",
-    "channel": 0
-  },
-  "!fbd24e7a": {
-    "user": "Mesh Babenhausen | meshhessen.de",
-    "aka": "MB",
-    "hardware": "RAK4631",
-    "pubkey": "oVv2oUFjH1x74LKRtiFs1DlRlYvvFX1hq9dgEEwBB2M=",
-    "role": "N/A",
-    "hops": 5,
-    "timestamp": "2025-09-14T09:40:15",
-    "battery": "15%",
     "channel": 0
   },
   "!9ee70e28": {
@@ -1550,17 +1638,6 @@
     "battery": "Powered",
     "channel": 0
   },
-  "!f9b49208": {
-    "user": "OO-Okriftel",
-    "aka": "OOOK",
-    "hardware": "TLORA_V2_1_1P6",
-    "pubkey": "oC57xcOnsU4aVu49G1p0W5xC7APXfvwWCG/L6IMouFc=",
-    "role": "N/A",
-    "hops": 7,
-    "timestamp": "2025-09-14T08:50:09",
-    "battery": "N/A",
-    "channel": 0
-  },
   "!da657628": {
     "user": "Meshtastic 7628",
     "aka": "7628",
@@ -1649,17 +1726,6 @@
     "battery": "99%",
     "channel": 0
   },
-  "!087a6cc4": {
-    "user": "RiedLee01",
-    "aka": "RL01",
-    "hardware": "RAK11200",
-    "pubkey": "k/N/qdY0KKeZ7+GqJjl1ciiZMv58wbd6uaKhRyU0sHk=",
-    "role": "N/A",
-    "hops": 2,
-    "timestamp": "2025-09-14T08:25:58",
-    "battery": "Powered",
-    "channel": 0
-  },
   "!231b3747": {
     "user": "Ralf73-Travel",
     "aka": "HOET",
@@ -1693,17 +1759,6 @@
     "battery": "N/A",
     "channel": 0
   },
-  "!b03d89c8": {
-    "user": "Amateur Radio Club Worms DL0WJ Jn49ep",
-    "aka": "ARCW",
-    "hardware": "HELTEC_V3",
-    "pubkey": "Ejr1KdwiesSMNGzxRCWTRo/HDy3w5LcAuhjEORfkPVI=",
-    "role": "N/A",
-    "hops": 2,
-    "timestamp": "2025-09-14T08:18:22",
-    "battery": "Powered",
-    "channel": 0
-  },
   "!6c698854": {
     "user": "Flintstone-868-12",
     "aka": "Flnt",
@@ -1735,17 +1790,6 @@
     "hops": 3,
     "timestamp": "2025-09-14T08:13:37",
     "battery": "N/A",
-    "channel": 0
-  },
-  "!d20e1284": {
-    "user": "Idstein01",
-    "aka": "ID01",
-    "hardware": "RAK4631",
-    "pubkey": "KAmPbFqqZcjsEzwi6zZ7MRxNZUx2EHLNQTVMHZuluCM=",
-    "role": "N/A",
-    "hops": 4,
-    "timestamp": "2025-09-14T08:13:21",
-    "battery": "Powered",
     "channel": 0
   },
   "!433b4c94": {
@@ -1856,17 +1900,6 @@
     "hops": 5,
     "timestamp": "2025-09-14T07:42:43",
     "battery": "Powered",
-    "channel": 0
-  },
-  "!519765d2": {
-    "user": "KD Mobile Tracker",
-    "aka": "KDMT",
-    "hardware": "TRACKER_T1000_E",
-    "pubkey": "v/vta37OgKpOpAZ4PlOFT4AHS5mNumF97EWARP7TnHQ=",
-    "role": "TRACKER",
-    "hops": 4,
-    "timestamp": "2025-09-14T07:39:43",
-    "battery": "21%",
     "channel": 0
   },
   "!050c3610": {
@@ -2098,17 +2131,6 @@
     "hops": 3,
     "timestamp": "2025-09-14T06:23:05",
     "battery": "N/A",
-    "channel": 0
-  },
-  "!433e0680": {
-    "user": "Rodau02",
-    "aka": "0680",
-    "hardware": "HELTEC_V3",
-    "pubkey": "xIrK1ZMpxhXchrJJy6MFvQAkXbDd2HgmROWKIbCIhSk=",
-    "role": "N/A",
-    "hops": 4,
-    "timestamp": "2025-09-14T06:14:49",
-    "battery": "Powered",
     "channel": 0
   },
   "!b00d960e": {
@@ -2978,17 +3000,6 @@
     "hops": 7,
     "timestamp": "2025-09-13T13:52:06",
     "battery": "26%",
-    "channel": 0
-  },
-  "!da5aef18": {
-    "user": "LZ T1 T3S3 QTH: RLP-LU JN49EM",
-    "aka": "LZT1",
-    "hardware": "TLORA_T3_S3",
-    "pubkey": "oqC/G7lNEnUv8lAPewA2Sm3mwUqnqIf24qLD93l7SEQ=",
-    "role": "N/A",
-    "hops": 5,
-    "timestamp": "2025-09-13T13:03:05",
-    "battery": "Powered",
     "channel": 0
   },
   "!9eeca68c": {

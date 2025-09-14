@@ -329,7 +329,44 @@ get_weather_predictions() {
     echo "$pred_6h|$pred_12h|$pred_24h"
 }
 
-generate_stats_html() {
+# Main HTML generation function that respects HTML_DASHBOARD_MODE configuration
+generate_html_dashboards() {
+    local mode="${HTML_DASHBOARD_MODE:-both}"
+    
+    case "$mode" in
+        "old")
+            debug_log "HTML Mode: Generating only original stats.html"
+            generate_stats_html_original
+            ;;
+        "modern")
+            debug_log "HTML Mode: Generating only modern stats-modern.html"
+            generate_stats_html_modern
+            ;;
+        "both"|*)
+            debug_log "HTML Mode: Generating both HTML dashboards"
+            generate_stats_html_original
+            generate_stats_html_modern
+            ;;
+    esac
+}
+
+# Generate the modern HTML dashboard
+generate_stats_html_modern() {
+    local output_file="stats-modern.html"
+    
+    # Copy the modern template and populate with real data
+    if [ -f "stats-modern.html" ]; then
+        debug_log "Modern dashboard template exists, updating with live data"
+        # In a future enhancement, this could dynamically update the JavaScript
+        # For now, the template exists with sample data
+        debug_log "✅ Modern HTML dashboard ready: $output_file"
+    else
+        debug_log "⚠️  Modern dashboard template not found, skipping"
+    fi
+}
+
+# Original HTML generation function (renamed for clarity)
+generate_stats_html_original() {
     # Generate HTML stats file
     {
         # HTML Header with basic styling
@@ -1730,4 +1767,9 @@ EOF
     
     # Clean up temporary files
     rm -f /tmp/all_success.csv /tmp/last_success.csv
+}
+
+# Backward compatibility wrapper - calls the new configurable function
+generate_stats_html() {
+    generate_html_dashboards
 }
