@@ -126,9 +126,9 @@ EOF
                         status_class="warning"
                         status_text="⏱️ Timeout"
                         ;;
-                    "false")
-                        status_class="danger"
-                        status_text="❌ No Route"
+                    {
+                        # HTML Header with basic styling
+                        cat << 'EOF'
                         ;;
                     *)
                         status_class="secondary"
@@ -151,6 +151,9 @@ EOF
                 echo "<td class=\"number\">$total_hops</td>"
                 echo "<td class=\"route-path\">$route_display</td>"
                 echo "</tr>"
+                        # Add traceroute stats section to stats.html
+                        generate_network_topology_section
+                        # ...existing code...
             fi
         done
     fi
@@ -1427,68 +1430,70 @@ generate_stats_html_original() {
             margin-left: 10px;
             transition: background 0.2s ease;
         }
-        .clear-filters:hover { 
-            background: #c82333; 
-            transform: translateY(-1px);
-        }
-        
-        /* Global controls styling */
-        .global-controls {
-            position: fixed; 
-            top: 10px; 
-            right: 10px; 
-            z-index: 1000; 
-            background: white; 
-            padding: 12px; 
-            border: 1px solid #ddd; 
-            border-radius: 8px; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            font-family: Arial, sans-serif;
-        }
-        .global-controls button {
-            margin: 0 3px;
-            font-size: 12px;
-            transition: all 0.2s ease;
-        }
-        .global-controls button:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-        
-        /* Table row highlighting */
-        tbody tr:hover {
-            background-color: #fff3cd !important;
-            transition: background-color 0.2s ease;
-        }
-        
-        /* Responsive table improvements */
-        @media (max-width: 768px) {
-            .filter-input { width: 200px; }
-            .global-controls { position: relative; top: auto; right: auto; margin: 10px 0; }
-        }
-        
-        /* Hide rows when filtering */
-        .hidden-row { display: none !important; }
-        
-        /* GPS link styling */
-        a { color: #1976d2; text-decoration: none; }
-        a:hover { color: #0d47a1; text-decoration: underline; }
-        a[title]:hover { cursor: help; }
-        
-        /* Smooth scrolling for navigation */
-        html { scroll-behavior: smooth; }
-        
-        /* Navigation link hover effects */
-        .nav-link { transition: transform 0.2s, box-shadow 0.2s; }
-        .nav-link:hover { 
-            transform: translateY(-2px); 
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1); 
-            text-decoration: none !important; 
-        }
-        
-        /* Trend indicator styles */
-        .trend-indicator {
-            font-size: 0.9em;
+        {
+            # HTML Header with basic styling
+            cat << 'EOF'
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Meshtastic Telemetry Stats</title>
+        <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            h1 { color: #333; }
+            h2 { color: #666; margin-top: 30px; }
+            h3 { color: #888; margin-top: 20px; }
+            table { border-collapse: collapse; width: 100%; margin: 10px 0; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #f2f2f2; font-weight: bold; position: relative; cursor: pointer; }
+            th:hover { background-color: #e8e8e8; }
+            tr:nth-child(even) { background-color: #f9f9f9; }
+            .timestamp { font-family: monospace; }
+            .number { text-align: right; }
+            .address { font-weight: bold; }
+            .good { color: #27ae60; }
+            .warning { color: #f39c12; }
+            .critical { color: #e74c3c; }
+            .unknown { color: #888; }
+            .success { color: #27ae60; font-weight: bold; }
+            .secondary { color: #888; }
+            .route-path { font-family: monospace; font-size: 0.95em; }
+            .topology-stats { background: #f8f9fa; border-radius: 8px; padding: 15px; margin: 20px 0; border-left: 4px solid #3498db; }
+            .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin: 10px 0; }
+            .stat-item { background: #fff; padding: 10px; border-radius: 6px; border-left: 4px solid #3498db; margin-bottom: 5px; }
+            .stat-label { font-weight: 500; color: #333; }
+            .stat-value { font-weight: 700; color: #3498db; font-size: 1.1rem; }
+            .recent-traceroutes { background: #fff3e0; border-radius: 8px; padding: 15px; margin: 20px 0; border-left: 4px solid #f39c12; }
+            .table-container { overflow-x: auto; }
+            .modern-table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+            .modern-table th, .modern-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            .modern-table th { background-color: #ffe0b2; font-weight: bold; }
+            .modern-table tr:nth-child(even) { background-color: #fff8e1; }
+            .analysis-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+            .analysis-item { background: linear-gradient(135deg, #fff, #f8f9fa); padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #3498db; }
+            .analysis-label { font-weight: 500; color: #333; }
+            .analysis-value { font-weight: 700; color: #3498db; font-size: 1.1rem; }
+            .info-card { background: linear-gradient(135deg, #e3f2fd, #bbdefb); border: 1px solid #90caf9; border-radius: 8px; padding: 20px; margin: 15px 0; text-align: center; }
+            .info-card h4 { color: #1976d2; margin-bottom: 10px; }
+            .info-card p { color: #424242; margin: 8px 0; }
+        </style>
+    </head>
+    <body>
+    EOF
+            echo "<h1>Meshtastic Telemetry Statistics</h1>"
+            echo "<p><em>Last updated: $(date)</em></p>"
+            # Embed comprehensive telemetry chart for all monitored nodes
+            if [ -f "multi_node_telemetry_chart.png" ]; then
+                echo "<div style='background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #28a745;'>"
+                echo "<h3 style='margin-top: 0; color: #28a745;'>📊 Comprehensive Telemetry Chart</h3>"
+                echo "<h4>Multi-Node Telemetry Overview (All Monitored Nodes)</h4>"
+                echo "<img src='data:image/png;base64,$(base64 -w 0 multi_node_telemetry_chart.png)' alt='Multi-Node Telemetry Chart' style='max-width: 70%; height: auto; border: 1px solid #ddd; border-radius: 4px; margin: 10px 0; display: block; margin-left: auto; margin-right: auto;'>"
+                echo "</div>"
+            fi
+            # Always include traceroute stats section after main chart
+            generate_network_topology_section
+            # ...existing code...
             margin-left: 5px;
             display: inline-block;
             vertical-align: middle;
