@@ -320,8 +320,13 @@ def format_news_html(news: Dict, time_window_hours: int, max_hops: int) -> str:
             html.append("<h4 style='color: #28a745; margin-top: 20px;'>🆕 New Nodes</h4>")
             html.append("<ul>")
             for node in news['new_nodes']:
-                name = node['aka'] or node['user'] or 'Unknown'
-                html.append(f"<li><strong>{node['id']}</strong> ({name}) - {node['hardware']} - {node['hops']} hops - <em>{node['timestamp']}</em></li>")
+                # Show full user name with short name in parentheses
+                if node['user'] and node['aka'] and node['user'] != node['aka']:
+                    name_display = f"{node['user']} ({node['aka']})"
+                else:
+                    name_display = node['aka'] or node['user'] or 'Unknown'
+                
+                html.append(f"<li><strong>{node['id']}</strong> {name_display} - {node['hardware']} - {node['hops']} hops - <em>{node['timestamp']}</em></li>")
             html.append("</ul>")
         
         # Lost nodes
@@ -329,7 +334,12 @@ def format_news_html(news: Dict, time_window_hours: int, max_hops: int) -> str:
             html.append("<h4 style='color: #dc3545; margin-top: 20px;'>📵 Lost Nodes</h4>")
             html.append("<ul>")
             for node in news['lost_nodes']:
-                name = node['aka'] or node['user'] or 'Unknown'
+                # Show full user name with short name in parentheses
+                if node['user'] and node['aka'] and node['user'] != node['aka']:
+                    name_display = f"{node['user']} ({node['aka']})"
+                else:
+                    name_display = node['aka'] or node['user'] or 'Unknown'
+                
                 last_seen = node['last_seen']
                 
                 # Simple timestamp formatting
@@ -345,7 +355,7 @@ def format_news_html(news: Dict, time_window_hours: int, max_hops: int) -> str:
                 else:
                     last_seen_str = str(last_seen) if last_seen else 'Unknown'
                 
-                html.append(f"<li><strong>{node['id']}</strong> ({name}) - {node['hardware']} - was {node['hops']} hops - <em>last seen: {last_seen_str}</em></li>")
+                html.append(f"<li><strong>{node['id']}</strong> {name_display} - {node['hardware']} - was {node['hops']} hops - <em>last seen: {last_seen_str}</em></li>")
             html.append("</ul>")
         
         # Name changes
