@@ -24,13 +24,17 @@ load_node_info_cache() {
     if [ "$file_timestamp" -gt "$NODE_INFO_CACHE_TIMESTAMP" ]; then
         debug_log "Reloading node info cache from $NODES_CSV"
         NODE_INFO_CACHE=()
-        while IFS=, read -r user id _ hardware _; do
+        while IFS=, read -r user id aka hardware _; do
             # Remove quotes if present
             user=$(echo "$user" | sed 's/^"//; s/"$//')
+            aka=$(echo "$aka" | sed 's/^"//; s/"$//')
             hardware=$(echo "$hardware" | sed 's/^"//; s/"$//')
             id=$(echo "$id" | sed 's/^"//; s/"$//')
             
-            if [ -n "$user" ] && [ -n "$hardware" ]; then
+            # Use AKA if available and short, otherwise use user name with hardware
+            if [ -n "$user" ] && [ -n "$aka" ] && [ ${#aka} -le 8 ]; then
+                NODE_INFO_CACHE["$id"]="$user ($aka)"
+            elif [ -n "$user" ] && [ -n "$hardware" ]; then
                 NODE_INFO_CACHE["$id"]="$user $hardware"
             elif [ -n "$user" ]; then
                 NODE_INFO_CACHE["$id"]="$user"
@@ -61,8 +65,8 @@ run_telemetry() {
     
     debug_log "Requesting telemetry for $addr at $ts"
     
-    # Use timeout command to prevent hanging
-    out=$(timeout "$TELEMETRY_TIMEOUT" meshtastic --request-telemetry --dest "$addr" 2>&1)
+    # Use configured connection method and timeout
+    out=$(exec_meshtastic_command "$TELEMETRY_TIMEOUT" --request-telemetry --dest "$addr")
     local exit_code=$?
     
     debug_log "Telemetry output: $out"
@@ -124,8 +128,8 @@ update_nodes_log() {
     debug_log "Updating nodes log at $ts"
     
     local out
-    # Use timeout command to give nodes request time to complete
-    out=$(timeout "$NODES_TIMEOUT" meshtastic --nodes 2>&1)
+    # Use configured connection method and timeout
+    out=$(exec_meshtastic_command "$NODES_TIMEOUT" --nodes)
     local exit_code=$?
     
     if [ $exit_code -eq 124 ]; then

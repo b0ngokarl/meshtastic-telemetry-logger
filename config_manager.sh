@@ -10,6 +10,20 @@ ENV_FILE="$SCRIPT_DIR/.env"
 DEFAULT_CONFIG=(
     "# Meshtastic Telemetry Logger Configuration"
     ""
+    "# Meshtastic Connection Configuration"
+    "# Choose ONE connection method by setting the appropriate variables"
+    "MESHTASTIC_CONNECTION_TYPE=serial  # Options: serial, tcp, ble"
+    ""
+    "# Serial Connection (default)"
+    "MESHTASTIC_SERIAL_PORT=auto        # auto = auto-detect, or specific port like /dev/ttyUSB0"
+    ""
+    "# TCP Connection (for WiFi/Ethernet connected devices)"
+    "MESHTASTIC_TCP_HOST=192.168.1.100  # IP address of your Meshtastic device"
+    "MESHTASTIC_TCP_PORT=4403           # Port (default: 4403)"
+    ""
+    "# Bluetooth Low Energy (BLE) Connection"
+    "MESHTASTIC_BLE_ADDRESS=12:34:56:78:9A:BC  # MAC address of your Meshtastic device"
+    ""
     "# Basic Settings"
     "POLLING_INTERVAL=300          # Time between collection cycles (seconds)"
     "DEBUG_MODE=false              # Enable debug output (true/false)"
@@ -48,9 +62,17 @@ Commands:
     init        Create initial configuration file with defaults
     edit        Open configuration file in default editor
     show        Display current configuration
-    validate    Check configuration for common issues
-    reset       Reset to default configuration
+    connection  Show current Meshtastic connection configuration
+    validate    Validate configuration file
+    reset       Reset configuration to defaults
     help        Show this help message
+
+Examples:
+    $0 init                    # Create default .env file
+    $0 edit                    # Edit configuration in your default editor
+    $0 show                    # Show current settings
+    $0 connection              # Show connection settings and test command
+    $0 validate                # Check for configuration issues
 
 Configuration file: $ENV_FILE
 EOF
@@ -70,9 +92,76 @@ show_config() {
         return 1
     fi
     
-    echo "Current configuration:"
-    echo "====================="
-    cat "$ENV_FILE"
+    source "$ENV_FILE"
+    
+    echo "Current Configuration Summary"
+    echo "============================="
+    echo
+    
+    echo "📡 CONNECTION SETTINGS:"
+    echo "  Device Port: ${DEVICE_PORT:-/dev/ttyUSB0}"
+    echo "  Monitored Nodes: ${MONITORED_NODES:-all}"
+    echo "  Connection Timeout: ${CONNECTION_TIMEOUT:-30}s"
+    echo "  Max Retries: ${MAX_RETRIES:-3}"
+    echo "  Polling Interval: ${POLLING_INTERVAL:-60}s"
+    echo
+    
+    echo "📊 CHART SETTINGS:"
+    echo "  Chart Width: ${CHART_FIGSIZE_WIDTH:-16}"
+    echo "  Chart Height: ${CHART_FIGSIZE_HEIGHT:-12}"
+    echo "  Chart DPI: ${CHART_DPI:-300}"
+    echo "  Size Multiplier: ${CHART_SIZE_MULTIPLIER:-1.0}"
+    echo
+    
+    echo "🤖 MACHINE LEARNING:"
+    echo "  ML Timeout: ${ML_TIMEOUT:-120}s"
+    echo "  Historical Window: ${ML_HISTORICAL_WINDOW:-50} records"
+    echo "  Minimum Data Points: ${ML_MIN_DATA_POINTS:-10}"
+    echo "  Learning Rate: ${ML_LEARNING_RATE:-0.01}"
+    echo
+    
+    echo "🌤️ WEATHER INTEGRATION:"
+    echo "  OpenWeather API Key: ${OPENWEATHER_API_KEY:+[Set]}${OPENWEATHER_API_KEY:-[Not Set]}"
+    echo "  Cache TTL: ${WEATHER_CACHE_TTL:-3600}s"
+    echo
+    
+    echo "📰 NETWORK NEWS:"
+    echo "  News Enabled: ${NEWS_ENABLED:-true}"
+    echo "  Time Window: ${NEWS_TIME_WINDOW:-24} hours"
+    echo "  Max Hops: ${NEWS_MAX_HOPS:-2} (0=direct, 1=1 hop, 2=2 hops, etc.)"
+    echo
+    
+    echo "📝 LOGGING & DATA:"
+    echo "  Log Level: ${LOG_LEVEL:-INFO}"
+    echo "  Log Telemetry Requests: ${LOG_TELEMETRY_REQUESTS:-false}"
+    echo "  Log to File: ${LOG_TO_FILE:-true}"
+    echo "  Error Log: ${ERROR_LOG:-error.log}"
+    echo "  Max Telemetry Days: ${MAX_TELEMETRY_DAYS:-30}"
+    echo "  Max Log Size: ${MAX_LOG_SIZE_MB:-100}MB"
+    echo "  Backup Old Data: ${BACKUP_OLD_DATA:-true}"
+    echo
+    
+    echo "📁 FILE PATHS:"
+    echo "  Telemetry Log: ${TELEMETRY_LOG:-telemetry_log.csv}"
+    echo "  Nodes Log: ${NODES_LOG:-nodes_log.csv}"
+    echo "  Stats HTML: ${STATS_HTML:-stats.html}"
+    echo "  Weather Cache: ${WEATHER_CACHE_DIR:-weather_cache}"
+    echo
+    
+    echo "🌐 HTML DASHBOARD:"
+    echo "  Dashboard Mode: ${HTML_DASHBOARD_MODE:-both} (old/modern/both)"
+    echo "  Web Deploy: ${WEB_DEPLOY_ENABLED:-false}"
+    echo "  Deploy Path: ${WEB_DEPLOY_PATH:-/var/www/html}"
+    echo
+    
+    echo "🔧 ADVANCED SETTINGS:"
+    echo "  Debug Mode: ${DEBUG:-false}"
+    echo "  Quiet Mode: ${QUIET:-false}"
+    echo "  Auto Backup: ${AUTO_BACKUP:-true}"
+    echo "  Backup Retention: ${BACKUP_RETENTION_DAYS:-7} days"
+    echo
+    echo "To edit configuration: $0 edit"
+    echo "To see raw .env file: cat $ENV_FILE"
 }
 
 edit_config() {
@@ -97,6 +186,90 @@ edit_config() {
     
     echo "Opening configuration file with $editor..."
     "$editor" "$ENV_FILE"
+}
+
+validate_config() {
+    if [ ! -f "$ENV_FILE" ]; then
+        echo "Error: Configuration file not found at $ENV_FILE"
+        echo "Run '$0 init' to create a default configuration."
+        return 1
+    fi
+    
+    # Basic validation
+    local errors=0
+    
+    source "$ENV_FILE"
+    
+    # Check required variables
+    if [ -z "$MONITORED_NODES" ]; then
+        echo "Warning: MONITORED_NODES is not set"
+        errors=$((errors + 1))
+    fi
+    
+    if [ -z "$POLLING_INTERVAL" ]; then
+        echo "Warning: POLLING_INTERVAL is not set"
+        errors=$((errors + 1))
+    fi
+    
+    if [ $errors -eq 0 ]; then
+        echo "Configuration validation passed"
+        return 0
+    else
+        echo "Configuration has $errors warnings"
+        return 1
+    fi
+}
+
+show_connection_config() {
+    if [ ! -f "$ENV_FILE" ]; then
+        echo "Error: Configuration file not found at $ENV_FILE"
+        echo "Run '$0 init' to create a default configuration."
+        return 1
+    fi
+    
+    source "$ENV_FILE"
+    source "$SCRIPT_DIR/common_utils.sh"
+    
+    echo "=== Meshtastic Connection Configuration ==="
+    echo "Connection Type: ${MESHTASTIC_CONNECTION_TYPE:-serial}"
+    echo ""
+    
+    case "${MESHTASTIC_CONNECTION_TYPE:-serial}" in
+        serial)
+            echo "Serial Configuration:"
+            echo "  Port: ${MESHTASTIC_SERIAL_PORT:-auto}"
+            ;;
+        tcp)
+            echo "TCP Configuration:"
+            echo "  Host: ${MESHTASTIC_TCP_HOST:-192.168.1.100}"
+            echo "  Port: ${MESHTASTIC_TCP_PORT:-4403}"
+            ;;
+        ble)
+            echo "BLE Configuration:"
+            echo "  Address: ${MESHTASTIC_BLE_ADDRESS:-not set}"
+            if [ -z "$MESHTASTIC_BLE_ADDRESS" ]; then
+                echo "  Warning: BLE address not configured!"
+            fi
+            ;;
+        *)
+            echo "Error: Invalid connection type"
+            return 1
+            ;;
+    esac
+    
+    echo ""
+    echo "Example command that will be generated:"
+    local test_cmd
+    if test_cmd=$(build_meshtastic_command --nodes 2>/dev/null); then
+        echo "  $test_cmd"
+    else
+        echo "  Error: Cannot build command with current configuration"
+        return 1
+    fi
+    
+    echo ""
+    echo "To change connection method, edit $ENV_FILE"
+    echo "Valid connection types: serial, tcp, ble"
 }
 
 validate_config() {
@@ -187,6 +360,9 @@ case "${1:-help}" in
         ;;
     show)
         show_config
+        ;;
+    connection)
+        show_connection_config
         ;;
     validate)
         validate_config

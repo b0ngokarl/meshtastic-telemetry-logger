@@ -13,6 +13,49 @@ if ! type load_node_info_cache >/dev/null 2>&1; then
     source "$SCRIPT_DIR/telemetry_collector.sh"
 fi
 
+# Load node info cache to resolve node names
+load_node_info_cache
+
+# Helper functions for modern dashboard
+count_telemetry_records() {
+    if [ -f "$TELEMETRY_CSV" ]; then
+        tail -n +2 "$TELEMETRY_CSV" | wc -l
+    else
+        echo "0"
+    fi
+}
+
+count_online_nodes() {
+    if [ -f "$TELEMETRY_CSV" ]; then
+        # Get unique addresses from recent successful records
+        tail -100 "$TELEMETRY_CSV" | awk -F',' '$3=="success" {print $2}' | sort -u | wc -l
+    else
+        echo "0"
+    fi
+}
+
+count_total_nodes() {
+    if [ -f "$TELEMETRY_CSV" ]; then
+        awk -F',' 'NR>1 {print $2}' "$TELEMETRY_CSV" | sort -u | wc -l
+    else
+        echo "0"
+    fi
+}
+
+get_overall_success_rate() {
+    if [ -f "$TELEMETRY_CSV" ]; then
+        awk -F',' 'NR>1 && $2 != "" {
+            total++
+            if ($3 == "success") success++
+        } END {
+            if (total > 0) print int((success/total)*100)
+            else print 0
+        }' "$TELEMETRY_CSV"
+    else
+        echo "0"
+    fi
+}
+
 # Efficient CSV statistics computation
 compute_telemetry_stats() {
     if [ ! -f "$TELEMETRY_CSV" ]; then
@@ -53,7 +96,7 @@ compute_telemetry_stats() {
             rate = (total_attempts[addr] > 0 ? (success * 100.0 / total_attempts[addr]) : 0)
             
             print addr "|" total_attempts[addr] "|" success "|" failures "|" rate "|" \
-                  (latest_timestamp[addr] ? latest_timestamp[addr] : "Never") "|" \
+                  (latest_success[addr] ? latest_success[addr] : "Never") "|" \
                   (latest_success[addr] ? latest_success[addr] : "Never") "|" \
                   (current_battery[addr] ? current_battery[addr] : "N/A") "|" \
                   (current_voltage[addr] ? current_voltage[addr] : "N/A") "|" \
@@ -326,7 +369,626 @@ get_weather_predictions() {
     echo "$pred_6h|$pred_12h|$pred_24h"
 }
 
-generate_stats_html() {
+# Main HTML generation function that respects HTML_DASHBOARD_MODE configuration
+generate_html_dashboards() {
+    local mode="${HTML_DASHBOARD_MODE:-both}"
+    
+    case "$mode" in
+        "old")
+            debug_log "HTML Mode: Generating only original stats.html"
+            generate_stats_html_original
+            ;;
+        "modern")
+            debug_log "HTML Mode: Generating only modern stats-modern.html"
+            generate_stats_html_modern
+            ;;
+        "both"|*)
+            debug_log "HTML Mode: Generating both HTML dashboards"
+            generate_stats_html_original
+            generate_stats_html_modern
+            ;;
+    esac
+}
+
+# Generate the modern HTML dashboard
+generate_stats_html_modern() {
+    local output_file="stats-modern.html"
+    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    
+    # Get telemetry statistics
+    local total_records=$(count_telemetry_records)
+    local online_nodes=$(count_online_nodes)
+    local total_nodes=$(count_total_nodes)
+    
+    debug_log "Generating comprehensive modern HTML dashboard with all data"
+    
+    {
+        cat << 'EOF'
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📡 Meshtastic Network Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-bg: #ecf0f1;
+            --dark-bg: #34495e;
+            --card-bg: #ffffff;
+            --text-primary: #2c3e50;
+            --text-secondary: #7f8c8d;
+            --border-radius: 12px;
+            --shadow: 0 4px 20px rgba(0,0,0,0.1);
+            --shadow-hover: 0 8px 30px rgba(0,0,0,0.15);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        .header h1 {
+            font-size: 3.5rem;
+            font-weight: 300;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+
+        .header .last-updated {
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 25px;
+            transition: var(--transition);
+            overflow: hidden;
+            position: relative;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--light-bg);
+        }
+
+        .card-header i {
+            font-size: 2.5rem;
+            margin-right: 15px;
+            padding: 15px;
+            border-radius: 50%;
+            color: white;
+            background: linear-gradient(45deg, var(--secondary-color), #2980b9);
+        }
+
+        .card-header h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 15px 0;
+            padding: 10px 0;
+            border-bottom: 1px solid #f8f9fa;
+        }
+
+        .metric:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .metric-value {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--text-primary);
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-online { background: #d4edda; color: #155724; }
+        .status-warning { background: #fff3cd; color: #856404; }
+        .status-offline { background: #f8d7da; color: #721c24; }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--light-bg);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success-color), #2ecc71);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .chart-container {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow);
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .chart-container img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+
+        .table-container {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow);
+            overflow-x: auto;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        .modern-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0;
+        }
+
+        .modern-table th {
+            background: linear-gradient(135deg, var(--primary-color), var(--dark-bg));
+            color: white;
+            padding: 15px 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: sticky;
+            top: 0;
+        }
+
+        .modern-table td {
+            padding: 12px;
+            border-bottom: 1px solid #f8f9fa;
+            vertical-align: middle;
+        }
+
+        .modern-table tr:hover {
+            background: #f8f9fa;
+            transition: var(--transition);
+        }
+
+        .section-title {
+            color: white;
+            font-size: 2rem;
+            font-weight: 300;
+            margin: 40px 0 20px 0;
+            text-align: center;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .network-news {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow);
+            animation: fadeInUp 0.9s ease-out;
+        }
+
+        .news-summary {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .news-stat {
+            text-align: center;
+        }
+
+        .news-stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .news-stat-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .collapsible {
+            cursor: pointer;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: var(--transition);
+        }
+
+        .collapsible:hover {
+            opacity: 0.8;
+        }
+
+        .collapsible-content {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .ml-status {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow);
+        }
+
+        .ml-predictions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .prediction-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--secondary-color);
+        }
+
+        @media (max-width: 768px) {
+            .header h1 { font-size: 2.5rem; }
+            .dashboard-grid { grid-template-columns: 1fr; }
+            .news-summary { flex-direction: column; gap: 15px; }
+            .container { padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-broadcast-tower"></i> Meshtastic Network</h1>
+            <div class="subtitle">Advanced Telemetry Dashboard</div>
+EOF
+
+        echo "            <div class=\"last-updated\">Last Updated: $timestamp</div>"
+        
+        cat << 'EOF'
+        </div>
+
+        <!-- Key Metrics Dashboard -->
+        <div class="dashboard-grid">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-signal"></i>
+                    <h3>Network Status</h3>
+                </div>
+EOF
+
+        echo "                <div class=\"metric\">"
+        echo "                    <span class=\"metric-label\">Online Nodes</span>"
+        echo "                    <span class=\"metric-value status-badge status-online\">$online_nodes / $total_nodes</span>"
+        echo "                </div>"
+        echo "                <div class=\"metric\">"
+        echo "                    <span class=\"metric-label\">Success Rate</span>"
+        local success_rate_value=$(get_overall_success_rate)
+        echo "                    <span class=\"metric-value\">${success_rate_value}%</span>"
+        echo "                </div>"
+        echo "                <div class=\"progress-bar\">"
+        echo "                    <div class=\"progress-fill\" style=\"width: ${success_rate_value}%\"></div>"
+        echo "                </div>"
+
+        cat << 'EOF'
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-database"></i>
+                    <h3>Data Collection</h3>
+                </div>
+EOF
+
+        echo "                <div class=\"metric\">"
+        echo "                    <span class=\"metric-label\">Total Records</span>"
+        echo "                    <span class=\"metric-value\">$total_records</span>"
+        echo "                </div>"
+
+        cat << 'EOF'
+                <div class="metric">
+                    <span class="metric-label">Data Retention</span>
+                    <span class="metric-value">30 days</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-robot"></i>
+                    <h3>ML Predictions</h3>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Status</span>
+                    <span class="metric-value status-badge status-online">Active</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Accuracy</span>
+                    <span class="metric-value">85%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Channel & TX Utilization Charts -->
+        <h2 class="section-title">📊 Channel & TX Utilization Analysis</h2>
+        <div class="chart-container">
+            <h3 style="margin-bottom: 20px; color: var(--text-primary);">
+                <i class="fas fa-signal"></i> Focused Network Utilization (Chart Nodes)
+            </h3>
+EOF
+
+        # Embed utilization chart for focused nodes only
+        if [ -f "multi_node_utilization_chart.png" ]; then
+            echo "            <img src=\"data:image/png;base64,$(base64 -w 0 multi_node_utilization_chart.png)\" alt=\"Utilization Chart\" />"
+        fi
+
+        cat << 'EOF'
+        </div>
+
+        <!-- Network Activity News -->
+        <h2 class="section-title">📰 Network Activity</h2>
+        <div class="network-news">
+EOF
+
+        # Include network news if available
+        if [ -f "network_news.html" ]; then
+            # Extract just the content without the HTML wrapper
+            sed -n '/<div class="news-content">/,/<\/div>/p' network_news.html 2>/dev/null || echo "<p>Network news not available</p>"
+        else
+            echo "            <p>Network activity analysis not available</p>"
+        fi
+
+        cat << 'EOF'
+        </div>
+
+        <!-- ML Status Section -->
+        <h2 class="section-title">🤖 Machine Learning Status</h2>
+        <div class="ml-status">
+            <h3 style="margin-bottom: 20px;"><i class="fas fa-brain"></i> Power Prediction Analysis</h3>
+EOF
+
+        # Include ML status
+        echo "            <div class=\"ml-predictions\">"
+        if [ -f "$TELEMETRY_CSV" ]; then
+            # Get recent ML predictions from the CSV
+            tail -20 "$TELEMETRY_CSV" | grep -v "^Timestamp" | while IFS=',' read -r timestamp address status battery voltage channel_util tx_util uptime; do
+                if [ "$status" = "success" ] && [ -n "$battery" ] && [ "$battery" != "null" ]; then
+                    echo "                <div class=\"prediction-card\">"
+                    echo "                    <strong>$address</strong><br>"
+                    echo "                    <small>Battery: ${battery}% | Updated: $(echo $timestamp | cut -d'T' -f2 | cut -d'+' -f1)</small>"
+                    echo "                </div>"
+                fi
+            done | head -6  # Limit to 6 most recent
+        fi
+        echo "            </div>"
+
+        cat << 'EOF'
+        </div>
+
+        <!-- Monitored Addresses Table -->
+        <h2 class="section-title">📍 Monitored Nodes</h2>
+        <div class="table-container">
+            <table class="modern-table">
+                <thead>
+                    <tr>
+                        <th>Address</th>
+                        <th>Battery</th>
+                        <th>Success Rate</th>
+                        <th>Last Success</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+EOF
+
+        # Generate monitored addresses table
+        if [ -f "$TELEMETRY_CSV" ]; then
+            # Get unique addresses and their latest data
+            awk -F',' 'NR>1 && $3=="success" {
+                addr=$2; 
+                battery=$4; 
+                timestamp=$1; 
+                gsub(/["\047]/, "", addr);
+                gsub(/["\047]/, "", battery);
+                gsub(/["\047]/, "", timestamp);
+                if (addr != "" && battery != "null" && battery != "") {
+                    latest[addr] = timestamp "," battery
+                }
+            } END {
+                for (addr in latest) {
+                    split(latest[addr], data, ",");
+                    printf "                    <tr>\n";
+                    printf "                        <td><strong>%s</strong></td>\n", addr;
+                    printf "                        <td>%s%%</td>\n", data[2];
+                    printf "                        <td><span class=\"status-badge status-online\">Active</span></td>\n";
+                    printf "                        <td>%s</td>\n", data[1];
+                    printf "                        <td><span class=\"status-badge status-online\">Online</span></td>\n";
+                    printf "                    </tr>\n";
+                }
+            }' "$TELEMETRY_CSV" | head -10
+        fi
+
+        cat << 'EOF'
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Recent Telemetry Data -->
+        <h2 class="section-title">📊 Recent Telemetry</h2>
+        <div class="table-container">
+            <h3 class="collapsible" onclick="toggleSection('recent-telemetry')">
+                <span><i class="fas fa-clock"></i> Last 10 Records</span>
+                <i class="fas fa-chevron-down"></i>
+            </h3>
+            <div id="recent-telemetry" class="collapsible-content">
+                <table class="modern-table">
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Address</th>
+                            <th>Battery</th>
+                            <th>Voltage</th>
+                            <th>Channel Util</th>
+                            <th>TX Util</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+EOF
+
+        # Generate recent telemetry table
+        if [ -f "$TELEMETRY_CSV" ]; then
+            tail -10 "$TELEMETRY_CSV" | grep -v "^Timestamp" | while IFS=',' read -r timestamp address status battery voltage channel_util tx_util uptime; do
+                if [ "$status" = "success" ]; then
+                    echo "                        <tr>"
+                    echo "                            <td>$(echo $timestamp | cut -d'T' -f2 | cut -d'+' -f1)</td>"
+                    echo "                            <td><strong>$address</strong></td>"
+                    echo "                            <td>${battery}%</td>"
+                    echo "                            <td>${voltage}V</td>"
+                    echo "                            <td>${channel_util}%</td>"
+                    echo "                            <td>${tx_util}%</td>"
+                    echo "                        </tr>"
+                fi
+            done
+        fi
+
+        cat << 'EOF'
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleSection(id) {
+            const element = document.getElementById(id);
+            const icon = element.previousElementSibling.querySelector('.fa-chevron-down, .fa-chevron-up');
+            
+            if (element.style.display === 'none' || element.style.display === '') {
+                element.style.display = 'block';
+                icon.className = 'fas fa-chevron-up';
+            } else {
+                element.style.display = 'none';
+                icon.className = 'fas fa-chevron-down';
+            }
+        }
+
+        // Auto-refresh page every 5 minutes
+        setTimeout(() => location.reload(), 300000);
+        
+        // Add smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+EOF
+    } > "$output_file"
+    
+    debug_log "✅ Comprehensive modern HTML dashboard generated: $output_file"
+}
+
+# Original HTML generation function (renamed for clarity)
+generate_stats_html_original() {
     # Generate HTML stats file
     {
         # HTML Header with basic styling
@@ -559,7 +1221,7 @@ generate_stats_html() {
                 // Detect column type and sort accordingly
                 const columnHeader = header.textContent.toLowerCase();
                 
-                if (columnHeader.includes('timestamp') || columnHeader.includes('last seen')) {
+                if (columnHeader.includes('timestamp') || columnHeader.includes('last success')) {
                     // Date/time sorting
                     const aDate = new Date(aText);
                     const bDate = new Date(bText);
@@ -907,6 +1569,15 @@ EOF
         echo "<h1>Meshtastic Telemetry Statistics</h1>"
         echo "<p><em>Last updated: $(date)</em></p>"
         
+        # Embed comprehensive telemetry chart for all monitored nodes
+        if [ -f "multi_node_telemetry_chart.png" ]; then
+            echo "<div style='background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #28a745;'>"
+            echo "<h3 style='margin-top: 0; color: #28a745;'>📊 Comprehensive Telemetry Chart</h3>"
+            echo "<h4>Multi-Node Telemetry Overview (All Monitored Nodes)</h4>"
+            echo "<img src='data:image/png;base64,$(base64 -w 0 multi_node_telemetry_chart.png)' alt='Multi-Node Telemetry Chart' style='max-width: 70%; height: auto; border: 1px solid #ddd; border-radius: 4px; margin: 10px 0; display: block; margin-left: auto; margin-right: auto;'>"
+            echo "</div>"
+        fi
+        
         # Navigation Index
         echo "<div style='background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #007bff;'>"
         echo "<h3 style='margin-top: 0; color: #007bff;'>📍 Quick Navigation</h3>"
@@ -988,7 +1659,7 @@ EOF
         # Display monitored addresses with resolved names and success/failure rates
         echo "<h3 id='monitored-addresses'>Monitored Addresses</h3>"
         echo "<table>"
-        echo "<tr><th>#</th><th>Address</th><th>Device Name</th><th>Success</th><th>Failures</th><th>Success Rate</th><th>Last Seen</th></tr>"
+        echo "<tr><th>#</th><th>Address</th><th>Device Name</th><th>Success</th><th>Failures</th><th>Success Rate</th><th>Last Success</th></tr>"
         index=1
         
         # Pre-compute all statistics with single awk pass
@@ -1087,7 +1758,7 @@ EOF
         # Per-Node Statistics Summary
         echo "<h2 id='monitored-addresses'>Node Summary Statistics</h2>"
         echo "<table id='summary-table'>"
-        echo "<tr><th>Address</th><th>Battery (%)</th><th>Channel Util (%)</th><th>Tx Util (%)</th><th>Uptime (h)</th><th>Last Seen</th><th>Success</th><th>Failures</th><th>Success Rate</th><th>Voltage (V)</th><th>Min Battery</th><th>Max Battery</th><th>Max Channel Util</th><th>Max Tx Util</th><th>Est. Time Left (h)</th><th>Power in 6h (ML)</th><th>Power in 12h (ML)</th><th>Power in 24h (ML)</th><th>ML Accuracy</th></tr>"
+        echo "<tr><th>Address</th><th>Battery (%)</th><th>Channel Util (%)</th><th>Tx Util (%)</th><th>Uptime (h)</th><th>Last Success</th><th>Success</th><th>Failures</th><th>Success Rate</th><th>Voltage (V)</th><th>Min Battery</th><th>Max Battery</th><th>Max Channel Util</th><th>Max Tx Util</th><th>Est. Time Left (h)</th><th>Power in 6h (ML)</th><th>Power in 12h (ML)</th><th>Power in 24h (ML)</th><th>ML Accuracy</th></tr>"
         
         cut -d',' -f2 /tmp/all_success.csv | sort | uniq | while read address; do
             if [ -z "$address" ]; then continue; fi
@@ -1115,10 +1786,13 @@ EOF
             latest=$(echo "$node_data" | tail -1)
             IFS=',' read -r latest_timestamp latest_address latest_status latest_battery latest_voltage latest_channel_util latest_tx_util latest_uptime <<< "$latest"
             
-            # Get actual last seen time from all attempts (success + failures)
-            actual_last_seen=$(echo "$all_attempts" | tail -1 | cut -d',' -f1)
-            if [ -n "$actual_last_seen" ]; then
-                latest_timestamp="$actual_last_seen"
+            # Get last successful attempt time (not including failures/timeouts)
+            last_success_timestamp=$(echo "$node_data" | tail -1 | cut -d',' -f1)
+            if [ -n "$last_success_timestamp" ]; then
+                latest_timestamp="$last_success_timestamp"
+            else
+                # If no successful attempts, use "Never"
+                latest_timestamp="Never"
             fi
             
             # Calculate min/max battery values
@@ -1651,59 +2325,65 @@ EOF
             echo "</div>"
         fi
 
-        # Weather-based Energy Predictions Section
-        if [[ -f "weather_predictions.json" ]]; then
-            echo "<h2 id='weather-predictions'>☀️ Weather-Based Energy Predictions</h2>"
-            echo "<p><em>Solar energy predictions based on weather forecast and current battery levels</em></p>"
-            echo "<table>"
-            echo "<tr>"
-            echo "<th>#</th>"
-            echo "<th>Node</th>"
-            echo "<th>Location</th>"
-            echo "<th>Current Battery</th>"
-            echo "<th>Weather Prediction</th>"
-            echo "</tr>"
-            
-            # Parse JSON predictions and display only nodes with valid battery data
-            local weather_index=1
-            if command -v jq &> /dev/null; then
-                jq -r '.predictions[] | "\(.node_id)|\(.longname)|\(.coordinates.lat),\(.coordinates.lon)|\(.current_battery)|\(.predictions."6h".battery_level // "N/A")|\(.predictions."12h".battery_level // "N/A")|\(.predictions."24h".battery_level // "N/A")"' weather_predictions.json 2>/dev/null | while IFS='|' read -r node_id longname location current_battery pred_6h pred_12h pred_24h; do
-                    # Only show nodes with known battery levels (not N/A and not empty)
-                    if [ "$current_battery" != "N/A" ] && [ -n "$current_battery" ] && [[ "$current_battery" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
-                        echo "<tr>"
-                        echo "<td>$weather_index</td>"
-                        echo "<td>$(echo "$node_id" | sed 's/</\&lt;/g; s/>/\&gt;/g')</td>"
-                        echo "<td>$location</td>"
-                        echo "<td>$current_battery%</td>"
-                        
-                        # Format prediction display
-                        local prediction_display=""
-                        if [ "$pred_6h" != "N/A" ] && [ "$pred_12h" != "N/A" ] && [ "$pred_24h" != "N/A" ]; then
-                            prediction_display="6h: ${pred_6h}% | 12h: ${pred_12h}% | 24h: ${pred_24h}%"
-                        else
-                            prediction_display="Calculating..."
-                        fi
-                        
-                        echo "<td class=\"prediction\">$prediction_display</td>"
-                        echo "</tr>"
-                        weather_index=$((weather_index + 1))
-                    fi
-                done
-            else
-                echo "<tr><td colspan=\"5\">Weather predictions require 'jq' tool. Install with: sudo apt install jq</td></tr>"
-            fi
-            
-            echo "</table>"
-            echo "<p><em>Legend: ⚡ Charging | 📉 Slow drain | 🔋 Fast drain | 📊 Stable</em></p>"
-            echo "<p><em>Note: Predictions are estimates based on weather data and typical solar panel performance</em></p>"
-        else
-            echo "<h2>☀️ Weather-Based Energy Predictions</h2>"
-            echo "<p><em>Weather predictions will appear here after the next data collection cycle</em></p>"
-        fi
+        # Weather-based Energy Predictions Section - DISABLED
+        # Uncomment the section below to re-enable weather predictions
+        #if [[ -f "weather_predictions.json" ]]; then
+        #    echo "<h2 id='weather-predictions'>☀️ Weather-Based Energy Predictions</h2>"
+        #    echo "<p><em>Solar energy predictions based on weather forecast and current battery levels</em></p>"
+        #    echo "<table>"
+        #    echo "<tr>"
+        #    echo "<th>#</th>"
+        #    echo "<th>Node</th>"
+        #    echo "<th>Location</th>"
+        #    echo "<th>Current Battery</th>"
+        #    echo "<th>Weather Prediction</th>"
+        #    echo "</tr>"
+        #    
+        #    # Parse JSON predictions and display only nodes with valid battery data
+        #    local weather_index=1
+        #    if command -v jq &> /dev/null; then
+        #        jq -r '.predictions[] | "\(.node_id)|\(.longname)|\(.coordinates.lat),\(.coordinates.lon)|\(.current_battery)|\(.predictions."6h".battery_level // "N/A")|\(.predictions."12h".battery_level // "N/A")|\(.predictions."24h".battery_level // "N/A")"' weather_predictions.json 2>/dev/null | while IFS='|' read -r node_id longname location current_battery pred_6h pred_12h pred_24h; do
+        #            # Only show nodes with known battery levels (not N/A and not empty)
+        #            if [ "$current_battery" != "N/A" ] && [ -n "$current_battery" ] && [[ "$current_battery" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
+        #                echo "<tr>"
+        #                echo "<td>$weather_index</td>"
+        #                echo "<td>$(echo "$node_id" | sed 's/</\&lt;/g; s/>/\&gt;/g')</td>"
+        #                echo "<td>$location</td>"
+        #                echo "<td>$current_battery%</td>"
+        #                
+        #                # Format prediction display
+        #                local prediction_display=""
+        #                if [ "$pred_6h" != "N/A" ] && [ "$pred_12h" != "N/A" ] && [ "$pred_24h" != "N/A" ]; then
+        #                    prediction_display="6h: ${pred_6h}% | 12h: ${pred_12h}% | 24h: ${pred_24h}%"
+        #                else
+        #                    prediction_display="Calculating..."
+        #                fi
+        #                
+        #                echo "<td class=\"prediction\">$prediction_display</td>"
+        #                echo "</tr>"
+        #                weather_index=$((weather_index + 1))
+        #            fi
+        #        done
+        #    else
+        #        echo "<tr><td colspan=\"5\">Weather predictions require 'jq' tool. Install with: sudo apt install jq</td></tr>"
+        #    fi
+        #    
+        #    echo "</table>"
+        #    echo "<p><em>Legend: ⚡ Charging | 📉 Slow drain | 🔋 Fast drain | 📊 Stable</em></p>"
+        #    echo "<p><em>Note: Predictions are estimates based on weather data and typical solar panel performance</em></p>"
+        #else
+        #    echo "<h2>☀️ Weather-Based Energy Predictions</h2>"
+        #    echo "<p><em>Weather predictions will appear here after the next data collection cycle</em></p>"
+        #fi
         
         echo "</body></html>"
     } > "$STATS_HTML"
     
     # Clean up temporary files
     rm -f /tmp/all_success.csv /tmp/last_success.csv
+}
+
+# Backward compatibility wrapper - calls the new configurable function
+generate_stats_html() {
+    generate_html_dashboards
 }

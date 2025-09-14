@@ -29,8 +29,11 @@ extract_features() {
     local node_id="$1"
     local timestamp="$2"
     
-    # Get historical battery levels for this node (last 7 days)
-    local historical_data=$(grep "^[^,]*,$node_id,success" "$TELEMETRY_LOG" | tail -50)
+    # Use configurable historical window size
+    local historical_window=${ML_HISTORICAL_WINDOW:-50}
+    
+    # Get historical battery levels for this node
+    local historical_data=$(grep "^[^,]*,$node_id,success" "$TELEMETRY_LOG" | tail -"$historical_window")
     
     # Calculate battery trends
     local battery_trend=$(echo "$historical_data" | awk -F',' '
