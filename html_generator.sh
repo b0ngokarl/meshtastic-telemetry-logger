@@ -869,7 +869,7 @@ EOF
 
         # Embed utilization chart for focused nodes only
         if [ -f "multi_node_utilization_chart.png" ]; then
-            echo "            <img src=\"data:image/png;base64,$(base64 -w 0 multi_node_utilization_chart.png)\" alt=\"Utilization Chart\" />"
+            echo "            <img src=\"multi_node_utilization_chart.png\" alt=\"Utilization Chart\" style=\"max-width:100%; height:auto;\" />"
         fi
 
         cat << 'EOF'
@@ -880,12 +880,12 @@ EOF
         <div class="network-news">
 EOF
 
-        # Include network news if available
+        # Include network news snippet (full header and content)
         if [ -f "network_news.html" ]; then
-            # Extract just the content without the HTML wrapper
-            sed -n '/<div class="news-content">/,/<\/div>/p' network_news.html 2>/dev/null || echo "<p>Network news not available</p>"
+            # Insert the entire news HTML
+            sed -n '/<h3 id=.network-news./,/<\/div>$/p' network_news.html 2>/dev/null || cat network_news.html
         else
-            echo "            <p>Network activity analysis not available</p>"
+            echo "<p>Network activity analysis not available</p>"
         fi
 
         cat << 'EOF'
@@ -1655,7 +1655,7 @@ EOF
             echo "<div style='background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #28a745;'>"
             echo "<h3 style='margin-top: 0; color: #28a745;'>📊 Comprehensive Telemetry Chart</h3>"
             echo "<h4>Multi-Node Telemetry Overview (All Monitored Nodes)</h4>"
-            echo "<img src='data:image/png;base64,$(base64 -w 0 multi_node_telemetry_chart.png)' alt='Multi-Node Telemetry Chart' style='max-width: 70%; height: auto; border: 1px solid #ddd; border-radius: 4px; margin: 10px 0; display: block; margin-left: auto; margin-right: auto;'>"
+            echo "<img src='multi_node_telemetry_chart.png' alt='Multi-Node Telemetry Chart' style='max-width: 70%; height: auto; border: 1px solid #ddd; border-radius: 4px; margin: 10px 0; display: block; margin-left: auto; margin-right: auto;'>"
             echo "</div>"
         fi
         
@@ -1685,6 +1685,15 @@ EOF
         
         # Include network topology if traceroute is enabled
         generate_network_topology_section
+
+        # Network Activity News Section (original stats)
+        echo "<h2>📰 Network Activity</h2>"
+        if [ -f "network_news.html" ]; then
+            # Include full network news HTML (header + lists)
+            cat network_news.html
+        else
+            echo "<p>Network activity analysis not available</p>"
+        fi
         
         # ML Learning Status Section
         echo "<h2 id='ml-status'>🤖 Machine Learning Power Prediction Status</h2>"

@@ -48,6 +48,36 @@ def get_node_names(nodes_csv='nodes_log.csv'):
                     friendly_name = aka if aka and aka != 'N/A' else (user if user and user != 'N/A' else node_id)
                     node_names[node_id] = friendly_name
     
+    # Also load any nodes from network_state.json for complete name mapping
+    state_file = 'network_state.json'
+    if os.path.exists(state_file):
+        try:
+            with open(state_file, 'r') as sf:
+                state_data = json.load(sf)
+            for node_id, info in state_data.items():
+                # Skip if already have a mapping
+                if node_id in node_names:
+                    continue
+                # Use AKA if present and not N/A, else user, else node_id
+                aka = info.get('aka', '').strip()
+                user = info.get('user', '').strip()
+                friendly = aka if aka and aka.upper() != 'N/A' else (user if user and user.upper() != 'N/A' else node_id)
+                node_names[node_id] = friendly
+        except Exception:
+            pass
+    # Fallback: query Meshtastic CLI for any additional nodes
+    try:
+        import subprocess
+        cli_output = subprocess.check_output(["meshtastic", "--nodes", "--json"], text=True)
+        cli_data = json.loads(cli_output)
+        for node in cli_data.get('nodes', []):
+            nid = node.get('id') or node.get('_id') or ''
+            if nid and nid not in node_names:
+                # Use AKA or user-friendly name from CLI
+                friendly = node.get('user') or node.get('aka') or nid
+                node_names[nid] = friendly
+    except Exception:
+        pass
     return node_names
 
 def analyze_current_routes(routes, time_window_hours=24):
@@ -58,6 +88,8 @@ def analyze_current_routes(routes, time_window_hours=24):
     routes_by_dest = {}
     route_changes = {}
     
+    # Filter out traceroutes to invalid node '!ab123456'
+    routes = [r for r in routes if r.get('destination') not in ('!ab123456', 'ab123456')]
     for route in routes:
         try:
             # Parse timestamp more flexibly
@@ -148,7 +180,8 @@ def generate_topology_html(routes_by_dest, route_changes, node_names):
     # Generate route visualizations
     for dest in sorted(routes_by_dest.keys()):
         dest_data = routes_by_dest[dest]
-        dest_name = node_names.get(dest, dest)
+        # Use friendly name or strip '!' for fallback
+        dest_name = node_names.get(dest, dest.lstrip('!'))
         
         # Get current routes
         current_forward = dest_data['forward'][-1] if dest_data['forward'] else None
@@ -178,17 +211,23 @@ def generate_topology_html(routes_by_dest, route_changes, node_names):
 <h4 style='margin-top: 0; color: {status_color};'>📡 To: {dest_name} ({dest})</h4>
 """
         
-        # Forward route
+        # Forward route with friendly names
         if current_forward and current_forward['success']:
-            route_display = current_forward['route_hops'].replace('→', ' ──→ ')
+            hops = [h.strip() for h in current_forward['route_hops'].split('→')]
+            # Map to friendly names or use ID without '!'
+            named = [node_names.get(h, h.lstrip('!')) for h in hops]
+            route_display = ' ──→ '.join(named)
             signal_info = f" ({current_forward['signal_strengths']})" if current_forward['signal_strengths'] else ""
             html += f"<p><strong>Forward:</strong> {route_display}{signal_info}</p>"
         else:
             html += "<p><strong>Forward:</strong> <span style='color: #dc3545;'>Route failed or unavailable</span></p>"
         
-        # Return route
+        # Return route with friendly names
         if current_return and current_return['success']:
-            route_display = current_return['route_hops'].replace('→', ' ──→ ')
+            hops_r = [h.strip() for h in current_return['route_hops'].split('→')]
+            # Map to friendly names or use ID without '!'
+            named_r = [node_names.get(h, h.lstrip('!')) for h in hops_r]
+            route_display = ' ──→ '.join(named_r)
             signal_info = f" ({current_return['signal_strengths']})" if current_return['signal_strengths'] else ""
             html += f"<p><strong>Return:</strong> {route_display}{signal_info}</p>"
         else:
@@ -227,16 +266,18 @@ def generate_routing_topology_section():
     try:
         # Load data
         routes, relationships = load_routing_data()
+        # Exclude traceroutes involving the invalid node '!ab123456'
+        bad = {'!ab123456', 'ab123456'}
+        routes = [r for r in routes if r.get('destination') not in bad and r.get('source') not in bad]
         node_names = get_node_names()
-        
+
         # Analyze current routes
         routes_by_dest, route_changes = analyze_current_routes(routes)
-        
+
         # Generate HTML
         html = generate_topology_html(routes_by_dest, route_changes, node_names)
-        
         return html
-        
+
     except Exception as e:
         return f"""
 <div style='background: #f8d7da; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #dc3545;'>
