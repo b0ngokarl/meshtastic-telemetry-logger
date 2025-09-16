@@ -13,6 +13,7 @@ fi
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/common_utils.sh"
 source "$SCRIPT_DIR/html_generator.sh"
+source "$SCRIPT_DIR/traceroute_collector.sh"
 
 # Set default values if not defined in .env
 TELEMETRY_TIMEOUT=${TELEMETRY_TIMEOUT:-300}
@@ -22,6 +23,11 @@ ML_TIMEOUT=${ML_TIMEOUT:-300}
 POLLING_INTERVAL=${POLLING_INTERVAL:-300}
 DEBUG_MODE=${DEBUG_MODE:-false}
 ML_ENABLED=${ML_ENABLED:-true}
+
+# Traceroute defaults
+TRACEROUTE_ENABLED=${TRACEROUTE_ENABLED:-true}
+TRACEROUTE_INTERVAL=${TRACEROUTE_INTERVAL:-4}
+TRACEROUTE_TIMEOUT=${TRACEROUTE_TIMEOUT:-120}
 
 # Meshtastic connection defaults
 MESHTASTIC_CONNECTION_TYPE=${MESHTASTIC_CONNECTION_TYPE:-serial}
@@ -89,16 +95,37 @@ load_node_info_cache() {
     if [ "$file_timestamp" -gt "$NODE_INFO_CACHE_TIMESTAMP" ]; then
         debug_log "Reloading node info cache from $NODES_CSV (file: $file_timestamp, cache: $NODE_INFO_CACHE_TIMESTAMP)"
         NODE_INFO_CACHE=()
-        while IFS=, read -r user id _ hardware _; do
+        while IFS=, read -r user id aka hardware _; do
             # Remove quotes if present
             user=$(echo "$user" | sed 's/^"//; s/"$//')
+            aka=$(echo "$aka" | sed 's/^"//; s/"$//')
             hardware=$(echo "$hardware" | sed 's/^"//; s/"$//')
             id=$(echo "$id" | sed 's/^"//; s/"$//')
             
-            if [ -n "$user" ] && [ -n "$hardware" ]; then
-                NODE_INFO_CACHE["$id"]="$user $hardware"
-            elif [ -n "$user" ]; then
-                NODE_INFO_CACHE["$id"]="$user"
+            # Choose the best friendly name with priority:
+            # 1. AKA if available and not default values
+            # 2. User if available and not generic
+            # 3. Fall back to node ID
+            local friendly_name=""
+            
+            # Check AKA first (often the best short name)
+            if [ -n "$aka" ] && [ "$aka" != "N/A" ] && [ "$aka" != "" ] && [ "$aka" != "$id" ] && [ "$aka" != "${id#!}" ]; then
+                friendly_name="$aka"
+            # Check User name (avoid generic names)
+            elif [ -n "$user" ] && [ "$user" != "N/A" ] && [ "$user" != "" ] && [ "$user" != "Meshtastic ${id#!}" ] && [ "$user" != "Meshtastic ${aka}" ]; then
+                friendly_name="$user"
+            # Add hardware info only if it's meaningful
+                if [ -n "$hardware" ] && [ "$hardware" != "N/A" ] && [ "$hardware" != "UNSET" ] && [ "$hardware" != "" ]; then
+                    friendly_name="$friendly_name ($hardware)"
+                fi
+            else
+                # Fall back to node ID
+                friendly_name="$id"
+            fi
+            
+            if [ -n "$friendly_name" ]; then
+                NODE_INFO_CACHE["$id"]="$friendly_name"
+                debug_log "Cached node: $id -> '$friendly_name'"
             fi
         done < "$NODES_CSV"
         NODE_INFO_CACHE_TIMESTAMP="$file_timestamp"
@@ -636,18 +663,54 @@ run_telemetry() {
     echo "$ts,$addr,$status,$battery,$voltage,$channel_util,$tx_util,$uptime"
 }
 
-# Sequential telemetry collection function
+# Sequential telemetry collection function (with optional traceroute integration)
 run_telemetry_sequential() {
     local ts
     ts=$(iso8601_date)
     
     debug_log "Starting sequential telemetry collection for ${#ADDRESSES[@]} nodes at $ts"
     
+    # Determine if we should run traceroutes this cycle
+    local run_traceroutes_this_cycle=false
+    if [ "$TRACEROUTE_ENABLED" = "true" ] && [ $((traceroute_cycle_counter % TRACEROUTE_INTERVAL)) -eq 0 ]; then
+        run_traceroutes_this_cycle=true
+        echo "🗺️  Running network traceroute collection integrated with telemetry (cycle $traceroute_cycle_counter)..."
+        
+        # Initialize routing logs if traceroutes are enabled
+        if command -v init_routing_logs >/dev/null 2>&1; then
+            init_routing_logs
+        fi
+    fi
+    
+    local traceroute_successful=0
+    local traceroute_failed=0
+    
     # Process each address sequentially (serial port can only be used by one process)
     for addr in "${ADDRESSES[@]}"; do
+        # 1. First collect telemetry for this node
+        echo "  📡 Collecting telemetry from $addr..."
         result=$(run_telemetry "$addr" "$ts")
         echo "$result" >> "$TELEMETRY_CSV"
+        
+        # 2. Then run traceroute for this node (same serial session)
+        if [ "$run_traceroutes_this_cycle" = "true" ]; then
+            echo "  📍 Tracing route to $addr..."
+            if command -v run_traceroute >/dev/null 2>&1 && run_traceroute "$addr"; then
+                traceroute_successful=$((traceroute_successful + 1))
+                echo "    ✅ Traceroute completed"
+            else
+                traceroute_failed=$((traceroute_failed + 1))
+                echo "    ❌ Traceroute failed or unavailable"
+            fi
+        fi
+        
+        # Small delay between nodes to avoid overwhelming the network
+        sleep 1
     done
+    
+    if [ "$run_traceroutes_this_cycle" = "true" ]; then
+        echo "🗺️  Integrated traceroute collection completed: $traceroute_successful successful, $traceroute_failed failed"
+    fi
     
     debug_log "Sequential telemetry collection completed"
 }
@@ -845,13 +908,20 @@ deploy_to_web() {
 }
 
 # ---- MAIN LOOP ----
+# Initialize cycle counter for traceroute interval
+traceroute_cycle_counter=0
+
 while true; do
     echo "Starting telemetry collection cycle at $(date)"
+    
+    # Increment cycle counter
+    traceroute_cycle_counter=$((traceroute_cycle_counter + 1))
     
     # Load/reload node info cache if nodes file has been updated (auto re-resolves names)
     load_node_info_cache
     
     # Use sequential telemetry collection (serial port limitation)
+    # This now includes integrated traceroute collection when enabled
     run_telemetry_sequential
     
     # Update nodes and generate HTML

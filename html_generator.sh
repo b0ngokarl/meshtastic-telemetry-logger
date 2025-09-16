@@ -13,6 +13,12 @@ if ! type load_node_info_cache >/dev/null 2>&1; then
     source "$SCRIPT_DIR/telemetry_collector.sh"
 fi
 
+# Load configuration defaults (paths, flags) if available
+# Ensures variables like NODES_CSV/TELEMETRY_CSV have sensible defaults
+if type load_config >/dev/null 2>&1; then
+    load_config
+fi
+
 # Load node info cache to resolve node names
 load_node_info_cache
 
@@ -369,6 +375,50 @@ get_weather_predictions() {
     echo "$pred_6h|$pred_12h|$pred_24h"
 }
 
+# Generate network topology section using Python analyzer
+generate_network_topology_section() {
+    if [ "$TRACEROUTE_ENABLED" != "true" ]; then
+        return  # Skip if traceroute is disabled
+    fi
+    
+    debug_log "Generating network topology section..."
+    
+    # Use Python import to return clean HTML without stdout noise
+    if [ -f "routing_topology_analyzer.py" ]; then
+        if ! python3 -c "from routing_topology_analyzer import generate_routing_topology_section; print(generate_routing_topology_section())" 2>/dev/null; then
+            debug_log "Failed to generate network topology HTML via import"
+            echo "<div style='background: #f8d7da; padding: 15px; border-radius: 5px; margin: 20px 0;'><h3>🗺️ Network Routing Topology</h3><p><em>Topology data not available yet.</em></p></div>"
+        else
+            debug_log "Network topology section generated successfully"
+        fi
+    else
+        debug_log "routing_topology_analyzer.py not found"
+        echo "<div style='background: #f8d7da; padding: 15px; border-radius: 5px; margin: 20px 0;'><h3>🗺️ Network Routing Topology</h3><p><em>Routing analyzer not available.</em></p></div>"
+    fi
+}
+
+# Generate GPS map section using Python generator
+generate_gps_map_section() {
+    debug_log "Generating GPS map section..."
+    
+    # Use Python import to return clean HTML without stdout noise
+    if [ -f "gps_map_generator.py" ]; then
+        # Ensure NODES_CSV has a default
+        local nodes_csv_path="${NODES_CSV:-nodes_log.csv}"
+        if ! python3 -c "from gps_map_generator import generate_gps_map_section; print(generate_gps_map_section('${nodes_csv_path}'))" 2>/dev/null; then
+            debug_log "Failed to generate GPS map HTML via import"
+            echo "<div class='card'><div style='text-align: center; padding: 40px; color: #666;'><i class='fas fa-map-marker-alt' style='font-size: 48px; margin-bottom: 20px; opacity: 0.3;'></i><h3>GPS Map Unavailable</h3><p>Unable to generate GPS map section.</p></div></div>"
+        else
+            debug_log "GPS map section generated successfully"
+        fi
+    else
+        debug_log "gps_map_generator.py not found"
+        echo "<div class='card'><div style='text-align: center; padding: 40px; color: #666;'><i class='fas fa-map-marker-alt' style='font-size: 48px; margin-bottom: 20px; opacity: 0.3;'></i><h3>GPS Map Generator Not Found</h3><p>GPS map generator script is missing.</p></div></div>"
+    fi
+}
+
+
+
 # Main HTML generation function that respects HTML_DASHBOARD_MODE configuration
 generate_html_dashboards() {
     local mode="${HTML_DASHBOARD_MODE:-both}"
@@ -411,6 +461,12 @@ generate_stats_html_modern() {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>📡 Meshtastic Network Dashboard</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Leaflet CSS for GPS Maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <!-- Leaflet JavaScript -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -835,6 +891,23 @@ EOF
         cat << 'EOF'
         </div>
 
+        <!-- Network Topology Section -->
+EOF
+
+        # Include network topology if traceroute is enabled
+        generate_network_topology_section
+
+        cat << 'EOF'
+
+        <!-- GPS Map Section -->
+        <h2 class="section-title">🗺️ Network GPS Map</h2>
+EOF
+
+        # Include GPS map section
+        generate_gps_map_section
+
+        cat << 'EOF'
+
         <!-- ML Status Section -->
         <h2 class="section-title">🤖 Machine Learning Status</h2>
         <div class="ml-status">
@@ -999,6 +1072,14 @@ generate_stats_html_original() {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Meshtastic Telemetry Stats</title>
+    <!-- Font Awesome for icons used in GPS/sections -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Leaflet CSS for GPS Maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <!-- Leaflet JavaScript -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; }
         h1 { color: #333; }
@@ -1582,6 +1663,7 @@ EOF
         echo "<div style='background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #007bff;'>"
         echo "<h3 style='margin-top: 0; color: #007bff;'>📍 Quick Navigation</h3>"
         echo "<div style='display: flex; flex-wrap: wrap; gap: 15px;'>"
+    echo "<a href='#gps-map-header' class='nav-link' style='text-decoration: none; padding: 8px 12px; background: #e8f5e9; border-radius: 4px; color: #388e3c;'>🗺️ GPS Map</a>"
         echo "<a href='#ml-status' class='nav-link' style='text-decoration: none; padding: 8px 12px; background: #e3f2fd; border-radius: 4px; color: #1976d2;'>🤖 ML Status</a>"
         echo "<a href='#monitored-addresses' class='nav-link' style='text-decoration: none; padding: 8px 12px; background: #e8f5e9; border-radius: 4px; color: #388e3c;'>📊 Monitored Addresses</a>"
         echo "<a href='#latest-telemetry' class='nav-link' style='text-decoration: none; padding: 8px 12px; background: #fff3e0; border-radius: 4px; color: #f57c00;'>📈 Latest Telemetry</a>"
@@ -1591,6 +1673,18 @@ EOF
         echo "<a href='#weather-predictions' class='nav-link' style='text-decoration: none; padding: 8px 12px; background: #e0f7fa; border-radius: 4px; color: #00796b;'>☀️ Weather Predictions</a>"
         echo "</div>"
         echo "</div>"
+        
+        # GPS Map Section
+    echo "<h2 id='gps-map-header'>🗺️ Network GPS Map</h2>"
+        echo "<div style='background: #f8f9fa; padding: 20px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #28a745;'>"
+        
+        # Include GPS map section
+        generate_gps_map_section
+        
+        echo "</div>"
+        
+        # Include network topology if traceroute is enabled
+        generate_network_topology_section
         
         # ML Learning Status Section
         echo "<h2 id='ml-status'>🤖 Machine Learning Power Prediction Status</h2>"
@@ -2387,3 +2481,13 @@ EOF
 generate_stats_html() {
     generate_html_dashboards
 }
+
+# If this script is executed directly (not sourced), run the generator
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+    # Load configuration if available
+    if [[ -f "$SCRIPT_DIR/.env" ]]; then
+        # shellcheck disable=SC1090
+        source "$SCRIPT_DIR/.env"
+    fi
+    generate_html_dashboards
+fi
