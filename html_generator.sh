@@ -22,6 +22,87 @@ fi
 # Load node info cache to resolve node names
 load_node_info_cache
 
+# Shared content generation functions to ensure consistency between dashboards
+
+# Generate telemetry statistics section (shared content)
+generate_telemetry_stats_content() {
+    local total_records=$(count_telemetry_records)
+    local online_nodes=$(count_online_nodes)
+    local total_nodes=$(count_total_nodes)
+    
+    echo "Total Records: $total_records"
+    echo "Online Nodes: $online_nodes"
+    echo "Total Nodes: $total_nodes"
+    
+    # Generate detailed telemetry tables and statistics
+    if [ -f "$TELEMETRY_CSV" ]; then
+        # Recent telemetry section
+        echo "<!-- Recent Telemetry Data -->"
+        
+        # Show recent entries (last 20)
+        tail -n 20 "$TELEMETRY_CSV" | while IFS=',' read -r timestamp node_id status battery voltage channel_util air_util uptime lat lon alt sats last_heard; do
+            # Skip header
+            [ "$timestamp" = "timestamp" ] && continue
+            
+            # Format node name
+            local display_name=$(get_node_display_name "$node_id")
+            
+            echo "Node: $display_name | Status: $status | Battery: ${battery}% | Voltage: ${voltage}V"
+        done
+    fi
+}
+
+# Generate network activity content (shared)
+generate_network_activity_content() {
+    if [ -f "network_news.html" ]; then
+        # Extract just the content without HTML wrapper for reuse
+        sed -n '/<h3 id=.network-news./,/<\/div>$/p' network_news.html 2>/dev/null || cat network_news.html
+    else
+        echo "<p>Network activity analysis not available</p>"
+    fi
+}
+
+# Generate ML status content (shared)
+generate_ml_status_content() {
+    if [ -f "power_predictions.csv" ] && [ -f "prediction_accuracy.csv" ]; then
+        # Count total predictions made
+        local total_predictions=$(tail -n +2 "power_predictions.csv" 2>/dev/null | wc -l)
+        
+        # Count accuracy measurements
+        local total_accuracy_checks=$(tail -n +2 "prediction_accuracy.csv" 2>/dev/null | wc -l)
+        
+        echo "<p>Total Predictions: $total_predictions</p>"
+        echo "<p>Accuracy Checks: $total_accuracy_checks</p>"
+        
+        # Show recent predictions
+        if [ "$total_predictions" -gt 0 ]; then
+            echo "<h4>Recent Predictions:</h4>"
+            tail -n 5 "power_predictions.csv" | while IFS=',' read -r line; do
+                [ "$line" != "${line#timestamp}" ] && continue  # Skip header
+                echo "<div class='prediction-entry'>$line</div>"
+            done
+        fi
+    else
+        echo "<p>Machine learning power predictor is collecting initial data. Improved predictions will be available after sufficient data is gathered.</p>"
+    fi
+}
+
+# Generate monitored nodes content (shared)
+generate_monitored_nodes_content() {
+    if [ -f "$NODES_CSV" ]; then
+        echo "<h4>Node Information:</h4>"
+        tail -n +2 "$NODES_CSV" | while IFS=',' read -r NodeID ShortName LongName AKA LastHeard Since Role Position Battery Voltage Hops; do
+            local display_name=$(get_node_display_name "$NodeID")
+            echo "<div class='node-entry'>"
+            echo "  <strong>$display_name</strong> ($NodeID)"
+            echo "  <br>Role: $Role | Battery: $Battery | Last Heard: $LastHeard"
+            echo "</div>"
+        done
+    else
+        echo "<p>Node information not available</p>"
+    fi
+}
+
 # Helper functions for modern dashboard
 count_telemetry_records() {
     if [ -f "$TELEMETRY_CSV" ]; then
