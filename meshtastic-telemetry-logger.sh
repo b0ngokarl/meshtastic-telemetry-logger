@@ -199,7 +199,7 @@ run_telemetry_batch() {
     debug_log "Starting batch telemetry collection for all nodes at $ts"
 
     local out
-    out=$(exec_meshtastic_command "$TELEMETRY_TIMEOUT" --info --json)
+    out=$(exec_meshtastic_command "$TELEMETRY_TIMEOUT" --info)
     local exit_code=$?
 
     if [ $exit_code -ne 0 ]; then

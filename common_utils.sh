@@ -285,19 +285,43 @@ build_meshtastic_command() {
     echo "$cmd"
 }
 
-# Execute Meshtastic command with proper connection settings
+# Execute Meshtastic command with proper connection settings and parse JSON output
 # Usage: exec_meshtastic_command [timeout] [additional_args...]
+# This function now specifically handles the output of `--info` to extract the nodes JSON.
 exec_meshtastic_command() {
     local timeout_duration="$1"
     shift
     
     local cmd
+    # We remove the --json flag here as it's no longer used.
     if ! cmd=$(build_meshtastic_command "$@"); then
         return 1
     fi
     
     debug_log "Executing: timeout $timeout_duration $cmd"
-    timeout "$timeout_duration" $cmd 2>&1
+    
+    # Execute the command and capture its output.
+    # The output contains mixed text, so we find the "Nodes in mesh" line,
+    # and extract the JSON object that follows.
+    # This is more robust against changes in meshtastic's output format.
+    timeout "$timeout_duration" "$cmd" 2>&1 | awk '
+        /Nodes in mesh: {/ {
+            # Start of the block found
+            in_nodes_block=1
+            # Print the line, but remove the prefix
+            sub(/.*Nodes in mesh: /, "")
+            print
+            next
+        }
+        in_nodes_block {
+            # If we are in the block, print the line
+            print
+            # If this line contains the closing brace for the block, exit
+            if (/^}/) {
+                exit
+            }
+        }
+    '
 }
 
 # Performance optimization utility functions
