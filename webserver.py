@@ -341,7 +341,8 @@ def load_env_config():
                     if line and not line.startswith('#') and '=' in line:
                         key, value = line.split('=', 1)
                         key = key.strip().lower()
-                        value = value.strip().strip('"\'')
+                        # Remove inline comments and strip quotes
+                        value = value.split('#')[0].strip().strip('"\'')
                         
                         if key == 'webserver_enabled':
                             config['webserver_enabled'] = value.lower() in ('true', '1', 'yes', 'on')
