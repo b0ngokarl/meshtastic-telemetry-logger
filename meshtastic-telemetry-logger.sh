@@ -192,207 +192,141 @@ compute_telemetry_stats() {
 }
 
 # Get ML-enhanced power predictions for a specific node
-run_telemetry() {
-    local addr="$1"
-    local ts="$2"  # Accept timestamp as parameter to avoid multiple calls
-    local out
-    debug_log "Requesting telemetry for $addr at $ts"
-    # Use configured connection method and timeout
-    out=$(exec_meshtastic_command "$TELEMETRY_TIMEOUT" --request-telemetry --dest "$addr")
-    local exit_code=$?
-    debug_log "Telemetry output: $out"
-    local status="unknown"
-    local battery="" voltage="" channel_util="" tx_util="" uptime=""
-
-    if [ $exit_code -eq 124 ]; then
-        # timeout command returned 124 for timeout
-        status="timeout"
-        debug_log "Telemetry timeout (300s) for $addr"
-    elif echo "$out" | grep -q "Telemetry received:"; then
-        status="success"
-        # Optimize parsing with single awk call instead of multiple grep/awk operations
-        eval "$(echo "$out" | awk '
-        /Battery level:/ { gsub(/[^0-9.]/, "", $3); print "battery=" $3 }
-        /Voltage:/ { gsub(/[^0-9.]/, "", $2); print "voltage=" $2 }
-        /Total channel utilization:/ { gsub(/[^0-9.]/, "", $4); print "channel_util=" $4 }
-        /Transmit air utilization:/ { gsub(/[^0-9.]/, "", $4); print "tx_util=" $4 }
-        /Uptime:/ { gsub(/[^0-9.]/, "", $2); print "uptime=" $2 }
-        ')"
-        debug_log "Telemetry success: battery=$battery, voltage=$voltage, channel_util=$channel_util, tx_util=$tx_util, uptime=$uptime"
-    elif echo "$out" | grep -q "Timed out waiting for telemetry"; then
-        status="timeout"
-        debug_log "Telemetry timeout for $addr"
-    else
-        status="error"
-        debug_log "Telemetry error for $addr: $out"
-        echo "$ts [$addr] ERROR: $out" >> "$ERROR_LOG"
-    fi
-
-    # Return CSV line instead of directly writing to file (for parallel processing)
-    echo "$ts,$addr,$status,$battery,$voltage,$channel_util,$tx_util,$uptime"
-}
-
-# Sequential telemetry collection function (with optional traceroute integration)
-run_telemetry_sequential() {
+# Batch telemetry collection using JSON output for efficiency
+run_telemetry_batch() {
     local ts
     ts=$(iso8601_date)
-    
-    debug_log "Starting sequential telemetry collection for ${#ADDRESSES[@]} nodes at $ts"
-    
-    # Determine if we should run traceroutes this cycle
-    local run_traceroutes_this_cycle=false
-    if [ "$TRACEROUTE_ENABLED" = "true" ] && [ $((traceroute_cycle_counter % TRACEROUTE_INTERVAL)) -eq 0 ]; then
-        run_traceroutes_this_cycle=true
-        echo "🗺️  Running network traceroute collection integrated with telemetry (cycle $traceroute_cycle_counter)..."
+    debug_log "Starting batch telemetry collection for all nodes at $ts"
+
+    local out
+    out=$(exec_meshtastic_command "$TELEMETRY_TIMEOUT" --info --json)
+    local exit_code=$?
+
+    if [ $exit_code -ne 0 ]; then
+        debug_log "Batch telemetry command failed with exit code $exit_code"
+        echo "$ts,ERROR,batch_command_failed,0,0,0,0,0" >> "$ERROR_LOG"
+        return 1
+    fi
+
+    if ! echo "$out" | jq -e . >/dev/null 2>&1; then
+        debug_log "Batch telemetry output is not valid JSON."
+        echo "$ts,ERROR,invalid_json_output,0,0,0,0,0" >> "$ERROR_LOG"
+        return 1
+    fi
+
+    # Process each node from the JSON output
+    echo "$out" | jq -c '.nodes[]' | while read -r node_json; do
+        local node_id status battery voltage channel_util tx_util uptime
+        node_id=$(echo "$node_json" | jq -r '.user.id')
         
-        # Initialize routing logs if traceroutes are enabled
-        if command -v init_routing_logs >/dev/null 2>&1; then
-            init_routing_logs
+        # Check if telemetry data is present
+        if echo "$node_json" | jq -e '.deviceMetrics' >/dev/null; then
+            status="success"
+            battery=$(echo "$node_json" | jq -r '.deviceMetrics.batteryLevel // "N/A"')
+            voltage=$(echo "$node_json" | jq -r '.deviceMetrics.voltage // "N/A"')
+            channel_util=$(echo "$node_json" | jq -r '.deviceMetrics.channelUtilization // "N/A"')
+            tx_util=$(echo "$node_json" | jq -r '.deviceMetrics.airUtilTx // "N/A"')
+            uptime=$(echo "$node_json" | jq -r '.deviceMetrics.uptimeSeconds // "N/A"')
+        else
+            status="no_telemetry"
+            battery="N/A"
+            voltage="N/A"
+            channel_util="N/A"
+            tx_util="N/A"
+            uptime="N/A"
         fi
+
+        # Append to CSV
+        echo "$ts,$node_id,$status,$battery,$voltage,$channel_util,$tx_util,$uptime" >> "$TELEMETRY_CSV"
+        debug_log "Logged batch telemetry for $node_id"
+    done
+    
+    debug_log "Batch telemetry collection completed."
+}
+
+# Sequential traceroute collection (separated from telemetry)
+run_traceroute_sequential() {
+    # Determine if we should run traceroutes this cycle
+    if [ "$TRACEROUTE_ENABLED" != "true" ] || [ $((traceroute_cycle_counter % TRACEROUTE_INTERVAL)) -ne 0 ]; then
+        return
+    fi
+
+    echo "🗺️  Running network traceroute collection (cycle $traceroute_cycle_counter)..."
+    
+    # Initialize routing logs if traceroutes are enabled
+    if command -v init_routing_logs >/dev/null 2>&1; then
+        init_routing_logs
     fi
     
     local traceroute_successful=0
     local traceroute_failed=0
     
-    # Process each address sequentially (serial port can only be used by one process)
+    # Process each address sequentially
     for addr in "${ADDRESSES[@]}"; do
-        # 1. First collect telemetry for this node
-        echo "  📡 Collecting telemetry from $addr..."
-        result=$(run_telemetry "$addr" "$ts")
-        echo "$result" >> "$TELEMETRY_CSV"
-        
-        # 2. Then run traceroute for this node (same serial session)
-        if [ "$run_traceroutes_this_cycle" = "true" ]; then
-            echo "  📍 Tracing route to $addr..."
-            if command -v run_traceroute >/dev/null 2>&1 && run_traceroute "$addr"; then
-                traceroute_successful=$((traceroute_successful + 1))
-                echo "    ✅ Traceroute completed"
-            else
-                traceroute_failed=$((traceroute_failed + 1))
-                echo "    ❌ Traceroute failed or unavailable"
-            fi
+        echo "   Tracing route to $addr..."
+        if command -v run_traceroute >/dev/null 2>&1 && run_traceroute "$addr"; then
+            traceroute_successful=$((traceroute_successful + 1))
+            echo "    ✅ Traceroute completed"
+        else
+            traceroute_failed=$((traceroute_failed + 1))
+            echo "    ❌ Traceroute failed or unavailable"
         fi
-        
-        # Small delay between nodes to avoid overwhelming the network
-        sleep 1
+        sleep 1 # Small delay between nodes
     done
     
-    if [ "$run_traceroutes_this_cycle" = "true" ]; then
-        echo "🗺️  Integrated traceroute collection completed: $traceroute_successful successful, $traceroute_failed failed"
-    fi
-    
-    debug_log "Sequential telemetry collection completed"
+    echo "🗺️  Traceroute collection completed: $traceroute_successful successful, $traceroute_failed failed"
 }
 
-update_nodes_log() {
+update_nodes_from_json() {
     local ts
     ts=$(iso8601_date)
-    debug_log "Updating nodes log at $ts"
+    debug_log "Updating nodes from JSON at $ts"
+    
     local out
-    # Use configured connection method and timeout
-    out=$(exec_meshtastic_command "$NODES_TIMEOUT" --nodes)
-    debug_log "Nodes output: $out"
-    echo "===== $ts =====" >> "$NODES_LOG"
-    echo "$out" >> "$NODES_LOG"
-}
-
-parse_nodes_to_csv() {
-    local input_file="$1"
-    local output_file="$2"
+    out=$(exec_meshtastic_command "$NODES_TIMEOUT" --nodes --json)
     
-    if [ ! -f "$input_file" ]; then
-        echo "Error: Input file $input_file not found"
+    if ! echo "$out" | jq -e . >/dev/null 2>&1; then
+        debug_log "Nodes output is not valid JSON."
+        echo "$ts,ERROR,invalid_json_for_nodes,0,0,0,0,0" >> "$ERROR_LOG"
         return 1
     fi
+
+    local temp_csv="/tmp/nodes_new.csv"
     
-    # Create temporary files
-    local temp_csv="/tmp/nodes_unsorted.csv"
-    local temp_data="/tmp/data_rows.txt"
+    # Write header
+    echo "User,ID,AKA,Hardware,Role,Latitude,Longitude,Altitude,Battery,LastHeard,Since" > "$temp_csv"
+
+    # Use jq to transform the JSON array directly into CSV rows
+    echo "$out" | jq -r '
+        .[] | 
+        [
+            .user.longName,
+            .user.id,
+            .user.shortName,
+            .user.hwModel,
+            .role,
+            (.position.latitude // "N/A"),
+            (.position.longitude // "N/A"),
+            (.position.altitude // "N/A"),
+            (.deviceMetrics.batteryLevel // "N/A"),
+            (.lastHeard | tostring // "N/A"),
+            (.lastHeard | tostring | strftime("%Y-%m-%d %H:%M:%S") // "N/A")
+        ] | @csv' >> "$temp_csv"
+
+    # Merge new data with existing, keeping the latest entry for each node ID
     local temp_merged="/tmp/nodes_merged.csv"
+    {
+        head -n 1 "$NODES_CSV" 2>/dev/null || echo "User,ID,AKA,Hardware,Role,Latitude,Longitude,Altitude,Battery,LastHeard,Since"
+        tail -n +2 "$NODES_CSV" 2>/dev/null
+        tail -n +2 "$temp_csv"
+    } | awk -F, '!seen[$2]++' > "$temp_merged"
 
-    # Extract data rows (skip header row with "N │ User" and separator rows)
-    grep "│.*│" "$input_file" | grep -v "│   N │ User" | grep -v "├─" | grep -v "╞═" | grep -v "╘═" | grep -v "╒═" > "$temp_data"
-
-    # Check if we have any data rows
-    if [ ! -s "$temp_data" ]; then
-        echo "No data rows found in $input_file"
-        rm -f "$temp_data"
-        return 1
-    fi
-
-    # Write CSV header (skip first column N)
-    echo "User,ID,AKA,Hardware,Pubkey,Role,Latitude,Longitude,Altitude,Battery,Channel_util,Tx_air_util,SNR,Hops,Channel,LastHeard,Since" > "$temp_csv"
-
-    # Process each data row
-    while IFS= read -r line; do
-        if [ -n "$line" ]; then
-            # Split by │ and trim whitespace, skip first field (N)
-            echo "$line" | awk -F'│' '{
-                user = $3; gsub(/^[ ]+|[ ]+$/, "", user)
-                id = $4; gsub(/^[ ]+|[ ]+$/, "", id)
-                aka = $5; gsub(/^[ ]+|[ ]+$/, "", aka)
-                hardware = $6; gsub(/^[ ]+|[ ]+$/, "", hardware)
-                pubkey = $7; gsub(/^[ ]+|[ ]+$/, "", pubkey)
-                role = $8; gsub(/^[ ]+|[ ]+$/, "", role)
-                latitude = $9; gsub(/^[ ]+|[ ]+$/, "", latitude)
-                longitude = $10; gsub(/^[ ]+|[ ]+$/, "", longitude)
-                altitude = $11; gsub(/^[ ]+|[ ]+$/, "", altitude)
-                battery = $12; gsub(/^[ ]+|[ ]+$/, "", battery)
-                channel_util = $13; gsub(/^[ ]+|[ ]+$/, "", channel_util)
-                tx_util = $14; gsub(/^[ ]+|[ ]+$/, "", tx_util)
-                snr = $15; gsub(/^[ ]+|[ ]+$/, "", snr)
-                hops = $16; gsub(/^[ ]+|[ ]+$/, "", hops)
-                channel = $17; gsub(/^[ ]+|[ ]+$/, "", channel)
-                lastheard = $18; gsub(/^[ ]+|[ ]+$/, "", lastheard)
-                since = $19; gsub(/^[ ]+|[ ]+$/, "", since)
-
-                # Escape commas in fields by wrapping in quotes if they contain commas
-                if (match(user, /,/)) user = "\"" user "\""
-                if (match(id, /,/)) id = "\"" id "\""
-                if (match(aka, /,/)) aka = "\"" aka "\""
-                if (match(hardware, /,/)) hardware = "\"" hardware "\""
-                if (match(pubkey, /,/)) pubkey = "\"" pubkey "\""
-                if (match(role, /,/)) role = "\"" role "\""
-                if (match(latitude, /,/)) latitude = "\"" latitude "\""
-                if (match(longitude, /,/)) longitude = "\"" longitude "\""
-                if (match(altitude, /,/)) altitude = "\"" altitude "\""
-                if (match(battery, /,/)) battery = "\"" battery "\""
-                if (match(channel_util, /,/)) channel_util = "\"" channel_util "\""
-                if (match(tx_util, /,/)) tx_util = "\"" tx_util "\""
-                if (match(snr, /,/)) snr = "\"" snr "\""
-                if (match(hops, /,/)) hops = "\"" hops "\""
-                if (match(channel, /,/)) channel = "\"" channel "\""
-                if (match(lastheard, /,/)) lastheard = "\"" lastheard "\""
-                if (match(since, /,/)) since = "\"" since "\""
-
-                print user","id","aka","hardware","pubkey","role","latitude","longitude","altitude","battery","channel_util","tx_util","snr","hops","channel","lastheard","since
-            }' >> "$temp_csv"
-        fi
-    done < "$temp_data"
-
-    # Merge with existing nodes_log.csv (except header) using awk for portability
-    local header
-    header=$(head -n 1 "$temp_csv")
-    echo "$header" > "$temp_merged"
-
-    # Combine old and new data (skip headers)
-    { tail -n +2 "$NODES_CSV" 2>/dev/null; tail -n +2 "$temp_csv"; } > /tmp/nodes_all.csv
-
-    # Use awk to keep only the latest info for each node ID (never delete old nodes)
-    awk -F',' '{
-        if (!($2 in seen) || $16 > seen[$2]) {
-            row[$2]=$0; seen[$2]=$16
-        }
-    } END {
-        for (i in row) print row[i]
-    }' /tmp/nodes_all.csv | sort -t, -k16,16r >> "$temp_merged"
-
-    # Write merged and sorted node list to output
-    mv "$temp_merged" "$output_file"
-
-    # Clean up temporary files
-    rm -f "$temp_csv" "$temp_data" /tmp/nodes_all.csv
+    mv "$temp_merged" "$NODES_CSV"
+    rm -f "$temp_csv"
+    
+    debug_log "Nodes CSV updated successfully from JSON."
 }
+
 
 generate_stats_html() {
     # Use the new performance-optimized dashboard generator
@@ -486,19 +420,20 @@ while true; do
     # Increment cycle counter
     traceroute_cycle_counter=$((traceroute_cycle_counter + 1))
     
-    # Load/reload node info cache if nodes file has been updated (auto re-resolves names)
+    # Load/reload node info cache if nodes file has been updated
     load_node_info_cache
     
-    # Use sequential telemetry collection (serial port limitation)
-    # This now includes integrated traceroute collection when enabled
-    run_telemetry_sequential
+    # Use batch telemetry collection for speed and efficiency
+    run_telemetry_batch
     
-    # Update nodes and generate HTML
-    echo "Updating node list and re-resolving node names..."
-    update_nodes_log
-    parse_nodes_to_csv "$NODES_LOG" "$NODES_CSV"
+    # Run traceroutes sequentially after telemetry
+    run_traceroute_sequential
     
-    # Reload cache after updating nodes data (ensures fresh node names)
+    # Update nodes using the more reliable JSON method
+    echo "Updating node list from JSON..."
+    update_nodes_from_json
+    
+    # Reload cache after updating nodes data
     echo "Refreshing node name cache..."
     load_node_info_cache
     
