@@ -146,13 +146,17 @@ run_traceroute() {
     local timestamp
     timestamp=$(iso8601_date)
     
-    debug_log "Running traceroute to $destination"
+    # Strip quotes from destination to prevent issues with the CLI
+    local clean_destination
+    clean_destination=$(echo "$destination" | sed "s/^'//; s/'$//; s/^\"//; s/\"$//")
+    
+    debug_log "Running traceroute to $clean_destination (original: $destination)"
     
     # Run the traceroute command with timeout
     local output
     local traceroute_timeout
     traceroute_timeout=${TRACEROUTE_TIMEOUT:-$TELEMETRY_TIMEOUT}
-    output=$(exec_meshtastic_command "$traceroute_timeout" --traceroute "$destination" 2>&1)
+    output=$(exec_meshtastic_command "$traceroute_timeout" --traceroute "$clean_destination" 2>&1)
     local exit_code=$?
     
     debug_log "Traceroute command output: $output"
@@ -161,8 +165,8 @@ run_traceroute() {
     # Check for successful traceroute based on content, not just exit code
     # (meshtastic may return non-zero exit code due to protocol errors but still provide route data)
     if echo "$output" | grep -q "Route traced"; then
-        debug_log "Traceroute to $destination successful (found route data)"
-        parse_traceroute_output "$output" "$destination" "$timestamp"
+        debug_log "Traceroute to $clean_destination successful (found route data)"
+        parse_traceroute_output "$output" "$clean_destination" "$timestamp"
         return 0
     else
         # Log failed traceroute
@@ -175,8 +179,8 @@ run_traceroute() {
         
         # Get source node from config or auto-detect
         local source_node="!local"  # Will be improved to auto-detect
-        echo "$timestamp,$source_node,$destination,forward,,,0,false,$error_reason" >> "$ROUTING_LOG"
-        debug_log "Traceroute to $destination failed: $error_reason"
+        echo "$timestamp,$source_node,$clean_destination,forward,,,0,false,$error_reason" >> "$ROUTING_LOG"
+        debug_log "Traceroute to $clean_destination failed: $error_reason"
         return 1
     fi
 }
