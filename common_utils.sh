@@ -285,43 +285,37 @@ build_meshtastic_command() {
     echo "$cmd"
 }
 
-# Execute Meshtastic command with proper connection settings and parse JSON output
-# Usage: exec_meshtastic_command [timeout] [additional_args...]
-# This function now specifically handles the output of `--info` to extract the nodes JSON.
+# Execute a meshtastic command and parse the output
+# This function now uses a python parser to handle the table output from --nodes
 exec_meshtastic_command() {
     local timeout_duration="$1"
-    shift
+    shift # Remove timeout from arguments
+    local command_args=("$@")
+
+    # Construct the full command, including the port if specified
+    local meshtastic_cmd=("meshtastic")
+    if [ -n "$MESHTASTIC_PORT" ]; then
+        meshtastic_cmd+=("--port" "$MESHTASTIC_PORT")
+    fi
+    meshtastic_cmd+=("${command_args[@]}")
     
-    local cmd
-    # We remove the --json flag here as it's no longer used.
-    if ! cmd=$(build_meshtastic_command "$@"); then
+    debug_log "Executing command: timeout ${timeout_duration}s ${meshtastic_cmd[*]}"
+
+    # Execute the command and pipe it to the Python parser
+    local output
+    if ! output=$(timeout "${timeout_duration}s" "${meshtastic_cmd[@]}" 2> >(debug_log) | python3 "$SCRIPT_DIR/nodes_parser.py" 2> >(debug_log)); then
+        log_error "Failed to execute or parse meshtastic command: ${meshtastic_cmd[*]}"
+        return 1
+    fi
+
+    # Check if the output is valid JSON
+    if ! echo "$output" | jq . >/dev/null 2>&1; then
+        log_error "Generated output is not valid JSON."
+        debug_log "Invalid JSON output: $output"
         return 1
     fi
     
-    debug_log "Executing: timeout $timeout_duration $cmd"
-    
-    # Execute the command and capture its output.
-    # The output contains mixed text, so we find the "Nodes in mesh" line,
-    # and extract the JSON object that follows.
-    # This is more robust against changes in meshtastic's output format.
-    timeout "$timeout_duration" "$cmd" 2>&1 | awk '
-        /Nodes in mesh: {/ {
-            # Start of the block found
-            in_nodes_block=1
-            # Print the line, but remove the prefix
-            sub(/.*Nodes in mesh: /, "")
-            print
-            next
-        }
-        in_nodes_block {
-            # If we are in the block, print the line
-            print
-            # If this line contains the closing brace for the block, exit
-            if (/^}/) {
-                exit
-            }
-        }
-    '
+    echo "$output"
 }
 
 # Performance optimization utility functions

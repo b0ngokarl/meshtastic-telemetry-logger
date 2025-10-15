@@ -198,27 +198,15 @@ run_telemetry_batch() {
     ts=$(iso8601_date)
     debug_log "Starting batch telemetry collection for all nodes at $ts"
 
+    # Use the new --nodes command with specific fields
     local out
-    out=$(exec_meshtastic_command "$TELEMETRY_TIMEOUT" --info)
-    local exit_code=$?
-
-    if [ $exit_code -ne 0 ]; then
-        debug_log "Batch telemetry command failed with exit code $exit_code"
-        echo "$ts,ERROR,batch_command_failed,0,0,0,0,0" >> "$ERROR_LOG"
-        # Still write to the temp file so the next step doesn't use stale data
-        echo "{}" > "/tmp/meshtastic_info.json"
+    if ! out=$(exec_meshtastic_command "$TELEMETRY_TIMEOUT" --nodes --show-fields user,deviceMetrics,position); then
+        log_error "Failed to get batch node info. Aborting telemetry run."
         return 1
     fi
 
-    if ! echo "$out" | jq -e . >/dev/null 2>&1; then
-        debug_log "Batch telemetry output is not valid JSON."
-        echo "$ts,ERROR,invalid_json_output,0,0,0,0,0" >> "$ERROR_LOG"
-        echo "{}" > "/tmp/meshtastic_info.json"
-        return 1
-    fi
-    
-    # Save the output for the node update function to use
-    echo "$out" > "/tmp/meshtastic_info.json"
+    # Save the JSON output to a file for debugging and inspection
+    echo "$out" > "$RAW_JSON_FILE"
 
     # Process each node from the JSON output
     echo "$out" | jq -c '.nodes[]' | while read -r node_json; do
