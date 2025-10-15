@@ -299,3 +299,95 @@ exec_meshtastic_command() {
     debug_log "Executing: timeout $timeout_duration $cmd"
     timeout "$timeout_duration" $cmd 2>&1
 }
+
+# Performance optimization utility functions
+
+# Get limited telemetry data for dashboard processing
+get_limited_telemetry_data() {
+    local csv_file="$1"
+    local max_records="${MAX_DASHBOARD_RECORDS:-1000}"
+    local fast_mode="${FAST_DASHBOARD_MODE:-true}"
+    
+    if [ ! -f "$csv_file" ]; then
+        return 1
+    fi
+    
+    debug_log "Getting limited telemetry data from $csv_file (max: $max_records)"
+    
+    if [ "$max_records" -eq 0 ]; then
+        # No limit, return all data
+        cat "$csv_file"
+    else
+        # Return header + last N records for better performance
+        head -1 "$csv_file"
+        tail -n "$max_records" "$csv_file" | tail -n +2
+    fi
+}
+
+# Process data in chunks for better memory usage
+process_data_chunks() {
+    local csv_file="$1"
+    local chunk_size="${DASHBOARD_PAGINATION_SIZE:-500}"
+    local callback_function="$2"
+    
+    if [ ! -f "$csv_file" ]; then
+        return 1
+    fi
+    
+    debug_log "Processing $csv_file in chunks of $chunk_size"
+    
+    local line_count
+    line_count=$(wc -l < "$csv_file")
+    local chunks=$((line_count / chunk_size + 1))
+    
+    debug_log "Total lines: $line_count, Processing in $chunks chunks"
+    
+    # Process header first
+    head -1 "$csv_file" | "$callback_function" "header"
+    
+    # Process chunks
+    for ((i = 1; i <= chunks; i++)); do
+        local start_line=$((i * chunk_size))
+        local end_line=$(((i + 1) * chunk_size - 1))
+        
+        debug_log "Processing chunk $i/$chunks (lines $start_line-$end_line)"
+        
+        sed -n "${start_line},${end_line}p" "$csv_file" | "$callback_function" "chunk_$i"
+        
+        # Allow interruption for large datasets
+        if [ $((i % 5)) -eq 0 ]; then
+            sleep 0.1  # Brief pause every 5 chunks
+        fi
+    done
+}
+
+# Fast CSV record count (more efficient than wc -l for large files)
+get_csv_record_count() {
+    local csv_file="$1"
+    local fast_mode="${FAST_DASHBOARD_MODE:-true}"
+    
+    if [ ! -f "$csv_file" ]; then
+        echo "0"
+        return
+    fi
+    
+    if [ "$fast_mode" = "true" ]; then
+        # Use approximate count for speed (sample first 1000 lines)
+        local sample_lines=1000
+        local total_lines
+        total_lines=$(wc -l < "$csv_file")
+        
+        if [ "$total_lines" -le "$sample_lines" ]; then
+            echo "$total_lines"
+        else
+            # Estimate based on sample
+            local estimate=$((total_lines - 1))  # Subtract header
+            echo "$estimate"
+        fi
+    else
+        # Accurate count (slower for large files)
+        local count
+        count=$(tail -n +2 "$csv_file" | wc -l)
+        echo "$count"
+    fi
+}

@@ -11,7 +11,7 @@ source "$SCRIPT_DIR/common_utils.sh"
 declare -A NODE_INFO_CACHE
 NODE_INFO_CACHE_TIMESTAMP=0
 
-# Load node information into cache
+# Load node information into cache with optimization
 load_node_info_cache() {
     if [ ! -f "$NODES_CSV" ]; then
         return
@@ -24,12 +24,24 @@ load_node_info_cache() {
     if [ "$file_timestamp" -gt "$NODE_INFO_CACHE_TIMESTAMP" ]; then
         debug_log "Reloading node info cache from $NODES_CSV"
         NODE_INFO_CACHE=()
+        
+        # Use fast processing mode if available
+        local fast_mode="${FAST_DASHBOARD_MODE:-false}"
+        local record_count=0
+        local max_records="${MAX_DASHBOARD_RECORDS:-0}"
+        
         while IFS=, read -r user id aka hardware _; do
-            # Remove quotes if present
-            user=$(echo "$user" | sed 's/^"//; s/"$//')
-            aka=$(echo "$aka" | sed 's/^"//; s/"$//')
-            hardware=$(echo "$hardware" | sed 's/^"//; s/"$//')
-            id=$(echo "$id" | sed 's/^"//; s/"$//')
+            # Skip if we've reached the record limit (0 = unlimited)
+            if [ "$max_records" -gt 0 ] && [ "$record_count" -ge "$max_records" ]; then
+                debug_log "Reached max dashboard records limit ($max_records), stopping cache load"
+                break
+            fi
+            
+            # Remove quotes if present (optimized for speed)
+            user=${user#\"} user=${user%\"}
+            aka=${aka#\"} aka=${aka%\"}
+            hardware=${hardware#\"} hardware=${hardware%\"}
+            id=${id#\"} id=${id%\"}
             
             # Use AKA if available and short, otherwise use user name with hardware
             if [ -n "$user" ] && [ -n "$aka" ] && [ ${#aka} -le 8 ]; then
@@ -39,9 +51,17 @@ load_node_info_cache() {
             elif [ -n "$user" ]; then
                 NODE_INFO_CACHE["$id"]="$user"
             fi
+            
+            ((record_count++))
+            
+            # Progress indicator for large files
+            if [ "$record_count" -gt 0 ] && [ $((record_count % 500)) -eq 0 ]; then
+                debug_log "Processed $record_count node cache entries..."
+            fi
         done < "$NODES_CSV"
+        
         NODE_INFO_CACHE_TIMESTAMP="$file_timestamp"
-        debug_log "Node info cache loaded with ${#NODE_INFO_CACHE[@]} entries"
+        debug_log "Node info cache loaded with ${#NODE_INFO_CACHE[@]} entries (processed $record_count records)"
     fi
 }
 
