@@ -7,6 +7,9 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/common_utils.sh"
 
+# Global list of monitored addresses (filled lazily so standalone invocations work)
+declare -a ADDRESSES
+
 # File paths
 ROUTING_LOG="${ROUTING_LOG:-routing_log.csv}"
 RELATIONSHIPS_LOG="${RELATIONSHIPS_LOG:-node_relationships.csv}"
@@ -147,7 +150,9 @@ run_traceroute() {
     
     # Run the traceroute command with timeout
     local output
-    output=$(exec_meshtastic_command "$TELEMETRY_TIMEOUT" --traceroute "$destination" 2>&1)
+    local traceroute_timeout
+    traceroute_timeout=${TRACEROUTE_TIMEOUT:-$TELEMETRY_TIMEOUT}
+    output=$(exec_meshtastic_command "$traceroute_timeout" --traceroute "$destination" 2>&1)
     local exit_code=$?
     
     debug_log "Traceroute command output: $output"
@@ -179,6 +184,12 @@ run_traceroute() {
 # Run traceroutes for all monitored nodes
 run_traceroutes_sequential() {
     echo "🗺️  Running network traceroutes..."
+    if type load_config >/dev/null 2>&1; then
+        load_config
+    fi
+
+    ensure_addresses_array
+    refresh_node_cache_for_traceroute
     init_routing_logs
     
     local successful=0
@@ -200,6 +211,7 @@ run_traceroutes_sequential() {
     done
     
     echo "🗺️  Traceroute collection completed: $successful successful, $failed failed"
+    summarize_traceroute_recency
 }
 
 # Analyze routing changes by comparing with previous data
@@ -222,4 +234,147 @@ analyze_routing_changes() {
     
     # For now, just log that analysis was attempted
     debug_log "Routing change analysis completed at $current_time"
+}
+
+# Ensure the addresses array is populated from MONITORED_NODES when not already set
+ensure_addresses_array() {
+    if [ ${#ADDRESSES[@]} -gt 0 ]; then
+        return
+    fi
+
+    local raw="${MONITORED_NODES:-}"
+    if [ -z "$raw" ]; then
+        debug_log "No monitored nodes defined for traceroutes"
+        ADDRESSES=()
+        return
+    fi
+
+    IFS=',' read -ra __temp_addresses <<< "$raw"
+    ADDRESSES=()
+    for entry in "${__temp_addresses[@]}"; do
+        entry=$(echo "$entry" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//; s/^"//; s/"$//')
+        if [ -n "$entry" ]; then
+            ADDRESSES+=("$entry")
+        fi
+    done
+}
+
+# Refresh the node cache so downstream modules pick up latest metadata
+refresh_node_cache_for_traceroute() {
+    if ! type load_config >/dev/null 2>&1; then
+        debug_log "load_config not available; skipping node cache refresh"
+        return
+    fi
+
+    load_config
+
+    # Source telemetry helpers if the parser functions are missing
+    if ! declare -f update_nodes_log >/dev/null 2>&1 || ! declare -f parse_nodes_to_csv >/dev/null 2>&1; then
+        if [ -f "$SCRIPT_DIR/telemetry_collector.sh" ]; then
+            # shellcheck disable=SC1090
+            source "$SCRIPT_DIR/telemetry_collector.sh"
+        fi
+    fi
+
+    if ! declare -f update_nodes_log >/dev/null 2>&1 || ! declare -f parse_nodes_to_csv >/dev/null 2>&1; then
+        debug_log "Telemetry node parsers unavailable; cannot refresh node cache"
+        return
+    fi
+
+    debug_log "Refreshing node cache prior to traceroutes"
+
+    if update_nodes_log; then
+        if parse_nodes_to_csv "$NODES_LOG" "$NODES_CSV"; then
+            debug_log "Node cache CSV updated: $NODES_CSV"
+            if declare -f load_node_info_cache >/dev/null 2>&1; then
+                load_node_info_cache
+            fi
+        else
+            debug_log "Failed to parse nodes log into CSV"
+        fi
+    else
+        debug_log "Failed to update nodes log from Meshtastic CLI"
+    fi
+}
+
+# Produce a quick summary of recent traceroute successes and failures
+summarize_traceroute_recency() {
+    if ! command -v python3 >/dev/null 2>&1; then
+        debug_log "python3 unavailable; skipping traceroute recency summary"
+        return
+    fi
+
+    if [ ! -f "$ROUTING_LOG" ]; then
+        debug_log "Routing log not found; cannot summarize traceroutes"
+        return
+    fi
+
+    echo ""
+    echo "Recent traceroute results:"
+    python3 <<'PY'
+import csv
+import os
+from datetime import datetime, timezone
+from pathlib import Path
+
+path = Path(os.environ.get("ROUTING_LOG", "routing_log.csv"))
+if not path.exists():
+    raise SystemExit
+
+records = {}
+
+def update_record(dest, key, timestamp, extra=None):
+    if not timestamp:
+        return
+    try:
+        dt = datetime.fromisoformat(timestamp)
+    except ValueError:
+        return
+    store = records.setdefault(dest, {})
+    current = store.get(key)
+    if current is None or dt > current[0]:
+        store[key] = (dt, extra)
+
+with path.open(newline="") as fh:
+    reader = csv.DictReader(fh)
+    for row in reader:
+        dest = row.get("destination", "")
+        ts = row.get("timestamp", "")
+        direction = row.get("direction", "forward")
+        success = row.get("success", "").lower() == "true"
+        if not dest or direction != "forward":
+            continue
+        if success:
+            update_record(dest, "success", ts, row.get("hop_count", ""))
+        else:
+            reason = row.get("error_reason", "") or "unknown"
+            update_record(dest, "failure", ts, reason)
+
+def fmt(dt):
+    if dt is None:
+        return "-", "-"
+    stamp = dt[0].isoformat()
+    now = datetime.now(dt[0].tzinfo or timezone.utc)
+    delta = now - dt[0].astimezone(now.tzinfo)
+    hours = delta.total_seconds() / 3600
+    ago = f"{hours:.1f}h" if hours < 72 else f"{hours/24:.1f}d"
+    return stamp, ago
+
+def note_text(success_info, failure_info):
+    if failure_info and failure_info[1] not in (None, ""):
+        return failure_info[1]
+    if success_info and success_info[1] not in (None, ""):
+        return f"hops={success_info[1]}"
+    return "-"
+
+header = f"{'Destination':<14} {'Last success':<25} {'Age':<8} {'Last failure':<25} {'Age':<8} {'Note':<12}"
+print(header)
+print("-" * len(header))
+
+for dest in sorted(records):
+    success_info = fmt(records[dest].get('success'))
+    failure_info = fmt(records[dest].get('failure'))
+    note = note_text(records[dest].get('success'), records[dest].get('failure'))
+    print(f"{dest:<14} {success_info[0]:<25} {success_info[1]:<8} {failure_info[0]:<25} {failure_info[1]:<8} {note:<12}")
+PY
 }
