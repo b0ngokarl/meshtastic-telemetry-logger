@@ -9,10 +9,10 @@ else
     echo "No .env file found, using default values"
 fi
 
-# Source common utilities and HTML generator
+# Source common utilities and new optimized dashboard generator
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/common_utils.sh"
-source "$SCRIPT_DIR/html_generator.sh"
+source "$SCRIPT_DIR/dashboard_optimizer.sh"
 source "$SCRIPT_DIR/traceroute_collector.sh"
 
 # Set default values if not defined in .env
@@ -395,9 +395,9 @@ parse_nodes_to_csv() {
 }
 
 generate_stats_html() {
-    # Use the comprehensive HTML generation from html_generator.sh
-    # This includes network news, ML predictions, and all advanced features
-    generate_html_dashboards
+    # Use the new performance-optimized dashboard generator
+    debug_log "Switching to optimized dashboard generation"
+    generate_dashboard_optimized "modern"
 }
 
 # ---- WEB DEPLOYMENT FUNCTION ----
@@ -514,10 +514,11 @@ while true; do
     fi
     
     # Run ML power predictor to learn and improve predictions
-    if [[ "$ML_ENABLED" = "true" && -f "ml_power_predictor.sh" ]]; then
-        echo "Running ML power prediction analysis..."
-        ML_MIN_DATA_POINTS="$ML_MIN_DATA_POINTS" ML_LEARNING_RATE="$ML_LEARNING_RATE" timeout $ML_TIMEOUT ./ml_power_predictor.sh run
-    fi
+    # This feature is currently disabled after cleanup. Re-enable if needed.
+    # if [[ "$ML_ENABLED" = "true" && -f "ml_power_predictor.sh" ]]; then
+    #     echo "Running ML power prediction analysis..."
+    #     ML_MIN_DATA_POINTS="$ML_MIN_DATA_POINTS" ML_LEARNING_RATE="$ML_LEARNING_RATE" timeout $ML_TIMEOUT ./ml_power_predictor.sh run
+    # fi
     
     # AUTO-GENERATE CHARTS AND HTML AFTER EACH TELEMETRY COLLECTION
     echo "Auto-generating telemetry charts..."
