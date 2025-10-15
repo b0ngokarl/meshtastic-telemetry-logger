@@ -46,6 +46,12 @@ DEFAULT_CONFIG=(
     "ML_ENABLED=true               # Enable ML power predictions"
     "ML_MIN_DATA_POINTS=5          # Minimum data points for predictions"
     ""
+    "# Web Server Configuration"
+    "WEBSERVER_ENABLED=false       # Enable/disable web server (true/false)"
+    "WEBSERVER_PORT=8080           # HTTP port for web server"
+    "WEBSERVER_SSL_PORT=8443       # HTTPS port for web server"
+    "WEBSERVER_MODE=both           # Server mode: http, https, or both"
+    ""
     "# File Paths (usually don't need to change)"
     "TELEMETRY_CSV=telemetry_log.csv"
     "NODES_CSV=nodes_log.csv"
@@ -152,6 +158,15 @@ show_config() {
     echo "  Dashboard Mode: ${HTML_DASHBOARD_MODE:-both} (old/modern/both)"
     echo "  Web Deploy: ${WEB_DEPLOY_ENABLED:-false}"
     echo "  Deploy Path: ${WEB_DEPLOY_PATH:-/var/www/html}"
+    echo
+
+    echo "🌐 WEB SERVER:"
+    echo "  Web Server Enabled: ${WEBSERVER_ENABLED:-false}"
+    echo "  HTTP Port: ${WEBSERVER_PORT:-8080}"
+    echo "  HTTPS Port: ${WEBSERVER_SSL_PORT:-8443}"
+    echo "  SSL Certificate: ${WEBSERVER_SSL_CERT:-server.crt}"
+    echo "  SSL Key: ${WEBSERVER_SSL_KEY:-server.key}"
+    echo "  Server Mode: ${WEBSERVER_MODE:-both} (http/https/both)"
     echo
     
     echo "🔧 ADVANCED SETTINGS:"
