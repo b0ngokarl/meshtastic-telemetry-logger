@@ -12,7 +12,7 @@ fi
 # Source common utilities and new optimized dashboard generator
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/common_utils.sh"
-source "$SCRIPT_DIR/dashboard_optimizer.sh"
+source "$SCRIPT_DIR/html_generator.sh"
 source "$SCRIPT_DIR/traceroute_collector.sh"
 
 # Set default values if not defined in .env
