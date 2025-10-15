@@ -1104,6 +1104,141 @@ EOF
                 </table>
             </div>
         </div>
+
+        <!-- Comprehensive Telemetry History by Node (same as original) -->
+        <h2 class="section-title">📊 Complete Telemetry History by Node</h2>
+        <div class="table-container">
+            <h3 class="collapsible" onclick="toggleSection('telemetry-history')">
+                <span><i class="fas fa-history"></i> Historical Data by Node</span>
+                <i class="fas fa-chevron-down"></i>
+            </h3>
+            <div id="telemetry-history" class="collapsible-content" style="display: none;">
+EOF
+
+        # Generate comprehensive per-node telemetry history (same as original)
+        if [ -f "$TELEMETRY_CSV" ]; then
+            last_address=""
+            awk -F',' '$3=="success"' "$TELEMETRY_CSV" | sort -t',' -k2,2 -k1,1r | while IFS=',' read -r timestamp address status battery voltage channel_util tx_util uptime; do
+                device_name="$(get_node_info "$address")"
+                if [ -n "$device_name" ] && [ "$device_name" != "$address" ]; then
+                    address_display="$address ($device_name)"
+                else
+                    address_display="$address"
+                fi
+                
+                # Start new section for each address
+                if [ "$last_address" != "$address" ]; then
+                    if [ -n "$last_address" ]; then 
+                        echo "                </tbody></table></div>"
+                    fi
+                    echo "                <h4 style=\"margin-top: 20px; color: var(--primary-color);\">$address_display</h4>"
+                    echo "                <div class=\"node-history\">"
+                    echo "                <table class=\"modern-table\">"
+                    echo "                <thead><tr><th>Timestamp</th><th>Battery (%)</th><th>Voltage (V)</th><th>Channel Util (%)</th><th>Tx Util (%)</th><th>Uptime (h)</th></tr></thead>"
+                    echo "                <tbody>"
+                    last_address="$address"
+                fi
+                
+                echo "                <tr>"
+                echo "                    <td>$(format_human_time "$timestamp")</td>"
+                echo "                    <td>${battery:-N/A}</td>"
+                echo "                    <td>${voltage:-N/A}</td>"
+                echo "                    <td>${channel_util:-N/A}</td>"
+                echo "                    <td>${tx_util:-N/A}</td>"
+                uptime_hours=$(convert_uptime_to_hours "$uptime")
+                echo "                    <td>${uptime_hours:-N/A}</td>"
+                echo "                </tr>"
+            done
+            if [ -n "$last_address" ]; then
+                echo "                </tbody></table></div>"
+            fi
+        fi
+
+        cat << 'EOF'
+            </div>
+        </div>
+
+        <!-- All Nodes Ever Heard Section (same as original) -->
+        <h2 class="section-title">📡 All Nodes Ever Heard</h2>
+        <div class="table-container">
+            <h3 class="collapsible" onclick="toggleSection('all-nodes-content')">
+                <span><i class="fas fa-list"></i> Complete Node Registry</span>
+                <i class="fas fa-chevron-down"></i>
+            </h3>
+            <div id="all-nodes-content" class="collapsible-content" style="display: none;">
+                <p><em>Comprehensive list of all nodes that have ever been detected on the mesh network</em></p>
+                <table class="modern-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>User</th>
+                            <th>ID</th>
+                            <th>Hardware</th>
+                            <th>Role</th>
+                            <th>GPS</th>
+                            <th>First Heard</th>
+                            <th>Last Heard</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+EOF
+
+        # Generate all nodes table (same as original)
+        if [ -f "$NODES_CSV" ]; then
+            index=1
+            tail -n +2 "$NODES_CSV" 2>/dev/null | awk -F',' '!seen[$2]++ {print}' | sort -t',' -k17,17 | while IFS=',' read -r user id aka hardware pubkey role latitude longitude altitude battery channel_util tx_util snr hops channel lastheard since; do
+                # Remove quotes if present
+                user=$(echo "$user" | sed 's/^"//;s/"$//')
+                hardware=$(echo "$hardware" | sed 's/^"//;s/"$//')
+                latitude=$(echo "$latitude" | sed 's/^"//;s/"$//')
+                longitude=$(echo "$longitude" | sed 's/^"//;s/"$//')
+                
+                # Check if GPS coordinates are valid
+                gps_status="No GPS"
+                if [ -n "$latitude" ] && [ -n "$longitude" ] && \
+                   [ "$latitude" != "N/A" ] && [ "$longitude" != "N/A" ] && \
+                   [ "$latitude" != "0.0" ] && [ "$longitude" != "0.0" ]; then
+                    gps_status="📍 GPS"
+                fi
+                
+                # Determine status based on recent activity
+                node_status="Unknown"
+                if [ -n "$lastheard" ]; then
+                    current_time=$(date +%s)
+                    last_heard_time=$(date -d "$lastheard" +%s 2>/dev/null)
+                    if [ -n "$last_heard_time" ]; then
+                        time_diff=$(( current_time - last_heard_time ))
+                        if [ $time_diff -lt 3600 ]; then  # Less than 1 hour
+                            node_status="<span class=\"status-badge status-online\">Online</span>"
+                        elif [ $time_diff -lt 86400 ]; then  # Less than 24 hours
+                            node_status="<span class=\"status-badge status-idle\">Recent</span>"
+                        else
+                            node_status="<span class=\"status-badge status-offline\">Offline</span>"
+                        fi
+                    fi
+                fi
+                
+                echo "                        <tr>"
+                echo "                            <td>$index</td>"
+                echo "                            <td><strong>${user:-Unknown}</strong></td>"
+                echo "                            <td><code>$id</code></td>"
+                echo "                            <td>${hardware:-Unknown}</td>"
+                echo "                            <td>${role:-Unknown}</td>"
+                echo "                            <td>$gps_status</td>"
+                echo "                            <td>$(format_human_time "$since")</td>"
+                echo "                            <td>$(format_human_time "$lastheard")</td>"
+                echo "                            <td>$node_status</td>"
+                echo "                        </tr>"
+                index=$((index + 1))
+            done
+        fi
+
+        cat << 'EOF'
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <script>
