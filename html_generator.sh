@@ -1115,10 +1115,11 @@ EOF
             <div id="telemetry-history" class="collapsible-content" style="display: none;">
 EOF
 
-        # Generate comprehensive per-node telemetry history (same as original)
+        # Generate comprehensive per-node telemetry history (limited to last 100 records per node for performance)
         if [ -f "$TELEMETRY_CSV" ]; then
             last_address=""
-            awk -F',' '$3=="success"' "$TELEMETRY_CSV" | sort -t',' -k2,2 -k1,1r | while IFS=',' read -r timestamp address status battery voltage channel_util tx_util uptime; do
+            # Limit to last 1000 successful records total to prevent hanging
+            awk -F',' '$3=="success"' "$TELEMETRY_CSV" | tail -1000 | sort -t',' -k2,2 -k1,1r | while IFS=',' read -r timestamp address status battery voltage channel_util tx_util uptime; do
                 device_name="$(get_node_info "$address")"
                 if [ -n "$device_name" ] && [ "$device_name" != "$address" ]; then
                     address_display="$address ($device_name)"
