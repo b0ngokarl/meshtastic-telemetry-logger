@@ -292,12 +292,15 @@ exec_meshtastic_command() {
     shift # Remove timeout from arguments
     local command_args=("$@")
 
-    # Construct the full command, including the port if specified
-    local meshtastic_cmd=("meshtastic")
-    if [ -n "$MESHTASTIC_PORT" ]; then
-        meshtastic_cmd+=("--port" "$MESHTASTIC_PORT")
+    # Build the base command with connection parameters
+    local base_cmd
+    if ! base_cmd=$(build_meshtastic_command); then
+        log_error "Failed to build base meshtastic command."
+        return 1
     fi
-    meshtastic_cmd+=("${command_args[@]}")
+
+    # Combine base command with specific arguments for this execution
+    local meshtastic_cmd=($base_cmd "${command_args[@]}")
     
     debug_log "Executing command: timeout ${timeout_duration}s ${meshtastic_cmd[*]}"
 
