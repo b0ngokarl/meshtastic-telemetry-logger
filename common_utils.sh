@@ -321,6 +321,31 @@ exec_meshtastic_command() {
     echo "$output"
 }
 
+# Execute a raw meshtastic command without special JSON/table parsing.
+# Used for commands like traceroute that produce plain text output.
+exec_meshtastic_raw_command() {
+    local timeout_duration="$1"
+    shift # Remove timeout from arguments
+    local command_args=("$@")
+
+    # Build the base command with connection parameters
+    local base_cmd
+    if ! base_cmd=$(build_meshtastic_command); then
+        log_error "Failed to build base meshtastic command for raw execution."
+        return 1
+    fi
+
+    # Combine base command with specific arguments for this execution
+    local meshtastic_cmd=($base_cmd "${command_args[@]}")
+    
+    debug_log "Executing raw command: timeout ${timeout_duration}s ${meshtastic_cmd[*]}"
+
+    # Execute the command and return its raw output.
+    # We capture stderr because meshtastic often prints useful info there.
+    timeout "${timeout_duration}s" "${meshtastic_cmd[@]}" 2>&1
+}
+
+
 # Performance optimization utility functions
 
 # Get limited telemetry data for dashboard processing
