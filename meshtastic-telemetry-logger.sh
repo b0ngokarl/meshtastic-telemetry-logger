@@ -205,14 +205,20 @@ run_telemetry_batch() {
     if [ $exit_code -ne 0 ]; then
         debug_log "Batch telemetry command failed with exit code $exit_code"
         echo "$ts,ERROR,batch_command_failed,0,0,0,0,0" >> "$ERROR_LOG"
+        # Still write to the temp file so the next step doesn't use stale data
+        echo "{}" > "/tmp/meshtastic_info.json"
         return 1
     fi
 
     if ! echo "$out" | jq -e . >/dev/null 2>&1; then
         debug_log "Batch telemetry output is not valid JSON."
         echo "$ts,ERROR,invalid_json_output,0,0,0,0,0" >> "$ERROR_LOG"
+        echo "{}" > "/tmp/meshtastic_info.json"
         return 1
     fi
+    
+    # Save the output for the node update function to use
+    echo "$out" > "/tmp/meshtastic_info.json"
 
     # Process each node from the JSON output
     echo "$out" | jq -c '.nodes[]' | while read -r node_json; do
@@ -331,7 +337,7 @@ update_nodes_from_json() {
 generate_stats_html() {
     # Use the new performance-optimized dashboard generator
     debug_log "Switching to optimized dashboard generation"
-    generate_dashboard_optimized "modern"
+    generate_dashboard_optimized
 }
 
 # ---- WEB DEPLOYMENT FUNCTION ----

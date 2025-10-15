@@ -260,7 +260,7 @@ build_meshtastic_command() {
         tcp)
             local host="${MESHTASTIC_TCP_HOST:-192.168.1.100}"
             local port="${MESHTASTIC_TCP_PORT:-4403}"
-            cmd="$cmd --host $host:$port"
+            cmd="$cmd --host $host --port $port"
             ;;
         ble)
             local ble_address="${MESHTASTIC_BLE_ADDRESS}"
