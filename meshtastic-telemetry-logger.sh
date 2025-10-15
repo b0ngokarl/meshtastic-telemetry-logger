@@ -410,89 +410,87 @@ deploy_to_web() {
     return 0
 }
 
-# ---- MAIN LOOP ----
+# ---- PARALLEL PROCESSING TASKS ----
+run_analysis_tasks_parallel() {
+    echo "🚀 Launching parallel analysis tasks..."
+    
+    # Task 1: Generate HTML Dashboard
+    (
+        echo "  -> Starting HTML dashboard generation..."
+        generate_stats_html
+        echo "  -> ✅ HTML dashboard generation complete."
+    ) &
+    local html_pid=$!
+
+    # Task 2: Generate All Charts
+    (
+        echo "  -> Starting chart generation..."
+        if [[ -f "generate_full_telemetry_chart.py" ]]; then
+            python3 generate_full_telemetry_chart.py 2>/dev/null || echo "  Warning: Failed to generate comprehensive chart"
+        fi
+        if [[ -f "generate_node_chart.py" ]]; then
+            python3 generate_node_chart.py 2>/dev/null || echo "  Warning: Failed to generate utilization chart"
+        fi
+        echo "  -> ✅ Chart generation complete."
+    ) &
+    local chart_pid=$!
+
+    # Task 3: Weather and Network News Analysis
+    (
+        echo "  -> Starting weather and news analysis..."
+        if [[ -f "weather_integration.sh" ]]; then
+            WEATHER_API_KEY="$WEATHER_API_KEY" DEFAULT_LATITUDE="$DEFAULT_LATITUDE" DEFAULT_LONGITUDE="$DEFAULT_LONGITUDE" timeout "$WEATHER_TIMEOUT" ./weather_integration.sh
+        fi
+        if [[ -f "network_news_analyzer.py" ]]; then
+            python3 network_news_analyzer.py 2>/dev/null || echo "  Warning: Failed to generate network news"
+        fi
+        echo "  -> ✅ Weather and news analysis complete."
+    ) &
+    local analysis_pid=$!
+
+    # Wait for all background tasks to complete
+    wait $html_pid
+    wait $chart_pid
+    wait $analysis_pid
+    
+    echo "✅ All parallel analysis tasks completed."
+}
+
+# ---- MAIN LOOP (Optimized for Parallel Execution) ----
 # Initialize cycle counter for traceroute interval
 traceroute_cycle_counter=0
 
 while true; do
-    echo "Starting telemetry collection cycle at $(date)"
+    echo "--- Starting Telemetry Cycle at $(date) ---"
     
-    # Increment cycle counter
+    # --- STEP 1: DATA COLLECTION (Sequential) ---
     traceroute_cycle_counter=$((traceroute_cycle_counter + 1))
-    
-    # Load/reload node info cache if nodes file has been updated
     load_node_info_cache
-    
-    # Use batch telemetry collection for speed and efficiency
     run_telemetry_batch
-    
-    # Run traceroutes sequentially after telemetry
     run_traceroute_sequential
-    
-    # Update nodes using the more reliable JSON method
     echo "Updating node list from JSON..."
     update_nodes_from_json
-    
-    # Reload cache after updating nodes data
     echo "Refreshing node name cache..."
     load_node_info_cache
-    
-    generate_stats_html
-    
-    # Deploy to web server if configured
-    deploy_to_web
-    
-    # Generate weather predictions for solar nodes
-    if [[ -f "weather_integration.sh" ]]; then
-        echo "Generating weather-based energy predictions..."
-        WEATHER_API_KEY="$WEATHER_API_KEY" DEFAULT_LATITUDE="$DEFAULT_LATITUDE" DEFAULT_LONGITUDE="$DEFAULT_LONGITUDE" timeout $WEATHER_TIMEOUT ./weather_integration.sh nodes_log.csv telemetry_log.csv weather_predictions.json
-    fi
-    
-    # Run ML power predictor to learn and improve predictions
-    # This feature is currently disabled after cleanup. Re-enable if needed.
-    # if [[ "$ML_ENABLED" = "true" && -f "ml_power_predictor.sh" ]]; then
-    #     echo "Running ML power prediction analysis..."
-    #     ML_MIN_DATA_POINTS="$ML_MIN_DATA_POINTS" ML_LEARNING_RATE="$ML_LEARNING_RATE" timeout $ML_TIMEOUT ./ml_power_predictor.sh run
-    # fi
-    
-    # AUTO-GENERATE CHARTS AND HTML AFTER EACH TELEMETRY COLLECTION
-    echo "Auto-generating telemetry charts..."
-    
-    # Generate comprehensive telemetry chart (PNG)
-    if [[ -f "generate_full_telemetry_chart.py" ]]; then
-        echo "  -> Generating multi-node telemetry chart..."
-        python3 generate_full_telemetry_chart.py 2>/dev/null || echo "  Warning: Failed to generate telemetry chart"
-    fi
-    
-    # Generate utilization chart (PNG)
-    if [[ -f "generate_node_chart.py" ]]; then
-        echo "  -> Generating multi-node utilization chart..."
-        python3 generate_node_chart.py 2>/dev/null || echo "  Warning: Failed to generate utilization chart"
-    fi
-    
-    # Re-generate HTML dashboard with latest data
-    echo "  -> Updating HTML dashboard..."
-    generate_stats_html
-    
-    # Embed charts in HTML dashboard
-    echo "  -> Embedding charts in HTML dashboard..."
+    echo "✅ Data collection complete."
+
+    # --- STEP 2: DATA PROCESSING (Parallel) ---
+    run_analysis_tasks_parallel
+
+    # --- STEP 3: FINAL ASSEMBLY (Sequential) ---
+    echo "⚙️  Starting final assembly..."
+    # Embed charts and news into the main dashboard
     if [[ -f "auto_chart_embedder.py" ]]; then
-        python3 auto_chart_embedder.py 2>/dev/null || echo "  Warning: Failed to embed charts in HTML"
+        python3 auto_chart_embedder.py 2>/dev/null || echo "  Warning: Failed to embed charts"
+    fi
+    if [[ -f "network_news_embedder.py" ]]; then
+        python3 network_news_embedder.py 2>/dev/null || echo "  Warning: Failed to embed network news"
     fi
     
-    # Generate and embed network news
-    echo "  -> Generating network activity news..."
-    if [[ -f "network_news_analyzer.py" ]]; then
-        python3 network_news_analyzer.py 2>/dev/null || echo "  Warning: Failed to generate network news"
-        if [[ -f "network_news_embedder.py" && -f "network_news.html" ]]; then
-            python3 network_news_embedder.py 2>/dev/null || echo "  Warning: Failed to embed network news"
-        fi
-    fi
-    
-    # Deploy to web server if configured
+    # Deploy final assets to web server
     deploy_to_web
     
-    echo "Auto-generation complete. Charts and HTML updated."
+    echo "✅ Cycle complete. Charts and HTML updated."
     
     sleep "$INTERVAL"
 done
