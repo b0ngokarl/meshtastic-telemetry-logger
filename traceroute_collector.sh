@@ -152,11 +152,11 @@ run_traceroute() {
     
     debug_log "Running traceroute to $clean_destination (original: $destination)"
     
-    # Run the traceroute command with timeout
+    # Run the traceroute command with timeout using the raw command executor
     local output
     local traceroute_timeout
     traceroute_timeout=${TRACEROUTE_TIMEOUT:-$TELEMETRY_TIMEOUT}
-    output=$(exec_meshtastic_command "$traceroute_timeout" --traceroute "$clean_destination" 2>&1)
+    output=$(exec_meshtastic_raw_command "$traceroute_timeout" --traceroute "$clean_destination")
     local exit_code=$?
     
     debug_log "Traceroute command output: $output"
